@@ -1,0 +1,4 @@
+1. add testing codes in ./unit_test.
+use package pytest 6.1.1, docs: https://docs.pytest.org/en/latest/contents.html
+use following cmd when you are in root directory:
+pytest
