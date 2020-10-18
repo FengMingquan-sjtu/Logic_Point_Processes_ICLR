@@ -1,6 +1,8 @@
 import sys
 sys.path.extend(["../","./","../../"])
+
 import numpy as np
+import torch
 
 from model.point_process import Point_Process 
 from utils.args import get_args
@@ -9,8 +11,9 @@ from utils.args import get_args
 class Test_Point_Process:
     """ Testing gourp for ./model/point_process.py
     """
-    def get_pp(self, dataset_name="synthetic",logic_name="hawkes"):
+    def get_pp(self,target_predicate=[1], dataset_name="synthetic",logic_name="hawkes"):
         args = get_args()
+        args.target_predicate = target_predicate
         args.dataset_name = dataset_name
         args.synthetic_logic_name = logic_name
         return Point_Process(args)
@@ -39,8 +42,8 @@ class Test_Point_Process:
         # test case 1
         # checking time_window and neighbor_combination
         data = {0:{"time":[0, 1.1, 1.2, 2.1, 2.2], "state":[0,1,0,1,0]}}
-        time_window = 2
-        t = 3.5
+        time_window = 0.9
+        t = 2.1
         neighbor_ind = [0]
         neighbor_combination = np.array([1]) 
         input_ = (data, time_window, t, neighbor_ind, neighbor_combination)
@@ -59,6 +62,66 @@ class Test_Point_Process:
         transition_time_list, is_early_stop = pp._get_filtered_transition_time(*input_) 
         assert is_early_stop == True
         assert (transition_time_list[0] == np.array([])).all()
+
+    def test_get_history_cnt(self):
+        pp = self.get_pp() 
+        BEFORE = pp.logic.logic.BEFORE
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+
+        #test case 1
+        target_ind_in_predicate = 1
+        transition_time_list = [np.array([0,1,2,3,4]) ] 
+        t = 4 + DT
+        time_template = np.array([0, BEFORE])
+        input_ = (target_ind_in_predicate, time_template, transition_time_list, t)
+        history_cnt = pp._get_history_cnt(*input_)
+
+        t_a = transition_time_list[0]
+        expected_history_cnt = np.sum(np.exp(-(t-t_a)*D))
+        assert history_cnt == expected_history_cnt
+        assert history_cnt == 3.487190701886659
+
+        #test case 2
+        target_ind_in_predicate = 2
+        transition_time_list = [np.array([0,1,2,3,4]), np.array([0,1,2,3,4,5,6]) ] 
+        print(transition_time_list)
+        t = 8
+        time_template = np.array([0, BEFORE, BEFORE])
+        input_ = (target_ind_in_predicate, time_template, transition_time_list, t)
+        history_cnt = pp._get_history_cnt(*input_)
+        t_a,t_b = transition_time_list
+        t_a_r = t_a.reshape(1,5)
+        t_b_r = t_b.reshape(7,1)
+        hist = np.sum(t_b_r-t_a_r > DT, axis=0)
+        decay = np.exp(-(t-t_a)*D)
+        expected_history_cnt = np.sum(hist * decay)
+        assert history_cnt == expected_history_cnt
+        assert history_cnt == 5.651437027073542
+    
+    def test_get_feature(self):
+        pp = self.get_pp() 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        #test case 1
+        
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":[0, 1, 1, 2, 2], "state":[0,1,0,1,0]}
+        pred1 = pred0.copy()
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        t = 2 + DT
+        input_ = (t,dataset,sample_ID,target_predicate)
+        feature_list = pp.get_feature(*input_)
+
+        t_a = np.array([1,2])
+        expected_feature_list = torch.tensor([np.sum(np.exp(-(t-t_a)*D)) ])
+        assert (feature_list[0]==expected_feature_list).all() 
+
+if __name__ =="__main__":
+    tpp = Test_Point_Process()
+    tpp.test_get_feature()
+
         
         
 

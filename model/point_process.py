@@ -17,6 +17,7 @@ class Point_Process:
     def __init__(self, args):
         self.logic = Logic(args)
         self.args = args
+        self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
         # initialize parameters
         num_formula = self.logic.logic.num_formula
         num_predicate = self.logic.logic.num_predicate
@@ -63,7 +64,7 @@ class Point_Process:
             transition_state = np.array(data[neighbor_ind_]['state'])
             # only use history that falls in range [t - time_window, t)
             # and neighbors should follow neighbor_combination
-            mask = (transition_time >= t - time_window) * (transition_time < t) * (transition_state == neighbor_combination[idx])
+            mask = (transition_time >= t - time_window) * (transition_time <= t) * (transition_state == neighbor_combination[idx])
             transition_time = transition_time[mask]
             transition_time_list.append(transition_time)
             if len(transition_time) == 0:
@@ -71,18 +72,19 @@ class Point_Process:
                 break
         return transition_time_list, is_early_stop
     
-    def _get_history_cnt(self, target_ind_in_predicate:int, transition_time_list:List, t:float) -> float:
-        transition_time_list.insert(target_ind_in_predicate, np.array([t,]))
+    def _get_history_cnt(self, target_ind_in_predicate:int, time_template:np.ndarray, transition_time_list:List, t:float) -> float:
+        transition_time_list_ = transition_time_list.copy() #copy, avoid modifing input
+        transition_time_list_.insert(target_ind_in_predicate, np.array([t,]))
         # NOTE: we consider simple case that only A->Others have time relation.
         # time_template denotes relations of A->Others.
-        # transition_time_list[0] is A's time
-        t_a = np.expand_dims(transition_time_list[0], axis=0)
-        cnt_array = np.ones(len(transition_time_list[0])) #cnt.shape = t_a.shape[1] = len(A's time list)
-        for idx,transition_time in enumerate(transition_time_list):
+        # transition_time_list_[0] is A's time
+        t_a = np.expand_dims(transition_time_list_[0], axis=0)
+        cnt_array = np.ones(len(transition_time_list_[0])) #cnt.shape = t_a.shape[1] = len(A's time list)
+        for idx,transition_time in enumerate(transition_time_list_):
             if idx == 0: # A has no relation with itself. 
                 continue
             else:
-                t_ = np.expand_dims(transition_time_list[idx], axis=1)
+                t_ = np.expand_dims(transition_time_list_[idx], axis=1)
                 if time_template[idx] == self.logic.logic.BEFORE:
                     mask = (t_ - t_a) >= self.args.time_tolerence
                 elif time_template[idx] == self.logic.logic.EQUAL:
@@ -97,12 +99,12 @@ class Point_Process:
         return history_cnt
 
     def get_feature(self, t:float, dataset:Dict, sample_ID:int, target_predicate:int) -> torch.Tensor:
-        formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
         if (target_predicate,sample_ID,t) in self.feature_cache:
             #Notice that sample_ID in testing and training should be different
             feature_list = self.feature_cache[(target_predicate,sample_ID,t)]
         else:
             #### begin calculating feature ####
+            formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
             cur_state = self._check_state(dataset[sample_ID][target_predicate], t)  # cur_state is either 0 or 1
             feature_list = list()
             # collect evidence
@@ -114,11 +116,11 @@ class Point_Process:
 
                 time_window = self._get_time_window(formula_ind=formula_ind)
                 
-                transition_time_list, is_early_stop = self._get_filtered_transition_time(self, data=dataset[sample_ID], time_window=time_window, t=t, neighbor_ind=neighbor_ind, neighbor_combination=neighbor_combination)
+                transition_time_list, is_early_stop = self._get_filtered_transition_time(data=dataset[sample_ID], time_window=time_window, t=t, neighbor_ind=neighbor_ind, neighbor_combination=neighbor_combination)
                 if is_early_stop:
                     history_cnt = 0
                 else:
-                    history_cnt = self._get_history_cnt(target_ind_in_predicate, transition_time_list, t)           
+                    history_cnt = self._get_history_cnt(target_ind_in_predicate, time_template, transition_time_list, t)           
                 feature = torch.tensor(history_cnt * formula_effect).double()
                 feature_list.append(feature)
             feature_list = torch.tensor(feature_list)
