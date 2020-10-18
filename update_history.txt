@@ -1,4 +1,16 @@
 1. add testing codes in ./unit_test.
 use package pytest 6.1.1, docs: https://docs.pytest.org/en/latest/contents.html
-use following cmd when you are in root directory:
+run the following cmd when you are in root directory:
 pytest
+
+2. put testing codes in several dirs to avoid repeated testing.
+
+3. if testing codes use argparse, then it raises error when running "pytest file_path".
+   since argparse will recognize file_path as its args.
+
+4. in ./model/point_process.py line 66:
+    mask = ...(transition_time < t)...
+    maybe we can change to  
+    mask = ...(transition_time <= t)...
+    The boundary condition is meanless, and it may cause bugs.
+

@@ -1,3 +1,4 @@
+from typing import List,Tuple,Dict,Any
 import numpy as np
 
 class Hawkes_logic:
@@ -47,7 +48,7 @@ class Hawkes_logic:
         self.predicate_mapping = {1:[0]}
 
 
-    def __get_R_matrix(self):
+    def __get_R_matrix(self) -> np.ndarray:
         """define R matrix.
         Args: None
         Temporal variables:
@@ -68,7 +69,7 @@ class Hawkes_logic:
         
         return R_matrix
 
-    def __get_logic_formulas(self):
+    def __get_logic_formulas(self) -> Tuple[List]:
         """Set expert logic formulas via hard coding.
         Args: None
         Returns: 

@@ -1,5 +1,5 @@
 import sys
-sys.path.extend(["../","./"])
+sys.path.extend(["../","./","../../"])
 import numpy as np
 
 from logic.hawkes_logic import Hawkes_logic

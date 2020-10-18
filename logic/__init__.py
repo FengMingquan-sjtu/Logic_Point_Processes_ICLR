@@ -27,8 +27,9 @@ class Logic:
             get_logic_rule
     """
     def __init__(self,args):
+        self.args = args
         if args.dataset_name == "synthetic":
-            if self.args.synthetic_logic_name == "hawkes":
+            if args.synthetic_logic_name == "hawkes":
                 self.logic = Hawkes_logic()
         else:
             raise ValueError
@@ -118,3 +119,12 @@ class Logic:
         logic_rule = self.logic.logic_rule_list[rule_ind]
         return logic_rule
     
+
+if __name__ == "__main__":
+    from utils.args import get_args
+    
+    args = get_args()
+    args.dataset_name = "synthetic"
+    args.synthetic_logic_name = "hawkes"
+    l = Logic(args)
+    print(l.get_template(0))
