@@ -14,3 +14,5 @@ pytest
     mask = ...(transition_time <= t)...
     The boundary condition is meanless, and it may cause bugs.
 
+5. notice that self-correcting logic is "A -> Not B", instead of "Not A -> B"
+

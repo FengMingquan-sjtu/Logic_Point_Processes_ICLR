@@ -19,20 +19,20 @@ class Point_Process:
         self.args = args
         self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
         # initialize parameters
-        num_formula = self.logic.logic.num_formula
-        num_predicate = self.logic.logic.num_predicate
+        self.num_formula = self.logic.logic.num_formula
+        self.num_predicate = self.logic.logic.num_predicate
         self._parameters = OrderedDict()
-        self._parameters["weight"] = torch.autograd.Variable((torch.rand(num_formula) * self.args.init_weight_range).double(), requires_grad=True)
+        self._parameters["weight"] = torch.autograd.Variable((torch.rand(self.num_formula) * self.args.init_weight_range).double(), requires_grad=True)
         #self._parameters["weight"] = torch.autograd.Variable((torch.rand(num_formula)).double(), requires_grad=True)
-        self._parameters["base"] = torch.autograd.Variable((torch.rand(num_predicate)* self.args.init_weight_range).double(), requires_grad=True)
+        self._parameters["base"] = torch.autograd.Variable((torch.rand(self.num_predicate)* self.args.init_weight_range).double(), requires_grad=True)
         #self._parameters["weight"] = torch.autograd.Variable((torch.ones(num_formula)* 0.2).double(), requires_grad=True)
         #self._parameters["base"] = torch.autograd.Variable((torch.ones(num_predicate)* 0.2).double(), requires_grad=True)
         # cache
         self.feature_cache = dict()
     
     def set_parameters(self, w:float, b:float):
-        self._parameters["weight"] = torch.autograd.Variable((torch.ones(num_formula)* w).double(), requires_grad=True)
-        self._parameters["base"] = torch.autograd.Variable((torch.ones(num_predicate)* b).double(), requires_grad=True)
+        self._parameters["weight"] = torch.autograd.Variable((torch.ones(self.num_formula)* w).double(), requires_grad=True)
+        self._parameters["base"] = torch.autograd.Variable((torch.ones(self.num_predicate)* b).double(), requires_grad=True)
         
     def _check_state(self, seq:Dict[str, List], cur_time:float) -> int:
         """check state of seq at cur_time
@@ -115,8 +115,8 @@ class Point_Process:
                 formula_effect = template['formula_effect'][cur_state]
 
                 time_window = self._get_time_window(formula_ind=formula_ind)
-                
                 transition_time_list, is_early_stop = self._get_filtered_transition_time(data=dataset[sample_ID], time_window=time_window, t=t, neighbor_ind=neighbor_ind, neighbor_combination=neighbor_combination)
+                
                 if is_early_stop:
                     history_cnt = 0
                 else:
@@ -129,10 +129,28 @@ class Point_Process:
             #### end calculating feature ####
         return feature_list
 
-    def intensity(self):
-        pass
-    def non_negative_map(self):
-        pass
+    def intensity(self, t:float, dataset:Dict, sample_ID:int, target_predicate:int) -> torch.Tensor:
+        """Calculate intensity of target_predicate given dataset[sample_ID], following Eq(9).
+        """
+        feature_list = self.get_feature(t, dataset, sample_ID, target_predicate)
+        formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
+        #weight = F.softmax(self._parameters["weight"][formula_ind_list], dim=0) 
+        weight = self._parameters["weight"][formula_ind_list]
+        #weight = torch.clamp(self._parameters["weight"][formula_ind_list], min=0.001, max=0.99)
+        base = self._parameters["base"][target_predicate]
+        f = torch.add(torch.sum(torch.mul(feature_list, weight)), base)
+        intensity = self._non_negative_map(f)
+        intensity = intensity.reshape((1,)) # convert scalar to tensor, for conveninent grad
+        return intensity
+
+    def _non_negative_map(self, f:torch.Tensor) -> torch.Tensor:
+        if self.args.non_negative_map == "exp":
+            intensity = torch.exp(f)
+        elif self.args.non_negative_map == "max":
+            intensity = torch.clamp(f, min=0.0001)
+        else:
+            raise ValueError("Undefiend non_negative_map name {}".format(self.args.non_negative_map))
+        return intensity
     
     def intensity_log_sum(self):
         pass

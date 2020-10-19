@@ -63,7 +63,20 @@ class Test_Point_Process:
         assert is_early_stop == True
         assert (transition_time_list[0] == np.array([])).all()
 
-    def test_get_history_cnt(self):
+        # test case 3
+        # checking neighbor_combination
+        data = {0:{"time":[0, 1.1, 1.2, 2.1, 2.2], "state":[0,1,0,1,0]}}
+        time_window = 0.9001
+        t = 2.1
+        neighbor_ind = [0]
+        neighbor_combination = np.array([0]) 
+        input_ = (data, time_window, t, neighbor_ind, neighbor_combination)
+        transition_time_list, is_early_stop = pp._get_filtered_transition_time(*input_) 
+        assert is_early_stop == False
+        assert (transition_time_list[0] == np.array([1.2])).all()
+
+
+    def test_get_history_cnt_hawkes(self):
         pp = self.get_pp() 
         BEFORE = pp.logic.logic.BEFORE
         DT = pp.args.time_tolerence
@@ -85,7 +98,6 @@ class Test_Point_Process:
         #test case 2
         target_ind_in_predicate = 2
         transition_time_list = [np.array([0,1,2,3,4]), np.array([0,1,2,3,4,5,6]) ] 
-        print(transition_time_list)
         t = 8
         time_template = np.array([0, BEFORE, BEFORE])
         input_ = (target_ind_in_predicate, time_template, transition_time_list, t)
@@ -99,12 +111,30 @@ class Test_Point_Process:
         assert history_cnt == expected_history_cnt
         assert history_cnt == 5.651437027073542
     
-    def test_get_feature(self):
+    def test_get_history_cnt_self_correcting(self):
+        pp = self.get_pp(logic_name = "self_correcting")
+        BEFORE = pp.logic.logic.BEFORE
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+
+        #test case 1
+        target_ind_in_predicate = 1
+        transition_time_list = [np.array([0,1,2,3,4]) ] 
+        t = 4 + DT
+        time_template = np.array([0, BEFORE])
+        input_ = (target_ind_in_predicate, time_template, transition_time_list, t)
+        history_cnt = pp._get_history_cnt(*input_)
+
+        t_a = transition_time_list[0]
+        expected_history_cnt = np.sum(np.exp(-(t-t_a)*D))
+        assert history_cnt == expected_history_cnt
+        assert history_cnt == 3.487190701886659
+
+    def test_get_feature_hawkes(self):
         pp = self.get_pp() 
         DT = pp.args.time_tolerence
         D = pp.args.time_decay_rate
-        #test case 1
-        
+        #test case 1: hawkes
         target_predicate = 1
         sample_ID = 1
         pred0 = {"time":[0, 1, 1, 2, 2], "state":[0,1,0,1,0]}
@@ -115,8 +145,75 @@ class Test_Point_Process:
         feature_list = pp.get_feature(*input_)
 
         t_a = np.array([1,2])
-        expected_feature_list = torch.tensor([np.sum(np.exp(-(t-t_a)*D)) ])
+        expected_feature_list = torch.tensor(np.sum(np.exp(-(t-t_a)*D)) )
         assert (feature_list[0]==expected_feature_list).all() 
+        assert (feature_list[0].item() == 1.8187303893318676)
+
+    def test_get_feature_self_correcting(self):
+        #test case 1: self_correcting
+        pp = self.get_pp(logic_name = "self_correcting")
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate 
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":[0, 1, 1, 2, 2], "state":[0,1,0,1,0]}
+        pred1 = pred0.copy()
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        t = 2 + DT
+        input_ = (t,dataset,sample_ID,target_predicate)
+        feature_list = pp.get_feature(*input_)
+
+        t_a = np.array([1,2])
+        expected_feature_list = torch.tensor(-1 * np.sum(np.exp(-(t-t_a)*D)))
+        assert (feature_list[0]==expected_feature_list).all() 
+        assert (feature_list[0].item() == -1.8187303893318676)
+    
+    def test_intensity_hawkes(self):
+        pp = self.get_pp() 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        W = 0.1
+        B = 0.2
+        pp.set_parameters(w=W, b=B)
+        #test case 1: hawkes
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":[0, 1, 1, 2, 2], "state":[0,1,0,1,0]}
+        pred1 = pred0.copy()
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        t = 2 + DT
+        input_ = (t,dataset,sample_ID,target_predicate)
+        intensity = pp.intensity(*input_)
+
+        t_a = np.array([1,2])
+        expected_intensity = W * np.sum(np.exp(-(t-t_a)*D)) + B 
+        assert abs(intensity[0].item() - expected_intensity) <= 1e-6
+        assert abs(intensity[0].item() - 0.3818730389331868) <= 1e-6        
+
+    def test_intensity_self_correcting(self):
+        pp = self.get_pp(logic_name = "self_correcting") 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        W = 0.1
+        B = 0.2
+        pp.set_parameters(w=W, b=B)
+        #test case 1: self_correcting
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":[0, 1, 1, 2, 2], "state":[0,1,0,1,0]}
+        pred1 = pred0.copy()
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        t = 2 + DT
+        input_ = (t,dataset,sample_ID,target_predicate)
+        intensity = pp.intensity(*input_)
+
+        t_a = np.array([1,2])
+        expected_intensity = - W * np.sum(np.exp(-(t-t_a)*D)) + B 
+        assert abs(intensity[0].item() - expected_intensity) <= 1e-6
+        assert abs(intensity[0].item() - 0.018126961066813246) <= 1e-6   
+
+
+ 
 
 if __name__ =="__main__":
     tpp = Test_Point_Process()
