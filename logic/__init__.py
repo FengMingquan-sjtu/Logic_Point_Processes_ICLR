@@ -8,6 +8,7 @@ import numpy as np
 #from logic.mimic_logic import Mimic_logic
 from logic.hawkes_logic import Hawkes_logic
 from logic.self_correcting_logic import Self_Correcting_logic
+from logic.a_then_b_logic import A_Then_B_logic
 
 class Logic:
     """Provide expert defiend logic rule calculations.
@@ -33,6 +34,8 @@ class Logic:
                 self.logic = Hawkes_logic()
             elif args.synthetic_logic_name == "self_correcting":
                 self.logic = Self_Correcting_logic()
+            elif args.synthetic_logic_name == "a_then_b":
+                self.logic = A_Then_B_logic()
             else:
                 raise ValueError
         else:

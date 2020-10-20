@@ -16,3 +16,16 @@ pytest
 
 5. notice that self-correcting logic is "A -> Not B", instead of "Not A -> B"
 
+6. In synthetic.py we can divide preds into 3 types:
+   1)target pred  2) mapped pred  3)independent pred
+   type 2) is copied from 1), and type 3) is random, 
+   therefore we only need to synthetic (using thining) 1) type.
+
+   Notice that the generation order is  3) --> 1) --> 2). 
+   At time t, we first randomly generate an event t_3 of 3),
+   then, synthetic events of 1) in interval [t, t_3].
+
+   Also, 1) can be further divided into 1.1)instant and 1.2)continuous. 
+
+7. how to decide the max intensity point in a short interval? only need to calculate sign of f*w.
+

@@ -38,14 +38,7 @@ class Self_Correcting_logic:
         self.EQUAL = 1000
         
         self.R_matrix = self.__get_R_matrix()
-        self.logic_rule_list, self.time_template_list, self.formula_ind_to_rule_ind = self.__get_logic_formulas()
-
-        # For Hawkes (and other AutoRegression-like PPs), the triggering predicate and triggered predicate are same.
-        # To fit our logic formulation, we thus copy(mapping) the target to form a virtual predicate.
-        # predicate_mapping[i] = j, means preidcate i is real, predicate j is virtual.
-        # predicate[1] (i.e. B) is target(real) predicate
-        # predicate[0] (i.e. A) is copied(virtual) predicate
-        self.predicate_mapping = {1:[0]}
+        self.logic_rule_list, self.time_template_list, self.formula_ind_to_rule_ind, self.predicate_mapping, self.independent_predicate = self.__get_logic_formulas()
 
 
     def __get_R_matrix(self) -> np.ndarray:
@@ -80,6 +73,10 @@ class Self_Correcting_logic:
                 [time_template_f0(),..,]
             formula_ind_to_rule_ind: int list, 
                 formula_ind_to_rule_ind[formula_ind] = index of logic formula(rule) or time templates 
+            independent_predicate: int list,
+                indices of independent preds
+            predicate_mapping: int-int dict,
+                define copy between predicates.
         """
         
         #### Begin logic_formula  ####
@@ -98,6 +95,21 @@ class Self_Correcting_logic:
         time_template_f0[1] = self.BEFORE
         #### End time_template  ####
 
+        #### Begin predicate mapping
+        # For SC (and other AutoRegression-like PPs), the triggering predicate and triggered predicate are same.
+        # To fit our logic formulation, we thus copy(mapping) the target to form a virtual predicate.
+        # predicate_mapping[i] = j, means preidcate i is real, predicate j is virtual.
+        # predicate[1] (i.e. B) is target(real) predicate
+        # predicate[0] (i.e. A) is copied(virtual) predicate
+        predicate_mapping = {1:[0]}
+
+        #### Begin independent predicate
+        # SC do not have independent predicates.
+        # independent predicates denote outer factors, e.g. human\whether\earthquake...
+        # these predicates can trigger others, but can not be triggered by others.
+        # we thus do not care about their intensity, and synthetic them randomly.
+        independent_predicate = []
+
         formula_ind_to_rule_ind = [0] * self.num_formula
 
         for i in range(len(formula_ind_to_rule_ind)):
@@ -106,7 +118,7 @@ class Self_Correcting_logic:
         logic_rule_list = [logic_f0,]
         time_template_list = [time_template_f0,]
 
-        return logic_rule_list, time_template_list, formula_ind_to_rule_ind
+        return logic_rule_list, time_template_list, formula_ind_to_rule_ind, predicate_mapping, independent_predicate
 
 if __name__ == "__main__":
     logic = Self_Correcting_logic()
