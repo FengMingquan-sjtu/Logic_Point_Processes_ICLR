@@ -7,7 +7,7 @@ from utils.args import get_args
 
 
 class Test_Logic:
-    """ Testing gourp for ./logic/__init__.py
+    """ Testing group for ./logic/__init__.py
     """
     def get_logic(self, dataset_name="synthetic",logic_name="hawkes"):
         args = get_args()

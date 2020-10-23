@@ -9,7 +9,7 @@ from utils.args import get_args
 
 
 class Test_Point_Process:
-    """ Testing gourp for ./model/point_process.py
+    """ Testing group for ./model/point_process.py
     """
     def get_pp(self,target_predicate=[1], dataset_name="synthetic",logic_name="hawkes"):
         args = get_args()

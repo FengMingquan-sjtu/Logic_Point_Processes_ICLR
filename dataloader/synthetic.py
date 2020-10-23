@@ -1,5 +1,6 @@
 import sys
 sys.path.extend(['./','../'])
+from typing import List,Tuple,Dict,Any
 
 import numpy as np
 from numpy.random import default_rng
@@ -7,19 +8,13 @@ import torch
 
 
 from logic import Logic
-from model.temporal_reason import TemporalReason
-from debug.hawkes import Hawkes # used to debug
+from model.point_process import Point_Process
+from utils.data_vis import draw_event_intensity
 
 class Synthetic:
     def __init__(self,args):
         self.args = args
-        
-        self.model = TemporalReason(
-            args = self.args,
-            train_dataset = None, 
-            test_dataset = None, 
-            template = dict(),)
-            
+        self.model = Point_Process(args=args)
         self.logic = self.model.logic
         self.num_predicate = self.logic.logic.num_predicate
         self.num_formula = self.logic.logic.num_formula
@@ -30,25 +25,15 @@ class Synthetic:
         print("=>Generating synthetic dataset.")
         print("=>Weight = ", self.model._parameters["weight"])
         print("=>Base = ", self.model._parameters["base"]) 
-
-        self.__update_template()  
-        #print(self.model.template) 
-        self.debug_model = Hawkes(args)
-
-
-    def __update_template(self):
-        """calculate templates of model.
-        """
-        # all predicates, including non-target, requires template
-        for p in range(self.num_predicate):
-            self.model.template[p] = self.logic.get_template(target_predicate_ind=p)
     
-    def get_dataset(self,is_train, seed=None):
+    def get_dataset(self,is_train:bool, seed:int=None)->Dict:
         """preprocess dataset.
         Args:
             is_train: bool,
                 if is_train then return training data
                 else return testing data
+            seed: int,
+                random seed, if None then use default random seed.
         Returns:
             dataset: nested dict,
                 dataset[sample_ID][predicate_ID] = {'time':int list,'state':int list} 
@@ -64,11 +49,16 @@ class Synthetic:
     
         return dataset
     
-    def _get_t_m(self, t, dataset, sample_ID, target_predicate):
-        feature_list = self.model.get_feature(t, dataset, sample_ID, target_predicate)
-        formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
-        weight = self._parameters["weight"][formula_ind_list]
-        is_positive_effect = (torch.sum(torch.mul(feature_list, weight)) >= 0)
+    def _get_t_m(self, t, dataset, sample_ID, target_predicate) -> float:
+        if self.args.synthetic_logic_name == "hawkes":
+            is_positive_effect = True
+        elif self.args.synthetic_logic_name == "self-correcting":
+            is_positive_effect = False
+        else:
+            feature_list = self.model.get_feature(t, dataset, sample_ID, target_predicate)
+            formula_ind_list = list(self.model.template[target_predicate].keys()) # extract formulas related to target_predicate
+            weight = self.model._parameters["weight"][formula_ind_list]
+            is_positive_effect = (torch.sum(torch.mul(feature_list, weight)) >= 0)
         # since all rules are decaying in same rate, the sign of f*w won't change.
         if is_positive_effect: # if f*w>0, then intensity keeps decreasing with time, thus max intensity point is current.
             t_m = t
@@ -76,6 +66,17 @@ class Synthetic:
             t_m = t + self.args.synthetic_time_horizon
         return t_m
     
+    def add_new_event(self,data:Dict,t:float,is_duration_pred:bool)->float:
+
+        data["time"].append(t)
+        last_state = data["state"][-1]
+        data["state"].append(1-last_state)
+        if not is_duration_pred:
+            data["time"].append(t)
+            data["state"].append(last_state)
+        t += (self.args.time_tolerence * 1.0001 ) #add time_tolerence to allow BEFORE captures this event.
+        return t
+
     def generate_data(self, sample_ID_lb, sample_ID_ub, seed):
         """
         generate event data using Ogata’s modified thinning algorithm
@@ -102,78 +103,51 @@ class Synthetic:
                         dataset[sample_ID][p] = dataset[sample_ID][predicate_ID]
             #### end initialization  ####
 
-
             #### begin simulation  ####
             # Ogata's thinning    
             rng = default_rng(seed)
             cur_time = 0
             while cur_time < self.args.synthetic_time_horizon:
-                if self.logic.independent_predicate:
-                    indep_pred = self.logic.independent_predicate
+                if self.logic.logic.independent_predicate:
+                    indep_pred = self.logic.logic.independent_predicate
                     intensity_indep = self.args.intensity_indep_pred * len(indep_pred)
                     dwell_time_indep = rng.exponential(scale=1.0/ intensity_indep)
                     t_l = cur_time + dwell_time_indep
                     if t_l > self.args.synthetic_time_horizon:
                         break
-                    pred_idx = rng.choice(indep_pred, 1)
-                    pred_idx = pred_idx.item()
-                    # TODO append this pred to dataset...
-                    # maybe define add_new_event() function.
-                    # ...
-                    
-                    
+                    pred_idx = rng.choice(indep_pred, 1).item()
+                    self.add_new_event(data=dataset[sample_ID][pred_idx], t=cur_time, is_duration_pred=self.logic.logic.is_duration_pred[pred_idx])
+                    # not using return value (time) of add_new_event
                 else:
                     t_l = self.args.synthetic_time_horizon
-                intensity_m = np.zeros(shape = self.num_predicate)
-
-                # to guarantee that intensity_m >= intensity_
-                t_m = self._get_t_m(cur_time)
-                for p in self.args.target_predicate:
-                    intensity_m[p]= self.model.intensity(t = t_m, dataset = dataset, sample_ID = sample_ID, target_predicate = p) 
-                # only real preidicates update intensity.
-                # the copied predicates always have 0 intensity (thus they won't be sampled).
-
-                # the next event
-                dwell_time = rng.exponential(scale=1.0/ np.sum(intensity_m))
                 
-                pred_idx = rng.choice(self.num_predicate, 1, p=intensity_m / np.sum(intensity_m))
-                pred_idx = pred_idx.item()
+                while cur_time < t_l:
+                    intensity_m = np.zeros(shape = self.num_predicate)
+                    # to guarantee that intensity_m >= intensity_
+                    # NOTE: calculation of t_m is difficult for multiple target preds
+                    # thus we use target_predicate[0] to get an approximated t_m.
+                    t_m = self._get_t_m(cur_time, dataset, sample_ID, self.args.target_predicate[0])
+                    for p in self.args.target_predicate:
+                        intensity_m[p]= self.model.intensity(t = t_m, dataset = dataset, sample_ID = sample_ID, target_predicate = p) 
+                    # only target preds update intensity, other preds won't be sampled
 
-                # since copied predicates have 0 probabililty, they won't be sampeld.
-                # only the real predicates will be sampled.
+                    # the next event
+                    dwell_time = rng.exponential(scale=1.0/ np.sum(intensity_m))
+                    pred_idx = rng.choice(self.num_predicate, 1, p=intensity_m / np.sum(intensity_m)).item()
+                    # since copied predicates have 0 probabililty, they won't be sampeld.
+                    # only the real predicates will be sampled.
 
-                cur_time += dwell_time# time moves forward, no matter this dwell_time is accepted or not.
-                if cur_time > min(t_l, self.args.synthetic_time_horizon):
-                    break
-                
-                #drop (thinning)
-                intensity_  = self.model.intensity(t =  cur_time, dataset = dataset, sample_ID = sample_ID, target_predicate = pred_idx)
-                #debug_int = self.debug_intensity(t =  cur_time, dataset = dataset, sample_ID = sample_ID)
-                #if abs(intensity_-debug_int) > 0.01:   
-                #    print("ERROR 2")
-
-                accept_ratio = intensity_ / intensity_m[pred_idx]
-                #if accept_ratio > 1:
-                #    print(accept_ratio)
-                
-
-                if rng.random() < accept_ratio: 
-
-                    dataset[sample_ID][pred_idx]["time"].append(cur_time)
-                    dataset[sample_ID][pred_idx]["state"].append(1)
-
-                    # must add time_tolerence
-                    # otherwise, next intensity_m can not count current event, which leads to accept_ratio > 1.
-                    #cur_time += (self.args.time_tolerence *1.01 )
-                    cur_time += self.args.time_tolerence * 1.0 # must be exactly time_tolerence.
-
-                    dataset[sample_ID][pred_idx]["time"].append(cur_time)
-                    dataset[sample_ID][pred_idx]["state"].append(0)
-                    cur_time += (self.args.time_tolerence * 0.1 ) #must add this line
-                else:
-                    continue
-
-                
+                    cur_time += dwell_time# time moves forward, no matter this dwell_time is accepted or not.
+                    if cur_time > t_l:
+                        break
+                    
+                    #drop (thinning)
+                    intensity_  = self.model.intensity(t =  cur_time, dataset = dataset, sample_ID = sample_ID, target_predicate = pred_idx)
+                    accept_ratio = intensity_ / intensity_m[pred_idx]
+                    #if accept_ratio > 1:
+                    #    print(accept_ratio)
+                    if rng.random() < accept_ratio: 
+                        cur_time = self.add_new_event(data=dataset[sample_ID][pred_idx], t=cur_time, is_duration_pred=self.logic.logic.is_duration_pred[pred_idx])                
         return dataset
     
     def draw_dataset(self):
@@ -186,8 +160,7 @@ class Synthetic:
             return self.model.intensity(t = t, dataset = dataset, sample_ID = 0, target_predicate = 1) 
         name = "synthetic_" + self.args.synthetic_logic_name 
 
-        h = Hawkes(self.args)
-        h.draw(time_array, name, f)
+        draw_event_intensity(time_array, name, f)
 
 
 
@@ -198,10 +171,12 @@ if __name__ == "__main__":
     args = get_args()
     args.dataset_name = "synthetic"
     args.target_predicate = [1]
-    args.synthetic_logic_name = "self_correcting"
+    args.synthetic_logic_name = "hawkes"#"self_correcting"
     args.synthetic_training_sample_num = 10
     args.synthetic_testing_sample_num = 10
     args.synthetic_time_horizon = 50
+    args.synthetic_weight = 0.1
+    args.synthetic_base = 0.2
     s = Synthetic(args)
     s.draw_dataset()
     train_data_set = s.get_dataset(1)

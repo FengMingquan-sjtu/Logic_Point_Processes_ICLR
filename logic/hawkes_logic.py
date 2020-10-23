@@ -38,7 +38,7 @@ class Hawkes_logic:
         self.EQUAL = 1000
         
         self.R_matrix = self.__get_R_matrix()
-        self.logic_rule_list, self.time_template_list, self.formula_ind_to_rule_ind, self.predicate_mapping, self.independent_predicate = self.__get_logic_formulas()
+        self.logic_rule_list, self.time_template_list, self.formula_ind_to_rule_ind, self.predicate_mapping, self.independent_predicate, self.is_duration_pred = self.__get_logic_formulas()
 
     def __get_R_matrix(self) -> np.ndarray:
         """define R matrix.
@@ -110,6 +110,11 @@ class Hawkes_logic:
         # we thus do not care about their intensity, and synthetic them randomly.
         independent_predicate = []
 
+        #### Begin is_duration_pred
+        # is_duration_pred[i] = True means pred i may keeps state in some duration.
+        # otherwise, pred i keep a certain state in all time, and only switch to the other state in infinite-small time.
+        is_duration_pred = [0,0]
+
         formula_ind_to_rule_ind = [0] * self.num_formula
 
         for i in range(len(formula_ind_to_rule_ind)):
@@ -118,7 +123,7 @@ class Hawkes_logic:
         logic_rule_list = [logic_f0,]
         time_template_list = [time_template_f0,]
 
-        return logic_rule_list, time_template_list, formula_ind_to_rule_ind, predicate_mapping, independent_predicate
+        return logic_rule_list, time_template_list, formula_ind_to_rule_ind, predicate_mapping, independent_predicate, is_duration_pred
 
 if __name__ == "__main__":
     logic = Hawkes_logic()

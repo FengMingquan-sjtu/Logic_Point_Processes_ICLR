@@ -29,3 +29,5 @@ pytest
 
 7. how to decide the max intensity point in a short interval? only need to calculate sign of f*w.
 
+8. using seed, we can test correctness of synthetic data.
+

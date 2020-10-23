@@ -6,7 +6,7 @@ from logic.hawkes_logic import Hawkes_logic
 
 
 class Test_Hawkes_Logic:
-    """ Testing gourp for ./logic/hawkes_logic.py
+    """ Testing group for ./logic/hawkes_logic.py
     """
     def get_logic(self):
         return Hawkes_logic()
