@@ -33,6 +33,8 @@ def get_args():
                         help="ground truth weight of synthetic data")
     parser.add_argument('--synthetic_base', type=float, default=0.2,
                         help="ground truth base of synthetic data")
+    parser.add_argument('--intensity_indep_pred', type=float, default=0.2,
+                        help="intensity of independent predicates.")
     
     
     #dataset general setting

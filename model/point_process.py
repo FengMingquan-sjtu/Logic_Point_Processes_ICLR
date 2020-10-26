@@ -30,9 +30,9 @@ class Point_Process:
         # cache
         self.feature_cache = dict()
     
-    def set_parameters(self, w:float, b:float):
-        self._parameters["weight"] = torch.autograd.Variable((torch.ones(self.num_formula)* w).double(), requires_grad=True)
-        self._parameters["base"] = torch.autograd.Variable((torch.ones(self.num_predicate)* b).double(), requires_grad=True)
+    def set_parameters(self, w:float, b:float, requires_grad:bool=True):
+        self._parameters["weight"] = torch.autograd.Variable((torch.ones(self.num_formula)* w).double(), requires_grad=requires_grad)
+        self._parameters["base"] = torch.autograd.Variable((torch.ones(self.num_predicate)* b).double(), requires_grad=requires_grad)
         
     def _check_state(self, seq:Dict[str, List], cur_time:float) -> int:
         """check state of seq at cur_time

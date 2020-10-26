@@ -74,7 +74,7 @@ class Synthetic:
         if not is_duration_pred:
             data["time"].append(t)
             data["state"].append(last_state)
-        t += (self.args.time_tolerence * 1.0001 ) #add time_tolerence to allow BEFORE captures this event.
+        t += (self.args.time_tolerence * 1.1 ) #add time_tolerence to allow BEFORE captures this event.
         return t
 
     def generate_data(self, sample_ID_lb, sample_ID_ub, seed):
@@ -133,6 +133,7 @@ class Synthetic:
 
                     # the next event
                     dwell_time = rng.exponential(scale=1.0/ np.sum(intensity_m))
+                    
                     pred_idx = rng.choice(self.num_predicate, 1, p=intensity_m / np.sum(intensity_m)).item()
                     # since copied predicates have 0 probabililty, they won't be sampeld.
                     # only the real predicates will be sampled.
@@ -172,14 +173,14 @@ if __name__ == "__main__":
     args.dataset_name = "synthetic"
     args.target_predicate = [1]
     args.synthetic_logic_name = "hawkes"#"self_correcting"
-    args.synthetic_training_sample_num = 10
-    args.synthetic_testing_sample_num = 10
+    args.synthetic_training_sample_num = 1
+    args.synthetic_testing_sample_num = 0
     args.synthetic_time_horizon = 50
     args.synthetic_weight = 0.1
     args.synthetic_base = 0.2
     s = Synthetic(args)
-    s.draw_dataset()
-    train_data_set = s.get_dataset(1)
+    #s.draw_dataset()
+    train_data_set = s.generate_data(sample_ID_lb=0, sample_ID_ub=1, seed=1)
     print(train_data_set)
     
     #print(test_data_set)
