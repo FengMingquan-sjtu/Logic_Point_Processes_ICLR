@@ -88,7 +88,6 @@ class Logic:
                 formula_effect = 1
 
             template[formula_ind] = dict()
-            template[formula_ind]['predicate_ind'] = predicate_ind
             template[formula_ind]['neighbor_ind'] = neighbor_ind
             template[formula_ind]['neighbor_combination'] = neighbor_combination
             template[formula_ind]['formula_effect'] = [formula_effect, -formula_effect]

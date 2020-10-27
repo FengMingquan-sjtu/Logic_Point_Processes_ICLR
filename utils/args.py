@@ -66,7 +66,7 @@ def get_args():
     
     
     #model
-    parser.add_argument('--integral_grid', type=float, default=0.01,
+    parser.add_argument('--integral_grid', type=float, default=0.1,
                         help="dt in approximate integral")
     parser.add_argument('--time_tolerence', type=float, default=1e-6,
                         help="tolerence of time relation BEFORE,EQUAL.")

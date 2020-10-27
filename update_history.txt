@@ -31,3 +31,10 @@ pytest
 
 8. using seed, we can test correctness of synthetic data.
 
+9.  in./model/point_process.py, intensity_log_sum() function: 
+   if (not is_duration_pred) and dataset[sample_ID][target_predicate]['state'][idx]==0:
+   missing "not" in first condition, missing "[idx]" in second condition.
+
+10. In closed form integral, the most dfficult part is how to get latest pred.
+    Thus currently we only implement for rule body length=1,2, but not for longer rules.
+

@@ -210,14 +210,35 @@ class Test_Point_Process:
         t_a = np.array([1,2])
         expected_intensity = - W * np.sum(np.exp(-(t-t_a)*D)) + B 
         assert abs(intensity[0].item() - expected_intensity) <= 1e-6
-        assert abs(intensity[0].item() - 0.018126961066813246) <= 1e-6   
+        assert abs(intensity[0].item() - 0.018126961066813246) <= 1e-6
 
+    def test_intensity_log_sum_hawkes(self):
+        pp = self.get_pp(logic_name = "hawkes") 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        W = 0.1
+        B = 0.2
+        pp.set_parameters(w=W, b=B)
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":[0, 1, 1, 2, 2], "state":[0,1,0,1,0]}
+        pred1 = pred0.copy()
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        input_ = (dataset,sample_ID,target_predicate)
+        intensity_log_sum = pp.intensity_log_sum(*input_)
+        t = np.array([2,])
+        t_a = np.array([1,])
+        intensity_1 = B #intensity at t=1
+        intensity_2 = W * np.sum(np.exp(-(t-t_a)*D)) + B #intensity at t=2
+        expected_intensity_list = np.array([intensity_1,intensity_2])
+        expected_intensity_log_sum = np.sum(np.log(expected_intensity_list))     
+        assert abs(intensity_log_sum.item() - expected_intensity_log_sum) <= 1e-6
+        assert abs(intensity_log_sum.item() - (-2.875736309358932) ) <=1e-6
 
- 
 
 if __name__ =="__main__":
     tpp = Test_Point_Process()
-    tpp.test_get_feature()
+    tpp.test_intensity_log_sum_hawkes()
 
         
         

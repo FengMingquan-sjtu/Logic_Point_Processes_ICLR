@@ -23,11 +23,7 @@ class Point_Process:
         self.num_predicate = self.logic.logic.num_predicate
         self._parameters = OrderedDict()
         self._parameters["weight"] = torch.autograd.Variable((torch.rand(self.num_formula) * self.args.init_weight_range).double(), requires_grad=True)
-        #self._parameters["weight"] = torch.autograd.Variable((torch.rand(num_formula)).double(), requires_grad=True)
         self._parameters["base"] = torch.autograd.Variable((torch.rand(self.num_predicate)* self.args.init_weight_range).double(), requires_grad=True)
-        #self._parameters["weight"] = torch.autograd.Variable((torch.ones(num_formula)* 0.2).double(), requires_grad=True)
-        #self._parameters["base"] = torch.autograd.Variable((torch.ones(num_predicate)* 0.2).double(), requires_grad=True)
-        # cache
         self.feature_cache = dict()
     
     def set_parameters(self, w:float, b:float, requires_grad:bool=True):
@@ -100,7 +96,7 @@ class Point_Process:
 
     def get_feature(self, t:float, dataset:Dict, sample_ID:int, target_predicate:int) -> torch.Tensor:
         if (target_predicate,sample_ID,t) in self.feature_cache:
-            #Notice that sample_ID in testing and training should be different
+            #Notice that sample_ID in testing and training should be different, for easy cache.
             feature_list = self.feature_cache[(target_predicate,sample_ID,t)]
         else:
             #### begin calculating feature ####
@@ -152,11 +148,174 @@ class Point_Process:
             raise ValueError("Undefiend non_negative_map name {}".format(self.args.non_negative_map))
         return intensity
     
-    def intensity_log_sum(self):
-        pass
-    def intensity_integral(self):
-        pass
-    def log_likelihood(self):
-        pass
+    def intensity_log_sum(self, dataset, sample_ID, target_predicate):
+        intensity_list = list()
+        is_duration_pred =  self.logic.logic.is_duration_pred[target_predicate]
+        for idx,t  in enumerate(dataset[sample_ID][target_predicate]['time']):
+            if (not is_duration_pred) and dataset[sample_ID][target_predicate]['state'][idx]==0:
+                # filter out 'fake' states for instant pred.
+                continue
+            cur_intensity = self.intensity(t, dataset, sample_ID, target_predicate)
+            intensity_list.append(cur_intensity)
+        if intensity_list:
+            intensity_sum = torch.sum(torch.log(torch.cat(intensity_list)))
+        else:
+            intensity_sum = torch.tensor([0], dtype=torch.float64)
+        return intensity_sum
+        
+
+    def intensity_integral(self, dataset, sample_ID, target_predicate):
+        start_time = 0
+        
+        if self.args.dataset_name == "synthetic":
+            end_time = self.args.synthetic_horizon
+        else:
+            end_time = dataset[sample_ID][target_predicate]['time'][-1]
+        if end_time == 0:
+            intensity_integral = torch.tensor([0], dtype=torch.float64)
+        else:
+            IS_USE_CLOSED_INTEGRAL = 0
+            if IS_USE_CLOSED_INTEGRAL and self.args.non_negative_map == "max":
+                intensity_integral = self._closed_integral(start_time, end_time, dataset, sample_ID, target_predicate)
+            else:
+                intensity_integral = self._numerical_integral(start_time, end_time, dataset, sample_ID, target_predicate)
+        return intensity_integral
+    
+    def _closed_integral(self, start_time, end_time, dataset, sample_ID, target_predicate):
+        """NOTE: this implementation has following assumptions:
+        1) non_negative_map is max
+        2) intensity alsways > 0
+        """
+        formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
+        feature_integral_list = list()
+        for formula_ind in formula_ind_list:
+            feature_integral = self._closed_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
+            feature_integral_list.append(feature_integral)
+        feature_integral_list = torch.tensor(feature_integral_list)
+        weight = self._parameters["weight"][formula_ind_list]
+        base = self._parameters["base"][target_predicate]
+        integral = torch.sum(torch.mul(feature_integral_list, weight)) +  base * (end_time - start_time) 
+        return integral
+    
+    def _numerical_feature_integral(self, start_time, end_time, dataset, sample_ID, target_predicate, formula_ind):
+        # collect evidence
+        feature_integral_term = list()
+        for t in np.arange(start_time, end_time, self.args.integral_grid):
+            cur_state = self._check_state(dataset[sample_ID][target_predicate], t)  # cur_state is either 0 or 1
+            template = self.template[target_predicate][formula_ind]
+            neighbor_ind, neighbor_combination, target_ind_in_predicate, time_template = template['neighbor_ind'],template['neighbor_combination'], template['target_ind_in_predicate'], template['time_template']
+            formula_effect = template['formula_effect'][cur_state]
+
+            time_window = self._get_time_window(formula_ind=formula_ind)
+            transition_time_list, is_early_stop = self._get_filtered_transition_time(data=dataset[sample_ID], time_window=time_window, t=t, neighbor_ind=neighbor_ind, neighbor_combination=neighbor_combination)
+            
+            if is_early_stop:
+                history_cnt = 0
+            else:
+                history_cnt = self._get_history_cnt(target_ind_in_predicate, time_template, transition_time_list, t)           
+            feature = torch.tensor(history_cnt * formula_effect).double()
+            feature_integral_term.append(feature)
+        if len(feature_integral_term) > 0:
+            feature_integral = torch.sum(torch.cat(feature_integral_term)) * self.args.integral_grid # approximate integral
+        else:
+            feature_integral = torch.tensor([0], dtype=torch.float64)
+        
+        return feature_integral.item()
+
+    def _closed_feature_integral(self, start_time, end_time, dataset, sample_ID, target_predicate, formula_ind):
+        template = self.template[target_predicate][formula_ind]
+        neighbor_ind, neighbor_combination, target_ind_in_predicate, time_template, formula_effect = template['neighbor_ind'],template['neighbor_combination'], template['target_ind_in_predicate'], template['time_template'], template['formula_effect']
+        data = dataset[sample_ID][target_predicate]
+        ta_tn_count = list()
+        # ta_tn_count is a list of (t_a, t_n, count)
+        # where t_a = float, time of pred A
+        # t_n = float, time of latest pred
+        # count = int, number of such combination (not used in current version)
+        if len(neighbor_ind) == 1:
+            #t_a == t_n, where t_n is the latest body pred.
+            t_n_idx = neighbor_ind[0]
+            mask = dataset[sample_ID][t_n_idx]['state'] == neighbor_combination[0]
+            t_n_array = dataset[sample_ID][t_n_idx]['time'][mask]
+            for t_n in t_n_array:
+                ta_tn_count.append((t_n, t_n, 1))
+        elif len(neighbor_ind) == 2:
+            #t_a != t_n, and len(body) == 2 
+            t_a_idx, t_n_idx = neighbor_ind
+            mask_a = dataset[sample_ID][t_a_idx]['state'] == neighbor_combination[0]
+            t_a_array = dataset[sample_ID][t_a_idx]['time'][mask_a]
+            mask_n = dataset[sample_ID][t_n_idx]['state'] == neighbor_combination[1]
+            t_n_array = dataset[sample_ID][t_n_idx]['time'][mask_n]
+            time_rel = time_template[1]
+            BEFORE = self.logic.logic.BEFORE
+            EQUAL = self.logic.logic.EQUAL
+            for t_a, t_n in zip(t_a_array, t_n_array):
+                if (time_rel == BEFORE and not t_n - t_a >= self.args.time_tolerence) or  (time_rel == EQUAL and not abs(t_n - t_a) <= self.args.time_tolerence):
+                    continue
+                ta_tn_count.append( (t_a, max(t_a,t_n), 1))
+        else:
+            # Not implemented for long rules, use numerical instead. 
+            return self._numerical_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
+        
+        is_duration_pred = self.logic.logic.is_duration_pred[target_predicate]
+        data = dataset[sample_ID][target_predicate]
+        integral = self._closed_formula_effect_integral(ta_tn_count, end_time, data, is_duration_pred, formula_effect)
+        return integral
+        
+    def _closed_formula_effect_integral(self, ta_tn_count, end_time, data, is_duration_pred, formula_effect):
+        fe_integral = 0
+        D = self.args.time_decay_rate
+        if not is_duration_pred:
+            state = data['state'][-1]
+            fe_sign = formula_effect[state]
+            for ta,tn,count in ta_tn_count:
+                # integral from tn to end_time
+                fe_integral_term = (exp(D*(ta - tn)) - exp(D*(ta - end_time)))/D
+                fe_integral += fe_integral_term * count * fe_sign 
+        else:
+            for ta,tn,count in ta_tn_count:
+                # integral from tn to end_time
+                mask = data['time'] > tn  # NOTE: assume tn is earier than target
+                time_list = data['time'][mask].tolist()
+                state_list = data['state'][mask].tolist()
+                # add virtual event: tn, for easy calculation
+                time_list.insert(0, tn)
+                state = self._check_state(data,tn)
+                state_list.insert(0, state)
+                # add virtual event: end_time, for easy calculation
+                time_list.append(end_time)
+                state = self._check_state(data, end_time)
+                state_list.append(state)
+
+                for i in range(len(time_list)-1):
+                    ts = time_list[i]
+                    te = time_list[i+1]
+                    state = state_list[i]
+                    fe_sign = formula_effect[state]
+                    fe_integral_term = (exp(D*(ta - ts)) - exp(D*(ta - te)))/D
+                    fe_integral += fe_integral_term * count * fe_sign 
+        return fe_integral
+                
+
+    def _numerical_integral(self, start_time, end_time, dataset, sample_ID, target_predicate):
+        intensity_integral_term = list()
+        for t in np.arange(start_time, end_time, self.args.integral_grid):
+            cur_intensity = self.intensity(t, dataset, sample_ID, target_predicate)
+            intensity_integral_term.append(cur_intensity)
+        if len(intensity_integral_term) > 0:
+            intensity_integral = torch.sum(torch.cat(intensity_integral_term)) * self.args.integral_grid # approximate integral
+        else:
+            intensity_integral = torch.tensor([0], dtype=torch.float64)
+        return intensity_integral
+
+
+    def log_likelihood(self, dataset, sample_ID_batch):
+        log_likelihood = torch.tensor([0], dtype=torch.float64)
+        for sample_ID in sample_ID_batch:
+            for target_predicate in self.target_predicate_list:
+                intensity_log_sum = self.intensity_log_sum(dataset, sample_ID, target_predicate)
+                intensity_integral = self.intensity_integral(dataset, sample_ID, target_predicate)
+                log_likelihood += intensity_log_sum - intensity_integral
+        return log_likelihood
+        
     def predict_survival(self):
         pass
