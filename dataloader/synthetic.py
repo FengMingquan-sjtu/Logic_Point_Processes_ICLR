@@ -148,7 +148,11 @@ class Synthetic:
                     #if accept_ratio > 1:
                     #    print(accept_ratio)
                     if rng.random() < accept_ratio: 
-                        cur_time = self.add_new_event(data=dataset[sample_ID][pred_idx], t=cur_time, is_duration_pred=self.logic.logic.is_duration_pred[pred_idx])                
+                        cur_time = self.add_new_event(data=dataset[sample_ID][pred_idx], t=cur_time, is_duration_pred=self.logic.logic.is_duration_pred[pred_idx])    
+
+            for predicate_ID in range(self.num_predicate):
+                dataset[sample_ID][predicate_ID]['time'] = np.array(dataset[sample_ID][predicate_ID]['time'])
+                dataset[sample_ID][predicate_ID]['state'] = np.array(dataset[sample_ID][predicate_ID]['state'])           
         return dataset
     
     def draw_dataset(self):

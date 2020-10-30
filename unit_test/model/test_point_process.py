@@ -234,11 +234,34 @@ class Test_Point_Process:
         expected_intensity_log_sum = np.sum(np.log(expected_intensity_list))     
         assert abs(intensity_log_sum.item() - expected_intensity_log_sum) <= 1e-6
         assert abs(intensity_log_sum.item() - (-2.875736309358932) ) <=1e-6
+    
+    def test_intensity_integral(self):
+        pp = self.get_pp(logic_name = "hawkes") 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        W = 0.1
+        B = 0.2
+        pp.set_parameters(w=W, b=B)
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":np.array([0, 1, 1, 2, 2]), "state":np.array([0,1,0,1,0])}
+        pred1 = pred0.copy()
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        is_use_closed_integral = 0
+        input_numerical = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_numerical = pp.intensity_integral(*input_numerical)
+        #print(intensity_integral_numerical)
+        is_use_closed_integral = 1
+        input_closed = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_closed = pp.intensity_integral(*input_closed)
+        #print(intensity_integral_closed)
+        assert abs(intensity_integral_numerical - intensity_integral_closed) <= 0.1
+
 
 
 if __name__ =="__main__":
     tpp = Test_Point_Process()
-    tpp.test_intensity_log_sum_hawkes()
+    tpp.test_intensity_integral()
 
         
         

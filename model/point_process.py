@@ -33,7 +33,7 @@ class Point_Process:
     def _check_state(self, seq:Dict[str, List], cur_time:float) -> int:
         """check state of seq at cur_time
         """
-        if seq['time'] ==[]:
+        if len(seq['time']) == 0:
             return 0
         else:
             ind = np.sum(cur_time >= np.asarray(seq['time'])) - 1
@@ -164,18 +164,17 @@ class Point_Process:
         return intensity_sum
         
 
-    def intensity_integral(self, dataset, sample_ID, target_predicate):
+    def intensity_integral(self, dataset, sample_ID, target_predicate, is_use_closed_integral=True):
         start_time = 0
         
         if self.args.dataset_name == "synthetic":
-            end_time = self.args.synthetic_horizon
+            end_time = self.args.synthetic_time_horizon
         else:
             end_time = dataset[sample_ID][target_predicate]['time'][-1]
         if end_time == 0:
             intensity_integral = torch.tensor([0], dtype=torch.float64)
         else:
-            IS_USE_CLOSED_INTEGRAL = 0
-            if IS_USE_CLOSED_INTEGRAL and self.args.non_negative_map == "max":
+            if is_use_closed_integral and self.args.non_negative_map == "max":
                 intensity_integral = self._closed_integral(start_time, end_time, dataset, sample_ID, target_predicate)
             else:
                 intensity_integral = self._numerical_integral(start_time, end_time, dataset, sample_ID, target_predicate)
@@ -185,6 +184,7 @@ class Point_Process:
         """NOTE: this implementation has following assumptions:
         1) non_negative_map is max
         2) intensity alsways > 0
+        i.e. lambda = wf + b
         """
         formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
         feature_integral_list = list()
@@ -269,7 +269,7 @@ class Point_Process:
             fe_sign = formula_effect[state]
             for ta,tn,count in ta_tn_count:
                 # integral from tn to end_time
-                fe_integral_term = (exp(D*(ta - tn)) - exp(D*(ta - end_time)))/D
+                fe_integral_term = (np.exp(D*(ta - tn)) - np.exp(D*(ta - end_time)))/D
                 fe_integral += fe_integral_term * count * fe_sign 
         else:
             for ta,tn,count in ta_tn_count:
@@ -311,7 +311,7 @@ class Point_Process:
     def log_likelihood(self, dataset, sample_ID_batch):
         log_likelihood = torch.tensor([0], dtype=torch.float64)
         for sample_ID in sample_ID_batch:
-            for target_predicate in self.target_predicate_list:
+            for target_predicate in self.args.target_predicate:
                 intensity_log_sum = self.intensity_log_sum(dataset, sample_ID, target_predicate)
                 intensity_integral = self.intensity_integral(dataset, sample_ID, target_predicate)
                 log_likelihood += intensity_log_sum - intensity_integral

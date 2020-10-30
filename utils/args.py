@@ -38,20 +38,17 @@ def get_args():
     
     
     #dataset general setting
-    parser.add_argument('--dataset_name', type=str, default="mimic",
+    parser.add_argument('--dataset_name', type=str, default="synthetic",
                         choices = ["mimic","synthetic","handcrafted"],)
     parser.add_argument('--train_data_file', type=str, default="/home/fengmingquan/data/mimic/train_mimic_500_10.csv")
-    #parser.add_argument('--train_data_file', type=str, default="/Users/fmq/Downloads/data/train_test_data_set/train_mimic_500_10.csv",
-    #                    help="train data file.")
-    parser.add_argument('--test_data_file', type=str, default="/home/fengmingquan/data/mimic/test_mimic_100_10.csv")
-    #parser.add_argument('--test_data_file', type=str, default="/Users/fmq/Downloads/data/train_test_data_set/test_mimic_100_10.csv",
-    #                    help="test data file.")
+    #parser.add_argument('--train_data_file', type=str, default="/Users/fmq/Downloads/data/train_test_data_set/train_mimic_500_10.csv",help="train data file.")
+    #parser.add_argument('--test_data_file', type=str, default="/home/fengmingquan/data/mimic/test_mimic_100_10.csv")
+    #parser.add_argument('--test_data_file', type=str, default="/Users/fmq/Downloads/data/train_test_data_set/test_mimic_100_10.csv",help="test data file.")
     parser.add_argument('--update_data_cache', action='store_true',
                         help="whether to update data cache, default=False.")
-    parser.add_argument('--data_cache_folder',type=str,  default="/home/fengmingquan/output/logic_pp/cache",)
-    #parser.add_argument('--data_cache_folder',type=str,  default="/Users/fmq/Downloads/cache",
-    #                    help='''folder to save and to load dataset cache, if empty then not use cache.
-    #                            cache file will be "data_cache_folder/dataset_name.pt"''')
+    #parser.add_argument('--data_cache_folder',type=str,  default="/home/fengmingquan/output/logic_pp/cache",)
+    parser.add_argument('--data_cache_folder',type=str,  default="/Users/fmq/Downloads/cache",
+                        help='''folder to save and to load dataset cache, if empty then not use cache.cache file will be "data_cache_folder/dataset_name.pt"''')
     
     #trainer
     parser.add_argument('--num_iter', type=int, default=100,)
@@ -70,7 +67,7 @@ def get_args():
                         help="dt in approximate integral")
     parser.add_argument('--time_tolerence', type=float, default=1e-6,
                         help="tolerence of time relation BEFORE,EQUAL.")
-    parser.add_argument('--target_predicate', nargs='+',  type=int, default=[24],
+    parser.add_argument('--target_predicate', nargs='+',  type=int, default=[1],
                         help="int list, indices of target predicates.")
     parser.add_argument('--non_negative_map', type=str, default="max",
                         help="type of non_negative mapping in intenisty calculation.")
