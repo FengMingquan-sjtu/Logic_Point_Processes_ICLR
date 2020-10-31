@@ -66,8 +66,8 @@ class Synthetic:
             t_m = t + self.args.synthetic_time_horizon
         return t_m
     
-    def add_new_event(self,data:Dict,t:float,is_duration_pred:bool)->float:
-
+    def add_new_event(self,data:Dict,t:float, pred_idx:int)->float:
+        is_duration_pred=self.logic.logic.is_duration_pred[pred_idx]
         data["time"].append(t)
         last_state = data["state"][-1]
         data["state"].append(1-last_state)
@@ -107,6 +107,7 @@ class Synthetic:
             # Ogata's thinning    
             rng = default_rng(seed)
             cur_time = 0
+            indep_pred_idx = None # independent pred index.
             while cur_time < self.args.synthetic_time_horizon:
                 if self.logic.logic.independent_predicate:
                     indep_pred = self.logic.logic.independent_predicate
@@ -115,11 +116,11 @@ class Synthetic:
                     t_l = cur_time + dwell_time_indep
                     if t_l > self.args.synthetic_time_horizon:
                         break
-                    pred_idx = rng.choice(indep_pred, 1).item()
-                    self.add_new_event(data=dataset[sample_ID][pred_idx], t=cur_time, is_duration_pred=self.logic.logic.is_duration_pred[pred_idx])
+                    indep_pred_idx = rng.choice(indep_pred, 1).item()
                     # not using return value (time) of add_new_event
                 else:
                     t_l = self.args.synthetic_time_horizon
+                    
                 
                 while cur_time < t_l:
                     intensity_m = np.zeros(shape = self.num_predicate)
@@ -140,6 +141,7 @@ class Synthetic:
 
                     cur_time += dwell_time# time moves forward, no matter this dwell_time is accepted or not.
                     if cur_time > t_l:
+                        cur_time = t_l #key for indep-pred logic.
                         break
                     
                     #drop (thinning)
@@ -148,7 +150,12 @@ class Synthetic:
                     #if accept_ratio > 1:
                     #    print(accept_ratio)
                     if rng.random() < accept_ratio: 
-                        cur_time = self.add_new_event(data=dataset[sample_ID][pred_idx], t=cur_time, is_duration_pred=self.logic.logic.is_duration_pred[pred_idx])    
+                        cur_time = self.add_new_event(data=dataset[sample_ID][pred_idx], t=cur_time, pred_idx=pred_idx)    
+                if not indep_pred_idx is None: # add independent event, after while loop.
+                    #print("add indep")
+                    #print("cur_time =",cur_time)
+                    #print("t_l =", t_l)
+                    self.add_new_event(data=dataset[sample_ID][indep_pred_idx], t=t_l, pred_idx=indep_pred_idx)
 
             for predicate_ID in range(self.num_predicate):
                 dataset[sample_ID][predicate_ID]['time'] = np.array(dataset[sample_ID][predicate_ID]['time'])
@@ -158,6 +165,7 @@ class Synthetic:
     def draw_dataset(self):
         dataset = self.get_dataset(is_train=1)
         #print(dataset)
+        print(dataset[0])
         data = dataset[0][1]
         mask = np.array(data['state'])==1
         time_array = np.array(data["time"])[mask]
@@ -176,16 +184,16 @@ if __name__ == "__main__":
     args = get_args()
     args.dataset_name = "synthetic"
     args.target_predicate = [1]
-    args.synthetic_logic_name = "hawkes"#"self_correcting"
+    args.synthetic_logic_name = "a_then_b"#"hawkes"#"self_correcting"
     args.synthetic_training_sample_num = 1
     args.synthetic_testing_sample_num = 0
     args.synthetic_time_horizon = 50
-    args.synthetic_weight = 0.1
-    args.synthetic_base = 0.2
+    args.synthetic_weight = 0.2
+    args.synthetic_base = 0.4
     s = Synthetic(args)
-    #s.draw_dataset()
+    s.draw_dataset()
     train_data_set = s.generate_data(sample_ID_lb=0, sample_ID_ub=1, seed=1)
-    print(train_data_set)
+    #print(train_data_set)
     
     #print(test_data_set)
     #event_cnt = 0

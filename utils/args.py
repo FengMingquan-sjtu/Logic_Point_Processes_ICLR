@@ -19,7 +19,6 @@ def get_args():
 
     #synthetic  dataset
     parser.add_argument('--synthetic_logic_name', type=str, default="hawkes",
-                        choices = ["hawkes","self_correcting"],
                         help="which logic to synthesize.")
     parser.add_argument('--synthetic_training_sample_num', type=int, default=100,
                         help="")
@@ -33,7 +32,7 @@ def get_args():
                         help="ground truth weight of synthetic data")
     parser.add_argument('--synthetic_base', type=float, default=0.2,
                         help="ground truth base of synthetic data")
-    parser.add_argument('--intensity_indep_pred', type=float, default=0.2,
+    parser.add_argument('--intensity_indep_pred', type=float, default=0.5,
                         help="intensity of independent predicates.")
     
     
