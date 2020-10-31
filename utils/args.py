@@ -38,7 +38,7 @@ def get_args():
     
     #dataset general setting
     parser.add_argument('--dataset_name', type=str, default="synthetic",
-                        choices = ["mimic","synthetic","handcrafted"],)
+                        choices = ["mimic","synthetic","toy"],)
     parser.add_argument('--train_data_file', type=str, default="/home/fengmingquan/data/mimic/train_mimic_500_10.csv")
     #parser.add_argument('--train_data_file', type=str, default="/Users/fmq/Downloads/data/train_test_data_set/train_mimic_500_10.csv",help="train data file.")
     #parser.add_argument('--test_data_file', type=str, default="/home/fengmingquan/data/mimic/test_mimic_100_10.csv")

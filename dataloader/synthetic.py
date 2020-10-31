@@ -74,7 +74,10 @@ class Synthetic:
         if not is_duration_pred:
             data["time"].append(t)
             data["state"].append(last_state)
-        t += (self.args.time_tolerence * 1.1 ) #add time_tolerence to allow BEFORE captures this event.
+        if self.logic.logic.time_template_list[0][-1] == self.logic.logic.BEFORE:
+            t += (self.args.time_tolerence * 1.1 ) #add time_tolerence to allow BEFORE captures this event.
+        else:#add very small time to allow EQUAL captures this event.
+            t += (self.args.time_tolerence * 0.01 )
         return t
 
     def generate_data(self, sample_ID_lb, sample_ID_ub, seed):
@@ -173,12 +176,10 @@ class Synthetic:
             mask = np.array(data['state'])==1
             time_array = np.array(data["time"])[mask]
             time_array_list = [time_array]
-        elif self.args.synthetic_logic_name in ["a_then_b","a_then_c_or_b_then_c", "a_and_b_then_c"]:
+        else:
             time_array_list = list()
             for i in range(self.num_predicate):
                 time_array_list.append(np.array(dataset[0][i]["time"]))
-        else:
-            raise ValueError
         draw_event_intensity(time_array_list, name, f_list)
 
 
@@ -188,7 +189,7 @@ if __name__ == "__main__":
     from utils.args import get_args
     args = get_args()
     args.dataset_name = "synthetic"
-    args.synthetic_logic_name = "a_and_b_then_c" #"a_then_c_or_b_then_c"#"a_then_b"#"hawkes"#"self_correcting"
+    args.synthetic_logic_name = "a_then_b_equal"#"a_and_b_then_c" #"a_then_c_or_b_then_c"#"a_then_b"#"hawkes"#"self_correcting"
 
     if args.synthetic_logic_name in ["a_then_c_or_b_then_c", "a_and_b_then_c"]:
         args.target_predicate = [2]
@@ -200,6 +201,7 @@ if __name__ == "__main__":
     args.synthetic_time_horizon = 50
     args.synthetic_weight = 0.2
     args.synthetic_base = 0.4
+    args.time_tolerence = 5
     s = Synthetic(args)
     s.draw_dataset()
     train_data_set = s.generate_data(sample_ID_lb=0, sample_ID_ub=1, seed=1)

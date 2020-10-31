@@ -25,6 +25,7 @@ class Point_Process:
         self._parameters["weight"] = torch.autograd.Variable((torch.rand(self.num_formula) * self.args.init_weight_range).double(), requires_grad=True)
         self._parameters["base"] = torch.autograd.Variable((torch.rand(self.num_predicate)* self.args.init_weight_range).double(), requires_grad=True)
         self.feature_cache = dict()
+        self.feature_integral_cache = dict()
     
     def set_parameters(self, w:float, b:float, requires_grad:bool=True):
         self._parameters["weight"] = torch.autograd.Variable((torch.ones(self.num_formula)* w).double(), requires_grad=requires_grad)
@@ -46,7 +47,7 @@ class Point_Process:
                 time_window = self.args.time_window_sym
             else:
                 time_window = self.args.time_window_drug
-        elif self.args.dataset_name == "synthetic":
+        elif self.args.dataset_name in ["synthetic","toy"]:
             time_window = self.args.synthetic_time_window
         else:
             raise ValueError("time window is undefined for dataset_name = '{}'".format(self.args.dataset_name))
@@ -171,6 +172,8 @@ class Point_Process:
             end_time = self.args.synthetic_time_horizon
         else:
             end_time = dataset[sample_ID][target_predicate]['time'][-1]
+            for i in range(self.num_predicate):
+                end_time = max(end_time, dataset[sample_ID][i]['time'][-1])
         if end_time == 0:
             intensity_integral = torch.tensor([0], dtype=torch.float64)
         else:
@@ -187,11 +190,16 @@ class Point_Process:
         i.e. lambda = wf + b
         """
         formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
-        feature_integral_list = list()
-        for formula_ind in formula_ind_list:
-            feature_integral = self._closed_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
-            feature_integral_list.append(feature_integral)
-        feature_integral_list = torch.tensor(feature_integral_list)
+        
+        if (sample_ID, target_predicate) in self.feature_integral_cache:
+            feature_integral_list = self.feature_integral_cache[(sample_ID, target_predicate)]
+        else:
+            feature_integral_list = list()
+            for formula_ind in formula_ind_list:
+                feature_integral = self._closed_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
+                feature_integral_list.append(feature_integral)
+            feature_integral_list = torch.tensor(feature_integral_list)
+            self.feature_integral_cache[(sample_ID, target_predicate)] = feature_integral_list
         weight = self._parameters["weight"][formula_ind_list]
         base = self._parameters["base"][target_predicate]
         integral = torch.sum(torch.mul(feature_integral_list, weight)) +  base * (end_time - start_time) 
@@ -224,6 +232,9 @@ class Point_Process:
 
     def _closed_feature_integral(self, start_time, end_time, dataset, sample_ID, target_predicate, formula_ind):
         template = self.template[target_predicate][formula_ind]
+        BEFORE = self.logic.logic.BEFORE
+        EQUAL = self.logic.logic.EQUAL
+        DT = self.args.time_tolerence
         neighbor_ind, neighbor_combination, target_ind_in_predicate, time_template, formula_effect = template['neighbor_ind'],template['neighbor_combination'], template['target_ind_in_predicate'], template['time_template'], template['formula_effect']
         data = dataset[sample_ID][target_predicate]
         ta_tn_count = list()
@@ -233,11 +244,16 @@ class Point_Process:
         # count = int, number of such combination (not used in current version)
         if len(neighbor_ind) == 1:
             #t_a == t_n, where t_n is the latest body pred.
-            t_n_idx = neighbor_ind[0]
-            mask = dataset[sample_ID][t_n_idx]['state'] == neighbor_combination[0]
-            t_n_array = dataset[sample_ID][t_n_idx]['time'][mask]
-            for t_n in t_n_array:
-                ta_tn_count.append((t_n, t_n, 1))
+            t_a_idx = neighbor_ind[0]
+            mask = dataset[sample_ID][t_a_idx]['state'] == neighbor_combination[0]
+            t_a_array = dataset[sample_ID][t_a_idx]['time'][mask]
+            time_rel = time_template[1]
+            for t_a in t_a_array:
+                if time_rel == BEFORE:
+                    ta_tn_count.append((t_a, min(t_a+DT,end_time), end_time, 1)) #integrate from t_a+DT to end_time. Use min(., end_time) to avoid overbounding.
+                elif time_rel == EQUAL:
+                    ta_tn_count.append((t_a, t_a, min(t_a+DT,end_time), 1))  #integrate from t_a to t_a+DT. Use min(., end_time) to avoid overbounding.
+
         elif len(neighbor_ind) == 2:
             #t_a != t_n, and len(body) == 2 
             t_a_idx, t_n_idx = neighbor_ind
@@ -246,16 +262,17 @@ class Point_Process:
             mask_n = dataset[sample_ID][t_n_idx]['state'] == neighbor_combination[1]
             t_n_array = dataset[sample_ID][t_n_idx]['time'][mask_n]
             time_rel = time_template[1]
-            BEFORE = self.logic.logic.BEFORE
-            EQUAL = self.logic.logic.EQUAL
-            for t_a, t_n in zip(t_a_array, t_n_array):
-                if (time_rel == BEFORE and not t_n - t_a >= self.args.time_tolerence) or  (time_rel == EQUAL and not abs(t_n - t_a) <= self.args.time_tolerence):
-                    continue
-                ta_tn_count.append( (t_a, max(t_a,t_n), 1))
+            
+            for t_a, t_n in itertools.product(t_a_array, t_n_array):
+                if time_rel == BEFORE and t_n - t_a >= self.args.time_tolerence:
+                    t_s = max(t_a,t_n)
+                    ta_tn_count.append( (t_a, min(t_s+DT, end_time), end_time, 1))
+                elif time_rel == EQUAL and not abs(t_n - t_a) <= self.args.time_tolerence:
+                    t_s = max(t_a,t_n)
+                    ta_tn_count.append( (t_a, t_s, min(t_s+DT, end_time), 1))
         else:
             # Not implemented for long rules, use numerical instead. 
             return self._numerical_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
-        
         is_duration_pred = self.logic.logic.is_duration_pred[target_predicate]
         data = dataset[sample_ID][target_predicate]
         integral = self._closed_formula_effect_integral(ta_tn_count, end_time, data, is_duration_pred, formula_effect)
@@ -267,31 +284,31 @@ class Point_Process:
         if not is_duration_pred:
             state = data['state'][-1]
             fe_sign = formula_effect[state]
-            for ta,tn,count in ta_tn_count:
+            for ta,ts,te,count in ta_tn_count:
                 # integral from tn to end_time
-                fe_integral_term = (np.exp(D*(ta - tn)) - np.exp(D*(ta - end_time)))/D
+                fe_integral_term = (np.exp(D*(ta - ts)) - np.exp(D*(ta - te)))/D
                 fe_integral += fe_integral_term * count * fe_sign 
         else:
-            for ta,tn,count in ta_tn_count:
+            
+            for ta,ts,te,count in ta_tn_count:
                 # integral from tn to end_time
-                mask = data['time'] > tn  # NOTE: assume tn is earier than target
+                mask = data['time'] > ts  # NOTE: assume tn is earier than target
                 time_list = data['time'][mask].tolist()
                 state_list = data['state'][mask].tolist()
-                # add virtual event: tn, for easy calculation
-                time_list.insert(0, tn)
-                state = self._check_state(data,tn)
+                # add virtual event: ts, for easy calculation
+                time_list.insert(0, ts)
+                state = self._check_state(data,ts)
                 state_list.insert(0, state)
-                # add virtual event: end_time, for easy calculation
-                time_list.append(end_time)
-                state = self._check_state(data, end_time)
+                # add virtual event: te, for easy calculation
+                time_list.append(te)
+                state = self._check_state(data, te)
                 state_list.append(state)
-
                 for i in range(len(time_list)-1):
-                    ts = time_list[i]
-                    te = time_list[i+1]
+                    ts_ = time_list[i]
+                    te_ = time_list[i+1]
                     state = state_list[i]
                     fe_sign = formula_effect[state]
-                    fe_integral_term = (np.exp(D*(ta - ts)) - np.exp(D*(ta - te)))/D
+                    fe_integral_term = (np.exp(D*(ta - ts_)) - np.exp(D*(ta - te_)))/D
                     fe_integral += fe_integral_term * count * fe_sign 
         return fe_integral
                 

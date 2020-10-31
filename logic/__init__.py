@@ -11,7 +11,7 @@ from logic.self_correcting_logic import Self_Correcting_logic
 from logic.a_then_b_logic import A_Then_B_logic
 from logic.a_then_c_or_b_then_c_logic import A_Then_C_or_B_Then_C_logic
 from logic.a_and_b_then_c_logic import A_And_B_Then_C_logic
-
+from logic.a_then_b_equal_logic import A_Then_B_Equal_logic
 class Logic:
     """Provide expert defiend logic rule calculations.
     Args:
@@ -31,7 +31,7 @@ class Logic:
     """
     def __init__(self,args):
         self.args = args
-        if args.dataset_name == "synthetic":
+        if args.dataset_name in ["synthetic","toy"]:
             if args.synthetic_logic_name == "hawkes":
                 self.logic = Hawkes_logic()
             elif args.synthetic_logic_name == "self_correcting":
@@ -42,6 +42,8 @@ class Logic:
                 self.logic = A_Then_C_or_B_Then_C_logic()
             elif args.synthetic_logic_name == "a_and_b_then_c":
                 self.logic = A_And_B_Then_C_logic()
+            elif args.synthetic_logic_name == "a_then_b_equal":
+                self.logic = A_Then_B_Equal_logic()
             else:
                 raise ValueError
         else:

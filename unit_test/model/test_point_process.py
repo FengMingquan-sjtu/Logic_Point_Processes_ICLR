@@ -11,11 +11,13 @@ from utils.args import get_args
 class Test_Point_Process:
     """ Testing group for ./model/point_process.py
     """
-    def get_pp(self,target_predicate=[1], dataset_name="synthetic",logic_name="hawkes"):
+    def get_pp(self,target_predicate=[1], dataset_name="toy",logic_name="hawkes",time_tolerence=1e-6):
         args = get_args()
         args.target_predicate = target_predicate
         args.dataset_name = dataset_name
         args.synthetic_logic_name = logic_name
+        args.time_tolerence = time_tolerence
+        args.integral_grid = 0.001
         return Point_Process(args)
 
     def test_check_state(self):
@@ -255,13 +257,78 @@ class Test_Point_Process:
         input_closed = (dataset, sample_ID, target_predicate, is_use_closed_integral)
         intensity_integral_closed = pp.intensity_integral(*input_closed)
         #print(intensity_integral_closed)
-        assert abs(intensity_integral_numerical - intensity_integral_closed) <= 0.1
+        assert abs(intensity_integral_numerical - intensity_integral_closed) <= 0.001
 
+    def test_intensity_integral_duration(self):
+        pp = self.get_pp(logic_name = "a_then_b") 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        W = 0.1
+        B = 0.2
+        pp.set_parameters(w=W, b=B)
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":np.array([0, 0.9, 0.9, 1.9, 1.9]), "state":np.array([0,1,0,1,0])}
+        pred1 = {"time":np.array([0, 1, 1.5, 2, 2.5]), "state":np.array([0,1,0,1,0])}
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        is_use_closed_integral = 0
+        input_numerical = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_numerical = pp.intensity_integral(*input_numerical)
+        print(intensity_integral_numerical)
+        is_use_closed_integral = 1
+        input_closed = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_closed = pp.intensity_integral(*input_closed)
+        print(intensity_integral_closed)
+        assert abs(intensity_integral_numerical - intensity_integral_closed) <= 0.001
 
+    def test_intensity_integral_2_length_rule(self):
+        target_predicate = 2
+        pp = self.get_pp(target_predicate=[target_predicate], logic_name = "a_and_b_then_c") 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        W = 0.1
+        B = 0.2
+        pp.set_parameters(w=W, b=B)
+        sample_ID = 1
+        pred0 = {"time":np.array([0, 0.9, 0.9, 1.9, 1.9]), "state":np.array([0,1,0,1,0])}
+        pred1 = {"time":np.array([0, 1.1, 1.1, 2.1, 2.1]), "state":np.array([0,1,0,1,0])}
+        pred2 = {"time":np.array([0, 1, 1, 2, 2]), "state":np.array([0,1,0,1,0])}
+        dataset = {sample_ID:{0:pred0, 1:pred1, 2:pred2}}
+        is_use_closed_integral = 0
+        input_numerical = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_numerical = pp.intensity_integral(*input_numerical)
+        print(intensity_integral_numerical)
+        is_use_closed_integral = 1
+        input_closed = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_closed = pp.intensity_integral(*input_closed)
+        print(intensity_integral_closed)
+        assert abs(intensity_integral_numerical - intensity_integral_closed) <= 0.001
+
+    def test_intensity_integral_equal(self):
+        pp = self.get_pp(logic_name = "a_then_b_equal", time_tolerence=5) 
+        DT = pp.args.time_tolerence
+        D = pp.args.time_decay_rate
+        W = 0.1
+        B = 0.2
+        pp.set_parameters(w=W, b=B)
+        target_predicate = 1
+        sample_ID = 1
+        pred0 = {"time":np.array([0, 0.9, 0.9, 1.9, 1.9]), "state":np.array([0,1,0,1,0])}
+        pred1 = {"time":np.array([0, 1, 1, 2, 2]), "state":np.array([0,1,0,1,0])}
+        dataset = {sample_ID:{0:pred0, 1:pred1}}
+        is_use_closed_integral = 0
+        input_numerical = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_numerical = pp.intensity_integral(*input_numerical)
+        print(intensity_integral_numerical)
+        is_use_closed_integral = 1
+        input_closed = (dataset, sample_ID, target_predicate, is_use_closed_integral)
+        intensity_integral_closed = pp.intensity_integral(*input_closed)
+        print(intensity_integral_closed)
+        assert abs(intensity_integral_numerical - intensity_integral_closed) <= 0.001
 
 if __name__ =="__main__":
     tpp = Test_Point_Process()
-    tpp.test_intensity_integral()
+    tpp.test_intensity_integral_equal()
 
         
         

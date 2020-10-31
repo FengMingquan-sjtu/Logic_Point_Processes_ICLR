@@ -51,4 +51,16 @@ pytest
       a_then_c_or_b_then_c, instant pred, target_pred=2, w=[0.1,0.1], b=0.2;  Result: w=[0.0983, 0.1091], b=0.2264
       a_and_b_then_c, instant pred, target_pred =2, w=[0.1], b=0.2; Result: w[1.2760], b=[0.0088]
 
+      the bug "time_tolerence must be 1e-6" disappears, maybe because here we use time_tolerence * 1.1, instead of time_tolerence * 1.001.(floating point presicion problem)
+
       Maybe, closed Integration on "length-2 rules" and "duration pred" are problematic.
+
+      fix bug on length2-rule-integral,
+      [Fixed]a_and_b_then_c w=[0.1], b=0.2, result: w=[0.0938], b=[0.2102]
+      fix bug on Equal: in synthetic Equal, new events should not add time_tolerence * 1.1, since that prevent model from capturing this event.
+      a_then_b_equal, w=[0.1], b=0.2, time_tolerence=5, result: w=[0.0350], b=[0.0771]
+      [Fixed]a_then_b_equal, w=[0.1], b=0.2, time_tolerence=5, result: w=[0.0824], b=[0.2193]
+
+      [Fixed]a_then_c duration pred, w=[0.1], b=[0.4], Result: w=[0.0800], b=[0.3573]
+      Notice that in duration case, fe can be negative, so w should be much smaller than b. 
+      Otherwise lambda can be negative, leads to wrong closed integral.

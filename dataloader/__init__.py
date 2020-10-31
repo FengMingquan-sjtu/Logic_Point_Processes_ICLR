@@ -8,8 +8,6 @@ def get_dataset(args):
         data = Synthetic(args=args)    
     elif args.dataset_name == 'mimic':
         data = Mimic(args=args)
-    elif args.dataset_name == 'handcrafted':
-        data = Handcrafted(args=args)
     else:
         raise ValueError("dataset {} is not implemented".format(args.dataset_name))
 
