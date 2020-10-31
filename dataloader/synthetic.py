@@ -164,27 +164,37 @@ class Synthetic:
     
     def draw_dataset(self):
         dataset = self.get_dataset(is_train=1)
-        #print(dataset)
-        print(dataset[0])
-        data = dataset[0][1]
-        mask = np.array(data['state'])==1
-        time_array = np.array(data["time"])[mask]
         def f(t):
-            return self.model.intensity(t = t, dataset = dataset, sample_ID = 0, target_predicate = 1) 
+            return self.model.intensity(t = t, dataset = dataset, sample_ID = 0, target_predicate = self.args.target_predicate[0]) 
         name = "synthetic_" + self.args.synthetic_logic_name 
-
-        draw_event_intensity(time_array, name, f)
+        f_list = [f]
+        if self.args.synthetic_logic_name in ["hawkes","self_correcting"]:
+            data = dataset[0][1]
+            mask = np.array(data['state'])==1
+            time_array = np.array(data["time"])[mask]
+            time_array_list = [time_array]
+        elif self.args.synthetic_logic_name in ["a_then_b","a_then_c_or_b_then_c", "a_and_b_then_c"]:
+            time_array_list = list()
+            for i in range(self.num_predicate):
+                time_array_list.append(np.array(dataset[0][i]["time"]))
+        else:
+            raise ValueError
+        draw_event_intensity(time_array_list, name, f_list)
 
 
 
 
 if __name__ == "__main__":
     from utils.args import get_args
-    
     args = get_args()
     args.dataset_name = "synthetic"
-    args.target_predicate = [1]
-    args.synthetic_logic_name = "a_then_b"#"hawkes"#"self_correcting"
+    args.synthetic_logic_name = "a_and_b_then_c" #"a_then_c_or_b_then_c"#"a_then_b"#"hawkes"#"self_correcting"
+
+    if args.synthetic_logic_name in ["a_then_c_or_b_then_c", "a_and_b_then_c"]:
+        args.target_predicate = [2]
+    else:
+        args.target_predicate = [1]
+    
     args.synthetic_training_sample_num = 1
     args.synthetic_testing_sample_num = 0
     args.synthetic_time_horizon = 50
@@ -194,10 +204,3 @@ if __name__ == "__main__":
     s.draw_dataset()
     train_data_set = s.generate_data(sample_ID_lb=0, sample_ID_ub=1, seed=1)
     #print(train_data_set)
-    
-    #print(test_data_set)
-    #event_cnt = 0
-    #for ID,info in test_data_set.items():
-    #    event_cnt += len(info[1]['time']) / 2  # divided by 2, since each event has 2 states (times).
-    #avg_event_cnt = event_cnt / len(test_data_set.keys())
-    #print(avg_event_cnt)

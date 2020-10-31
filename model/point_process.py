@@ -291,7 +291,7 @@ class Point_Process:
                     te = time_list[i+1]
                     state = state_list[i]
                     fe_sign = formula_effect[state]
-                    fe_integral_term = (exp(D*(ta - ts)) - exp(D*(ta - te)))/D
+                    fe_integral_term = (np.exp(D*(ta - ts)) - np.exp(D*(ta - te)))/D
                     fe_integral += fe_integral_term * count * fe_sign 
         return fe_integral
                 

@@ -38,3 +38,17 @@ pytest
 10. In closed form integral, the most dfficult part is how to get latest pred.
     Thus currently we only implement for rule body length=1,2, but not for longer rules.
 
+11. Integration can also use cache.
+
+12. experiments arguments:
+      hawkes: w=0.1, b=0.2;  Result: w=0.1058, b=0.1926
+      sc: w=0.1, b=0.2; Result: w=0.0994, b=0.2009
+      a_then_b indep instant pred: w=0.2, b=0.4, indep_intensity= 0.5. Result: w=0.1892, b=0.3749
+      (modify is_duration_pred to [0,1])
+      (Under current formulation, we can only set target pred to duration, but not other preds.)
+      a_then_b indep duration pred: w=0.2, b=0.4, indep_intensity= 0.5.  Result: w=0.1314, b=0.3399
+
+      a_then_c_or_b_then_c, instant pred, target_pred=2, w=[0.1,0.1], b=0.2;  Result: w=[0.0983, 0.1091], b=0.2264
+      a_and_b_then_c, instant pred, target_pred =2, w=[0.1], b=0.2; Result: w[1.2760], b=[0.0088]
+
+      Maybe, closed Integration on "length-2 rules" and "duration pred" are problematic.
