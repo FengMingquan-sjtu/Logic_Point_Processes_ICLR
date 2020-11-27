@@ -60,6 +60,10 @@ def get_args():
     parser.add_argument('--test_period', type=int, default=10,
                         help="after every test_period iters of training, test and print.")
     
+    #master problem
+    parser.add_argument('--max_complexity', type=int, default=0.2, 
+                        help = "maximum total rule complexity")
+    
     
     #model
     parser.add_argument('--integral_grid', type=float, default=0.1,

@@ -12,6 +12,7 @@ from logic.a_then_b_logic import A_Then_B_logic
 from logic.a_then_c_or_b_then_c_logic import A_Then_C_or_B_Then_C_logic
 from logic.a_and_b_then_c_logic import A_And_B_Then_C_logic
 from logic.a_then_b_equal_logic import A_Then_B_Equal_logic
+
 class Logic:
     """Provide expert defiend logic rule calculations.
     Args:
@@ -81,7 +82,9 @@ class Logic:
             neighbor_combination = logic_rule.copy()
             neighbor_combination = np.delete(neighbor_combination, target_ind_in_predicate)
             neighbor_combination = 1 - neighbor_combination  
-            #neighbor_combination = 1 - logic_rule, since only when all neighbors are unsatified will the formula effect be non-zero.
+            #neighbor_combination = 1 - logic_rule, 
+            #since predicates are connected by OR
+            #thus only when all neighbors are unsatified will the formula effect be non-zero.
 
             # begin calculation of formula effect, i.e. Eq(8) in paper.
             # formula_effect in this code denotes "formula effect with target predicte = 0"
@@ -133,6 +136,33 @@ class Logic:
         logic_rule = self.logic.logic_rule_list[rule_ind]
         return logic_rule
     
+    def _update_formula_ind_to_rule_ind(self):
+        if self.args.dataset_name in ["synthetic","toy"]:
+            self.logic.formula_ind_to_rule_ind = [i for i in range(self.logic.num_formula)]
+    
+    def add_rule(self, rule, time_template, R_arrray):
+        self.logic.num_formula += 1
+        self.logic.logic_rule_list.append(rule)
+        self.logic.time_template_list.append(time_template)
+        R_arrray_ = R_arrray.reshape((self.logic.num_predicate,1))
+        self.logic.R_matrix = np.append(self.logic.R_matrix, R_arrray_, axis=1)
+        self._update_formula_ind_to_rule_ind()
+    
+    def delete_rule(self, rule_idx):
+        self.logic.num_formula -= 1
+        rule = self.logic.logic_rule_list.pop(rule_idx)
+        time_template = self.logic.time_template_list.pop(rule_idx)
+        R_arrray = self.logic.R_matrix[:, rule_idx]
+        self.logic.R_matrix = np.delete(self.logic.R_matrix, rule_idx, axis=1)
+        self._update_formula_ind_to_rule_ind()
+        return rule, time_template, R_arrray
+    
+    def get_formula_complexity(self):
+        # complexity of a rule is defined as "how many preds it contains"
+        return self.logic.R_matrix.sum(axis=0)
+
+
+    
 
 if __name__ == "__main__":
     from utils.args import get_args
@@ -141,4 +171,13 @@ if __name__ == "__main__":
     args.dataset_name = "synthetic"
     args.synthetic_logic_name = "hawkes"
     l = Logic(args)
+    print(l.logic.R_matrix)
+    print(l.logic.logic_rule_list)
+    l.delete_rule(0)
+    rule = np.array([0,1])
+    time_template = np.array([100, 0]) 
+    R_arrray = np.array([1,1])
+    l.add_rule(rule, time_template, R_arrray)
+    print(l.logic.R_matrix)
+    print(l.logic.logic_rule_list)
     print(l.get_template(0))

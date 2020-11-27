@@ -314,3 +314,12 @@ class Master_Problem:
         
     def predict_survival(self):
         pass
+    
+    def constraints(self):
+        w = self._parameters["weight"]
+        b = self._parameters["base"]
+        formula_comp = self.logic.get_formula_complexity()
+        total_comp = cp.sum(cp.multiply(w, formula_comp))
+        C = self.args.max_complexity
+        constraints = [w >= 0,  total_comp <= C]
+        return constraints

@@ -51,13 +51,16 @@ class Master_Solver():
     def train(self):
         log_likelihood = self.model.log_likelihood(self.train_dataset, self.train_sample_ID_set)
         objective = cp.Minimize( - log_likelihood)
+        constraints = self.model.constraints()
+        prob = cp.Problem(objective, constraints)
+        opt = prob.solve()
         w = self.model._parameters["weight"]
         b = self.model._parameters["base"]
-        constraints = [w >= 0 ]
-        prob = cp.Problem(objective, constraints)
-        print("opt value = ",prob.solve())
+        print("opt value = ", opt)
         print("opt w = ", w.value)
         print("opt b = ", b.value)
+        print("dual_value[0] = ", constraints[0].dual_value)
+        print("dual_value[1] = ", constraints[1].dual_value)
         
 
 
