@@ -46,7 +46,7 @@ pytest
       a_then_b indep instant pred: w=0.2, b=0.4, indep_intensity= 0.5. Result: w=0.1892, b=0.3749
       (modify is_duration_pred to [0,1])
       (Under current formulation, we can only set target pred to duration, but not other preds.)
-      a_then_b indep duration pred: w=0.2, b=0.4, indep_intensity= 0.5.  Result: w=0.1314, b=0.3399
+      [Outdated]a_then_b indep duration pred: w=0.2, b=0.4, indep_intensity= 0.5.  Result: w=0.1314, b=0.3399
 
       a_then_c_or_b_then_c, instant pred, target_pred=2, w=[0.1,0.1], b=0.2;  Result: w=[0.0983, 0.1091], b=0.2264
       a_and_b_then_c, instant pred, target_pred =2, w=[0.1], b=0.2; Result: w[1.2760], b=[0.0088]
@@ -61,6 +61,17 @@ pytest
       a_then_b_equal, w=[0.1], b=0.2, time_tolerence=5, result: w=[0.0350], b=[0.0771]
       [Fixed]a_then_b_equal, w=[0.1], b=0.2, time_tolerence=5, result: w=[0.0824], b=[0.2193]
 
-      [Fixed]a_then_c duration pred, w=[0.1], b=[0.4], Result: w=[0.0800], b=[0.3573]
+      [Fixed]a_then_b duration pred, w=[0.1], b=[0.4], Result: w=[0.0800], b=[0.3573]
       Notice that in duration case, fe can be negative, so w should be much smaller than b. 
       Otherwise lambda can be negative, leads to wrong closed integral.
+
+13.use CVXPY package to solve master problem:
+   due to DCP requirements (see https://www.cvxpy.org/tutorial/dcp/index.html#dcp)
+   we skip non_negative_mapping part, in ./model/master_problem.py line 127
+   Experiment results:
+   Hawkes, GT={w:0.1, b:0.2}, OPT={w:0.103, b:0.191}
+   SC, GT={w:0.1, b:0.2}, OPT={w:0.100, b:0.201}
+   a_then_b, GT={w:0.1, b:0.4}, OPT={w:0.066, b:0.343}
+   
+   Speed of CVXPY is faster than PyTorch.
+    
