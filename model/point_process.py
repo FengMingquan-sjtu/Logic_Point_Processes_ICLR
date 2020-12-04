@@ -27,10 +27,19 @@ class Point_Process:
         self.feature_cache = dict()
         self.feature_integral_cache = dict()
     
-    def set_parameters(self, w:float, b:float, requires_grad:bool=True):
+    def set_parameters(self, w, b, requires_grad:bool=True):
+        if isinstance(w, torch.tensor):
+            self._parameters["weight"] = torch.autograd.Variable(w, requires_grad=requires_grad)
+            self._parameters["base"] = torch.autograd.Variable(b, requires_grad=requires_grad)
         self._parameters["weight"] = torch.autograd.Variable((torch.ones(self.num_formula)* w).double(), requires_grad=requires_grad)
         self._parameters["base"] = torch.autograd.Variable((torch.ones(self.num_predicate)* b).double(), requires_grad=requires_grad)
-        
+   
+    def set_logic(self, logic):
+        self.logic = logic
+        self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
+        self.num_formula = self.logic.logic.num_formula
+        self.num_predicate = self.logic.logic.num_predicate
+
     def _check_state(self, seq:Dict[str, List], cur_time:float) -> int:
         """check state of seq at cur_time
         """
@@ -164,16 +173,19 @@ class Point_Process:
             intensity_sum = torch.tensor([0], dtype=torch.float64)
         return intensity_sum
         
-
-    def intensity_integral(self, dataset, sample_ID, target_predicate, is_use_closed_integral=True):
-        start_time = 0
-        
+    def get_end_time(self, dataset, sample_ID, target_predicate):
         if self.args.dataset_name == "synthetic":
             end_time = self.args.synthetic_time_horizon
         else:
             end_time = dataset[sample_ID][target_predicate]['time'][-1]
             for i in range(self.num_predicate):
                 end_time = max(end_time, dataset[sample_ID][i]['time'][-1])
+        return end_time
+
+    def intensity_integral(self, dataset, sample_ID, target_predicate, is_use_closed_integral=True):
+        start_time = 0
+        end_time = self.get_end_time(dataset, sample_ID, target_predicate)
+
         if end_time == 0:
             intensity_integral = torch.tensor([0], dtype=torch.float64)
         else:

@@ -1,6 +1,7 @@
 """
 Modified from ./model/point_process.py
 Change solver from pytorch to cvxpy.
+implement Master problem
 """
 from collections import OrderedDict
 import itertools
@@ -12,7 +13,7 @@ import torch
 from logic import Logic
 
 class Master_Problem:
-    """functions used in PP.
+    """Master problem of Column Generation.
     """
     def __init__(self, args):
         self.logic = Logic(args)
@@ -24,6 +25,13 @@ class Master_Problem:
         self._parameters = OrderedDict()
         self._parameters["weight"] = cp.Variable(self.num_formula)
         self._parameters["base"] = cp.Variable(self.num_predicate)
+    
+    def set_logic(self, logic):
+        self.logic = logic
+        self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
+        self.num_formula = self.logic.logic.num_formula
+        self.num_predicate = self.logic.logic.num_predicate
+
 
     def _check_state(self, seq:Dict[str, List], cur_time:float) -> int:
         """check state of seq at cur_time
