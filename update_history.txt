@@ -74,4 +74,9 @@ pytest
    a_then_b, GT={w:0.1, b:0.4}, OPT={w:0.066, b:0.343}
    
    Speed of CVXPY is faster than PyTorch.
+
+14. 目前对subproblem的假设：targetpred总是出现在规则的最后、所有时序关系总是以rule中第一个pred为基准。
+   采用枚举的方法来选择最优的rule
+   tips：1）改动logic（增加、删除规则）之后要记得update PP.template
+    
     

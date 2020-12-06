@@ -28,7 +28,7 @@ class Point_Process:
         self.feature_integral_cache = dict()
     
     def set_parameters(self, w, b, requires_grad:bool=True):
-        if isinstance(w, torch.tensor):
+        if isinstance(w, torch.Tensor):
             self._parameters["weight"] = torch.autograd.Variable(w, requires_grad=requires_grad)
             self._parameters["base"] = torch.autograd.Variable(b, requires_grad=requires_grad)
         self._parameters["weight"] = torch.autograd.Variable((torch.ones(self.num_formula)* w).double(), requires_grad=requires_grad)
@@ -36,7 +36,7 @@ class Point_Process:
    
     def set_logic(self, logic):
         self.logic = logic
-        self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
+        self.template = {t:self.logic.get_template(t) for t in self.args.target_predicate}
         self.num_formula = self.logic.logic.num_formula
         self.num_predicate = self.logic.logic.num_predicate
 

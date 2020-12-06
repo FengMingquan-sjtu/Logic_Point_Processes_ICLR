@@ -1,6 +1,8 @@
 """
 implement Sub-problem
 """
+import sys
+sys.path.append("../")
 from collections import OrderedDict
 import itertools
 from typing import List,Tuple,Dict,Any
@@ -21,8 +23,6 @@ class Sub_Problem:
         self.logic = logic
         self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
 
-        self.num_formula = self.logic.logic.num_formula
-        self.num_predicate = self.logic.logic.num_predicate
 
         self.w = w
         self.b = b
@@ -31,64 +31,89 @@ class Sub_Problem:
         self.pp = Point_Process(self.args)
         self.pp.set_parameters(w=w, b=b, requires_grad=False)
 
-    def generate_new_R_array(self, target_predicate):
-        R_arrray_basic = np.zeros(self.num_predicate)
-        R_arrray_basic[target_predicate] = 1
-        for rule_len in range(2, self.num_predicate+1):
+        self.pp_only_new_rule = Point_Process(self.args)
+        self.pp_only_new_rule.set_parameters(w=w, b=b, requires_grad=False)
+
+    def get_empty_logic(self):
+        logic = Logic(self.args)
+        for i in range(logic.logic.num_formula):
+            logic.delete_rule(rule_idx=0)
+        return logic 
+
+    def generate_new_rule(self, target_predicate):
+        # NOTE: In this func we assume target pred is the last pred in list.
+        # Returns new_rule_triplet containing 3 np arrays: 
+        #   1)logic_rule: signs of each pred
+        #   2)time_template: time relation between each pred with first body pred
+        #   3)R_arrray: idx of selected pred.
+        num_predicate = self.logic.logic.num_predicate
+        for rule_len in range(2, num_predicate+1):
             if rule_len == 2: #len_2 rules are created from scratch
-                for neighbor_idx in range(self.num_predicate):
-                    if neighbor_idx == target_predicate:
-                        continue 
-                    R_arrray = R_arrray_basic.copy()
-                    R_arrray[neighbor_idx] = 1
-                    yield R_arrray
+                for neighbor_idx in range(num_predicate):
+                    if neighbor_idx >= target_predicate: #target pred is the last
+                        break 
+                    R_arrray = np.zeros(num_predicate)
+                    R_arrray[[neighbor_idx,target_predicate]] = 1
+                    for neighbor_sign in [0,1]:
+                        for target_sign in [0,1]:
+                            logic_rule = np.array([neighbor_sign, target_sign])
+                            for time_relation in [self.logic.logic.BEFORE, self.logic.logic.EQUAL]:
+                                time_template = np.array([0, time_relation])
+                                if not self._check_repeat(logic_rule, time_template, R_arrray):
+                                    yield logic_rule, time_template, R_arrray
+
             else: # longer rules are generated from existing rules.
                 for R_array_ in self.logic.R_arrray.T:
-                    for i in range(self.num_predicate):
+                    for i in range(num_predicate):
                         if R_arrray_[i] == 0: #extend from this rule
-                            R_arrray = R_array_.copy()
-                            R_arrray[i] = 1
-                            yield R_arrray
-    
-
-
-
-                    
-
-                    
-
-
+                            idx = np.sum(R_arrray_[:i]) # the idx of new predicate in the rule.
+                            if idx == 0: #not allow to insert at beginning.
+                                continue
+                            time_template_ = self.logic.get_time_template(formula_ind=idx)
+                            logic_rule_ = self.logic.get_logic_rule(formula_ind=idx)
+                            for sign in [0,1]:
+                                logic_rule = np.insert(logic_rule_, idx, sign)
+                                for time_relation in [self.logic.logic.BEFORE, self.logic.logic.EQUAL]:
+                                    time_template = np.insert(time_template, idx, time_relation)
+                                    if not self._check_repeat(logic_rule, time_template, R_arrray):
+                                        yield logic_rule, time_template, R_arrray
     
     def _check_repeat(self, rule, time_template, R_arrray):
-        for formula_ind in range(self.num_formula):
-            if (self.logic.R_matrix[:,formula_ind] == R_arrray).all():
+        for formula_ind in range(self.logic.logic.num_formula):
+            if (self.logic.logic.R_matrix[:,formula_ind] == R_arrray).all():
                 time_template = self.logic.get_time_template(formula_ind)
                 logic_rule = self.logic.get_logic_rule(formula_ind)
                 if (time_template == time_template).all() and (logic_rule == rule).all():
                     return True
         return False
     
-    def add_new_rule(self, rule, time_template, R_arrray):
-        self.logic.add_rule(rule, time_template, R_arrray)
-        self.pp.set_logic(self.logic)
     
-    def get_feature_list(self, dataset, sample_ID, target_predicate):
+    def get_feature_list(self, new_rule_triplet, dataset, sample_ID, target_predicate):
+        '''returns list of feature of new rule'''
+        logic =  self.get_empty_logic()
+        logic.add_rule(*new_rule_triplet)
+        self.pp_only_new_rule.set_logic(logic)
+
         feature_list = list()
         is_duration_pred =  self.logic.logic.is_duration_pred[target_predicate]
         for idx,t  in enumerate(dataset[sample_ID][target_predicate]['time']):
             if (not is_duration_pred) and dataset[sample_ID][target_predicate]['state'][idx]==0:
                 # filter out 'fake' states for instant pred.
                 continue
-            feature = self.pp.get_feature(t, dataset, sample_ID, target_predicate)
+            feature = self.pp_only_new_rule.get_feature(t, dataset, sample_ID, target_predicate)
             feature_list.append(feature[0])
-        return feature_list
+        return torch.tensor(feature_list)
 
     
-    def get_feature_integral(self, dataset, sample_ID, target_predicate):
+    def get_feature_integral(self, new_rule_triplet, dataset, sample_ID, target_predicate):
+        '''returns feature integral of new rule'''
         formula_ind = 0
         start_time = 0
-        end_time = self.pp.get_end_time(dataset, sample_ID, target_predicate)
-        feature_integral = self.pp._closed_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
+        logic =  self.get_empty_logic()
+        logic.add_rule(*new_rule_triplet)
+        self.pp_only_new_rule.set_logic(logic)
+        end_time = self.pp_only_new_rule.get_end_time(dataset, sample_ID, target_predicate)
+        feature_integral = self.pp_only_new_rule._closed_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
         return feature_integral
         
 
@@ -100,17 +125,68 @@ class Sub_Problem:
                 # filter out 'fake' states for instant pred.
                 continue
             formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
-            weight = self._parameters["weight"][formula_ind_list]
+            weight = self.pp._parameters["weight"][formula_ind_list]
             feature_list = self.pp.get_feature(t, dataset, sample_ID, target_predicate)
             feature_sum = torch.sum(torch.mul(feature_list, weight))
             feature_sum_list.append(feature_sum)
-        return feature_sum_list
+        return torch.tensor(feature_sum_list)
     
-    def objective(self, rule_complexity, feature_sum_list, feature_list, feature_integral):
-        term_1 = - torch.sum(torch.div(feature_list, feature_sum_list))
+    def objective(self, rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral):
+        term_1 = 0
+        for sample_ID in sample_ID_batch:
+            term_1 -= torch.sum(torch.div(feature_list[sample_ID], feature_sum_list[sample_ID]))
         term_2 = - feature_integral
         term_3 = self.lambda_ * rule_complexity
         objective = term_1 + term_2 + term_3
         return objective
+
+    def iter(self, dataset, sample_ID_batch, target_predicate):
+        feature_sum_list = dict()
+        for sample_ID in sample_ID_batch:
+            feature_sum_list[sample_ID] = self.get_feature_sum_list(dataset, sample_ID, target_predicate)
+        
+        for new_rule_triplet in self.generate_new_rule(target_predicate):
+            feature_list = dict()
+            feature_integral = 0
+            for sample_ID in sample_ID_batch:
+                feature_integral += self.get_feature_integral(new_rule_triplet, dataset, sample_ID, target_predicate)
+                feature_list[sample_ID] = self.get_feature_list(new_rule_triplet, dataset, sample_ID, target_predicate)
+            rule_complexity = np.sum(new_rule_triplet[2]) # rule_complexity = sum(R_arrray)
+            obj = self.objective(rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral)
+            print(obj)
+            print(new_rule_triplet)
+
+
+if __name__ == '__main__':
+    # simple test
+    from utils.args import get_args
+    args = get_args()
+    args.target_predicate = [1]
+    logic = Logic(args)
+    init_rand_rule = (np.array([1, 1]), np.array([   0, 1000]), np.array([1., 1.]))
+    logic.delete_rule(0)
+    logic.add_rule(*init_rand_rule)
+
+    w = torch.ones(logic.logic.num_formula)
+    b = torch.ones(logic.logic.num_predicate)
+    lambda_ = 1.0
+    target_predicate = 1
+    sp = Sub_Problem(args, logic, w, b, lambda_)
+    for i in sp.generate_new_rule(target_predicate=target_predicate):
+        ##print(i)
+        pass
+    pred0 = {"time":np.array([0, 0.9, 0.9, 1.9, 1.9]), "state":np.array([0,1,0,1,0])}
+    pred1 = {"time":np.array([0, 1, 1, 2, 2]), "state":np.array([0,1,0,1,0])}
+    dataset = {0:{0:pred0, 1:pred1}}
+    sample_ID_batch = [0]
+
+    sp.iter(dataset, sample_ID_batch, target_predicate)
+
+    
+
+
+
+
+
 
 
