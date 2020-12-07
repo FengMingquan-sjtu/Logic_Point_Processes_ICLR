@@ -31,6 +31,8 @@ class Master_Problem:
         self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
         self.num_formula = self.logic.logic.num_formula
         self.num_predicate = self.logic.logic.num_predicate
+        self._parameters["weight"] = cp.Variable(self.num_formula)
+        self._parameters["base"] = cp.Variable(self.num_predicate)
 
 
     def _check_state(self, seq:Dict[str, List], cur_time:float) -> int:
@@ -311,7 +313,7 @@ class Master_Problem:
         return intensity_integral
 
 
-    def log_likelihood(self, dataset, sample_ID_batch):
+    def log_likelihood(self, dataset):
         log_likelihood = np.zeros(1)
         for sample_ID in sample_ID_batch:
             for target_predicate in self.args.target_predicate:
@@ -331,3 +333,14 @@ class Master_Problem:
         C = self.args.max_complexity
         constraints = [w >= 0,  total_comp <= C]
         return constraints
+    
+    def iter(self, dataset, sample_ID_batch):
+        log_likelihood = self.log_likelihood(dataset, sample_ID_batch)
+        objective = cp.Minimize( - log_likelihood)
+        constraints = self.constraints()
+        prob = cp.Problem(objective, constraints)
+        opt = prob.solve()
+        w = self.model._parameters["weight"].value
+        b = self.model._parameters["base"].value
+        lambda_ = constraints[1].dual_value
+        return w,b,lambda_

@@ -17,28 +17,32 @@ from point_process import Point_Process
 class Sub_Problem:
     """Sub problem of Column Generation.
     """
-    def __init__(self, args, logic, w, b, lambda_):
-        
+    def __init__(self, args):
         self.args = args
+        self.pp = Point_Process(self.args)
+        self.pp_only_new_rule = Point_Process(self.args)
+    
+    def set_logic_and_param(self, logic, w, b, lambda_)
+        self.pp.set_logic(logic)
+        self.pp.set_parameters(w=w, b=b, requires_grad=False)
+        self.w, self.b, self.lambda_ = w, b, lambda_ 
         self.logic = logic
         self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
-
-
-        self.w = w
-        self.b = b
-        self.lambda_ = lambda_
-
-        self.pp = Point_Process(self.args)
-        self.pp.set_parameters(w=w, b=b, requires_grad=False)
-
-        self.pp_only_new_rule = Point_Process(self.args)
-        self.pp_only_new_rule.set_parameters(w=w, b=b, requires_grad=False)
 
     def get_empty_logic(self):
         logic = Logic(self.args)
         for i in range(logic.logic.num_formula):
             logic.delete_rule(rule_idx=0)
         return logic 
+    
+    def get_init_logic(self):
+        """generate logic with a unselected rule. Used as init logic in CG.
+        """
+        target_predicate = self.args.target_predicate[0]
+        new_rule_triplet = self.generate_new_rule(target_predicate)
+        logic = self.get_empty_logic()
+        logic.add_rule(*new_rule_triplet)
+        return logic
 
     def generate_new_rule(self, target_predicate):
         # NOTE: In this func we assume target pred is the last pred in list.
@@ -140,21 +144,27 @@ class Sub_Problem:
         objective = term_1 + term_2 + term_3
         return objective
 
-    def iter(self, dataset, sample_ID_batch, target_predicate):
-        feature_sum_list = dict()
-        for sample_ID in sample_ID_batch:
-            feature_sum_list[sample_ID] = self.get_feature_sum_list(dataset, sample_ID, target_predicate)
-        
-        for new_rule_triplet in self.generate_new_rule(target_predicate):
-            feature_list = dict()
-            feature_integral = 0
+    def iter(self, dataset, sample_ID_batch):
+        best_obj = 0
+        best_rule = None
+        for target_predicate in self.args.target_predicate:
+            feature_sum_list = dict()
             for sample_ID in sample_ID_batch:
-                feature_integral += self.get_feature_integral(new_rule_triplet, dataset, sample_ID, target_predicate)
-                feature_list[sample_ID] = self.get_feature_list(new_rule_triplet, dataset, sample_ID, target_predicate)
-            rule_complexity = np.sum(new_rule_triplet[2]) # rule_complexity = sum(R_arrray)
-            obj = self.objective(rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral)
-            print(obj)
-            print(new_rule_triplet)
+                feature_sum_list[sample_ID] = self.get_feature_sum_list(dataset, sample_ID, target_predicate)
+            for new_rule_triplet in self.generate_new_rule(target_predicate):
+                feature_list = dict()
+                feature_integral = 0
+                for sample_ID in sample_ID_batch:
+                    feature_integral += self.get_feature_integral(new_rule_triplet, dataset, sample_ID, target_predicate)
+                    feature_list[sample_ID] = self.get_feature_list(new_rule_triplet, dataset, sample_ID, target_predicate)
+                rule_complexity = np.sum(new_rule_triplet[2]) # rule_complexity = sum(R_arrray)
+                obj = self.objective(rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral)
+                #print(obj)
+                #print(new_rule_triplet)
+                if obj < best_obj:
+                    best_obj = obj
+                    best_rule = new_rule_triplet
+        return best_rule
 
 
 if __name__ == '__main__':
