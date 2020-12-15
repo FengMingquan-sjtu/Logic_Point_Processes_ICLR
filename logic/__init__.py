@@ -160,6 +160,13 @@ class Logic:
     def get_formula_complexity(self):
         # complexity of a rule is defined as "how many preds it contains"
         return self.logic.R_matrix.sum(axis=0)
+    
+    def print_rules(self):
+        for i in zip(self.logic.logic_rule_list, self.logic.time_template_list):
+            print(i)
+
+
+
 
 
     

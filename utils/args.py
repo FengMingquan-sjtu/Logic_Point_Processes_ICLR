@@ -61,7 +61,7 @@ def get_args():
                         help="after every test_period iters of training, test and print.")
     
     #master problem
-    parser.add_argument('--max_complexity', type=int, default=0.2, 
+    parser.add_argument('--max_complexity', type=int, default=0.4, 
                         help = "maximum total rule complexity")
     
     

@@ -78,5 +78,58 @@ pytest
 14. 目前对subproblem的假设：targetpred总是出现在规则的最后、所有时序关系总是以rule中第一个pred为基准。
    采用枚举的方法来选择最优的rule
    tips：1）改动logic（增加、删除规则）之后要记得update PP.template
-    
+
+15. 发现sub-problem的obj是nan，导致迭代第一轮就结束。
+   原因是sub-problem obj term1 的分母的第0个数据恒为0
+
+16. 
+hawkes数据集 w=0.1, b=0.2。
+初始rule为(array([0, 0]), array([  0, 100]))
+第一轮迭代， master result：
+w = [-7.33484268e-10]
+b = [0.    0.371]
+lambda = 1.6882037755368875e-08
+sub-porblem, 
+obj = -4000951681050.4585
+(array([0, 1]), array([   0, 1000]), array([1., 1.]))
+obj = -4000951663581.11
+(array([1, 0]), array([  0, 100]), array([1., 1.]))
+obj = -4000951645611.754
+(array([1, 0]), array([   0, 1000]), array([1., 1.]))
+obj = -4000951663581.102
+(array([1, 1]), array([  0, 100]), array([1., 1.]))
+obj = -4000951681550.458
+(array([1, 1]), array([   0, 1000]), array([1., 1.]))
+obj = -4000951663581.11
+
+它返回了(array([1, 1]), array([  0, 100]), array([1., 1.]))
+这个返回值是不正确的。
+这里所有rule的obj绝对值都很大，并且除了最低5位数以外都一样，为什么？
+
+第二轮迭代：
+规则集为：
+(array([0, 0]), array([  0, 100]))
+(array([1, 1]), array([  0, 100]))
+
+Master result：
+w = [-9.90928814e-10  1.06282436e-01]
+b = [0.         0.18001734]
+lambda = 5.2167890995233067e-08
+
+为什么这里恰好能解出w=0.1, b=0.2 ??
+
+
+Sub problem 过程：
+new_rule_triplet = (array([0, 1]), array([  0, 100]), array([1., 1.]))
+obj = tensor(16396.7493, dtype=torch.float64)
+new_rule_triplet = (array([0, 1]), array([   0, 1000]), array([1., 1.]))
+obj = tensor(33866.0979, dtype=torch.float64)
+new_rule_triplet = (array([1, 0]), array([  0, 100]), array([1., 1.]))
+obj = tensor(51835.4539, dtype=torch.float64)
+new_rule_triplet = (array([1, 0]), array([   0, 1000]), array([1., 1.]))
+obj = tensor(33866.1055, dtype=torch.float64)
+
+全都大于0，所以程序结束了。
+正确的rule是(array([0, 1]), array([  0, 100])），但是没被选中。
+
     

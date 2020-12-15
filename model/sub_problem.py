@@ -2,6 +2,7 @@
 implement Sub-problem
 """
 import sys
+sys.path.append("./")
 sys.path.append("../")
 from collections import OrderedDict
 import itertools
@@ -12,7 +13,7 @@ import cvxpy as cp
 import torch
 
 from logic import Logic
-from point_process import Point_Process
+from model.point_process import Point_Process
 
 class Sub_Problem:
     """Sub problem of Column Generation.
@@ -21,13 +22,14 @@ class Sub_Problem:
         self.args = args
         self.pp = Point_Process(self.args)
         self.pp_only_new_rule = Point_Process(self.args)
+        self.logic = self.get_empty_logic()
     
-    def set_logic_and_param(self, logic, w, b, lambda_)
+    def set_logic_and_param(self, logic, w, b, lambda_):
         self.pp.set_logic(logic)
         self.pp.set_parameters(w=w, b=b, requires_grad=False)
         self.w, self.b, self.lambda_ = w, b, lambda_ 
         self.logic = logic
-        self.template = {t:self.logic.get_template(t) for t in args.target_predicate}
+        self.template = {t:self.logic.get_template(t) for t in self.args.target_predicate}
 
     def get_empty_logic(self):
         logic = Logic(self.args)
@@ -36,10 +38,10 @@ class Sub_Problem:
         return logic 
     
     def get_init_logic(self):
-        """generate logic with a unselected rule. Used as init logic in CG.
+        """generate logic with a random rule. Used as init logic in CG.
         """
         target_predicate = self.args.target_predicate[0]
-        new_rule_triplet = self.generate_new_rule(target_predicate)
+        new_rule_triplet = next(self.generate_new_rule(target_predicate))
         logic = self.get_empty_logic()
         logic.add_rule(*new_rule_triplet)
         return logic
@@ -129,6 +131,7 @@ class Sub_Problem:
                 # filter out 'fake' states for instant pred.
                 continue
             formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
+            #print("self.pp._parameters", self.pp._parameters)
             weight = self.pp._parameters["weight"][formula_ind_list]
             feature_list = self.pp.get_feature(t, dataset, sample_ID, target_predicate)
             feature_sum = torch.sum(torch.mul(feature_list, weight))
@@ -138,9 +141,15 @@ class Sub_Problem:
     def objective(self, rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral):
         term_1 = 0
         for sample_ID in sample_ID_batch:
-            term_1 -= torch.sum(torch.div(feature_list[sample_ID], feature_sum_list[sample_ID]))
+            #print("feature_list[sample_ID] = ", feature_list[sample_ID])
+            #print("feature_sum_list[sample_ID] = ", feature_sum_list[sample_ID])
+            # add 1e-100 to avoid zero-div error
+            term_1 -= torch.sum(torch.div(feature_list[sample_ID] + 1e-100, feature_sum_list[sample_ID] + 1e-100))
         term_2 = - feature_integral
         term_3 = self.lambda_ * rule_complexity
+        #print("term_1 =", term_1)
+        #print("term_2 =", term_2)
+        #print("term_3 =", term_3)
         objective = term_1 + term_2 + term_3
         return objective
 
@@ -152,15 +161,18 @@ class Sub_Problem:
             for sample_ID in sample_ID_batch:
                 feature_sum_list[sample_ID] = self.get_feature_sum_list(dataset, sample_ID, target_predicate)
             for new_rule_triplet in self.generate_new_rule(target_predicate):
+                print("new_rule_triplet =", new_rule_triplet)
                 feature_list = dict()
                 feature_integral = 0
                 for sample_ID in sample_ID_batch:
                     feature_integral += self.get_feature_integral(new_rule_triplet, dataset, sample_ID, target_predicate)
                     feature_list[sample_ID] = self.get_feature_list(new_rule_triplet, dataset, sample_ID, target_predicate)
-                rule_complexity = np.sum(new_rule_triplet[2]) # rule_complexity = sum(R_arrray)
+                rule_complexity = np.sum(new_rule_triplet[2]) # rule_complexity = sum(R_arrray) = length of rule
                 obj = self.objective(rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral)
-                #print(obj)
-                #print(new_rule_triplet)
+                
+                
+                print("obj =", obj.item())
+                
                 if obj < best_obj:
                     best_obj = obj
                     best_rule = new_rule_triplet
@@ -181,7 +193,7 @@ if __name__ == '__main__':
     b = torch.ones(logic.logic.num_predicate)
     lambda_ = 1.0
     target_predicate = 1
-    sp = Sub_Problem(args, logic, w, b, lambda_)
+    sp = Sub_Problem(args, logic)
     for i in sp.generate_new_rule(target_predicate=target_predicate):
         ##print(i)
         pass
