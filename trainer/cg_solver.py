@@ -50,23 +50,25 @@ class CG_Solver:
         mp = Master_Problem(self.args)
         sp = Sub_Problem(self.args)
         logic = sp.get_init_logic()
-        for num_iter in range(10):
+        for num_iter in range(self.args.num_iter):
             print("=== begin %dth iter ==="%num_iter)
             print("Current rules are:")
             logic.print_rules()
-
             mp.set_logic(logic)
-            if num_iter == 0:
-                w = np.array([-9.02285332e-10])
-                b = np.array([[0., 0.37099999]])
-                lambda_ = 3.369082285172151e-08
-            else:
-                w, b, lambda_ = mp.iter(self.train_dataset, self.train_sample_ID_set)
+            # notice: set_logic also clears cache
+
+            #if num_iter == 0:
+            #    w = np.array([-9.02285332e-10])
+            #    b = np.array([0., 0.37099999])
+            #    lambda_ = 3.369082285172151e-08
+            #else:
+            w, b, lambda_ = mp.iter(self.train_dataset, self.train_sample_ID_set)
             
             print("Master problem solved")
             print("w =", w)
             print("b =", b)
             print("lambda =", lambda_)
+
 
             sp.set_logic_and_param(logic, w, b, lambda_)
             new_rule_triplet = sp.iter(self.train_dataset, self.train_sample_ID_set)
@@ -78,6 +80,10 @@ class CG_Solver:
                 logic.add_rule(*new_rule_triplet)
             else:
                 print("=== Finished ===")
+                print("w = ", w)
+                print("b = ", b)
+                print("Logic rules: ")
+                logic.print_rules()
                 break
 
 

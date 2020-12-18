@@ -14,6 +14,7 @@ import torch
 
 from logic import Logic
 from model.point_process import Point_Process
+from utils.args import get_args
 
 class Sub_Problem:
     """Sub problem of Column Generation.
@@ -22,7 +23,7 @@ class Sub_Problem:
         self.args = args
         self.pp = Point_Process(self.args)
         self.pp_only_new_rule = Point_Process(self.args)
-        self.logic = self.get_empty_logic()
+        self.logic = Logic(self.args) # avoid initialize to correct logic
     
     def set_logic_and_param(self, logic, w, b, lambda_):
         self.pp.set_logic(logic)
@@ -87,9 +88,9 @@ class Sub_Problem:
     def _check_repeat(self, rule, time_template, R_arrray):
         for formula_ind in range(self.logic.logic.num_formula):
             if (self.logic.logic.R_matrix[:,formula_ind] == R_arrray).all():
-                time_template = self.logic.get_time_template(formula_ind)
-                logic_rule = self.logic.get_logic_rule(formula_ind)
-                if (time_template == time_template).all() and (logic_rule == rule).all():
+                time_template_ = self.logic.get_time_template(formula_ind)
+                logic_rule_ = self.logic.get_logic_rule(formula_ind)
+                if (time_template_ == time_template).all() and (logic_rule_ == rule).all():
                     return True
         return False
     
@@ -99,6 +100,7 @@ class Sub_Problem:
         logic =  self.get_empty_logic()
         logic.add_rule(*new_rule_triplet)
         self.pp_only_new_rule.set_logic(logic)
+        # notice: set_logic also clears cache
 
         feature_list = list()
         is_duration_pred =  self.logic.logic.is_duration_pred[target_predicate]
@@ -118,6 +120,8 @@ class Sub_Problem:
         logic =  self.get_empty_logic()
         logic.add_rule(*new_rule_triplet)
         self.pp_only_new_rule.set_logic(logic)
+        # notice: set_logic also clears cache
+
         end_time = self.pp_only_new_rule.get_end_time(dataset, sample_ID, target_predicate)
         feature_integral = self.pp_only_new_rule._closed_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
         return feature_integral
@@ -138,37 +142,55 @@ class Sub_Problem:
             feature_sum_list.append(feature_sum)
         return torch.tensor(feature_sum_list)
     
-    def objective(self, rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral):
+    def get_intensity_list(self, dataset, sample_ID, target_predicate):
+        intensity_list = list()
+        is_duration_pred =  self.logic.logic.is_duration_pred[target_predicate]
+        for idx,t  in enumerate(dataset[sample_ID][target_predicate]['time']):
+            if (not is_duration_pred) and dataset[sample_ID][target_predicate]['state'][idx]==0:
+                # filter out 'fake' states for instant pred.
+                continue
+            cur_intensity = self.pp.intensity(t, dataset, sample_ID, target_predicate)
+            intensity_list.append(cur_intensity)
+        return torch.tensor(intensity_list)
+    
+    def objective(self, rule_complexity, sample_ID_batch, intensity_list, feature_list, feature_integral):
         term_1 = 0
         for sample_ID in sample_ID_batch:
             #print("feature_list[sample_ID] = ", feature_list[sample_ID])
             #print("feature_sum_list[sample_ID] = ", feature_sum_list[sample_ID])
-            # add 1e-100 to avoid zero-div error
-            term_1 -= torch.sum(torch.div(feature_list[sample_ID] + 1e-100, feature_sum_list[sample_ID] + 1e-100))
-        term_2 = - feature_integral
+            # add CONST to let 0/0 = 1
+            #CONST = 1e-15
+            #term_1 -= torch.sum(torch.div(feature_list[sample_ID] + CONST, feature_sum_list[sample_ID] + CONST))
+            term_1 -= torch.sum(torch.div(feature_list[sample_ID] , intensity_list[sample_ID]))
+        #term_1 /= len(sample_ID_batch)
+        term_2 = feature_integral
         term_3 = self.lambda_ * rule_complexity
-        #print("term_1 =", term_1)
-        #print("term_2 =", term_2)
-        #print("term_3 =", term_3)
+        print("term_1 =", term_1)
+        print("term_2 =", term_2)
+        print("term_3 =", term_3)
         objective = term_1 + term_2 + term_3
         return objective
 
     def iter(self, dataset, sample_ID_batch):
-        best_obj = 0
+        best_obj = -0.1 #improvement less then 0.1 is ignored
         best_rule = None
         for target_predicate in self.args.target_predicate:
-            feature_sum_list = dict()
+            intensity_list = dict()
             for sample_ID in sample_ID_batch:
-                feature_sum_list[sample_ID] = self.get_feature_sum_list(dataset, sample_ID, target_predicate)
+                intensity_list[sample_ID] = self.get_intensity_list(dataset, sample_ID, target_predicate)
             for new_rule_triplet in self.generate_new_rule(target_predicate):
                 print("new_rule_triplet =", new_rule_triplet)
                 feature_list = dict()
                 feature_integral = 0
+                
                 for sample_ID in sample_ID_batch:
                     feature_integral += self.get_feature_integral(new_rule_triplet, dataset, sample_ID, target_predicate)
                     feature_list[sample_ID] = self.get_feature_list(new_rule_triplet, dataset, sample_ID, target_predicate)
+                    if sample_ID == 0:
+                        print("feature_list = ", feature_list[sample_ID])
+                self.pp_only_new_rule.logic.print_rules()
                 rule_complexity = np.sum(new_rule_triplet[2]) # rule_complexity = sum(R_arrray) = length of rule
-                obj = self.objective(rule_complexity, sample_ID_batch, feature_sum_list, feature_list, feature_integral)
+                obj = self.objective(rule_complexity, sample_ID_batch, intensity_list, feature_list, feature_integral)
                 
                 
                 print("obj =", obj.item())
@@ -179,9 +201,9 @@ class Sub_Problem:
         return best_rule
 
 
-if __name__ == '__main__':
+def simple_test():
     # simple test
-    from utils.args import get_args
+    
     args = get_args()
     args.target_predicate = [1]
     logic = Logic(args)
@@ -203,6 +225,13 @@ if __name__ == '__main__':
     sample_ID_batch = [0]
 
     sp.iter(dataset, sample_ID_batch, target_predicate)
+
+if __name__ == '__main__':
+    args = get_args()
+    args.target_predicate = [1]
+    args.synthetic_logic_name = "self_correcting"
+
+
 
     
 

@@ -132,4 +132,34 @@ obj = tensor(33866.1055, dtype=torch.float64)
 全都大于0，所以程序结束了。
 正确的rule是(array([0, 1]), array([  0, 100])），但是没被选中。
 
-    
+   
+
+neighborhood 相同的rule 提取出的feature绝对值必然相同， 符号由target符号决定。
+规则[0,1] 与 规则[1,1] 所提取特征几乎相同，这是因为hawkes的事件都是瞬时的，A的0和1几乎重合。
+所以模型在hawkes输出[1,1]是可以理解的
+但是在self-correcting的结果完全错误？
+
+
+17.
+sub-problem公式第一项分母加上bias，第二项符号为正。
+
+18. feature-cache feature_integral_cache 导致sub-problem出错
+
+19. pp.filtering没有把t0=t筛掉，所以EQUAL总是被优先选择。改掉就好了
+
+20. sp的obj有时会比0小一点点，这些情况应该忽略。
+
+21. sp的计算冗余：intensity、feature、integral等均可多次复用。
+
+22. 解a_then_b时，发现结果如下：
+w =  [6.16242876e-02  1.38375718e-01]
+b =  [0.         0.32713167]
+Logic rules: 
+(array([0, 1]), array([  0, 100]))
+(array([0, 1]), array([   0, 1000]))
+为什么会出现EQUAL的这条rule，并且权重还很大呢？
+这是PP-likelihood的漏洞。
+EQUAL 对于likelihood的sum log lambda这一项毫无贡献，但是对第二项integral有正的贡献，所以模型会尽可能调高它的权重。
+这样的漏洞应该对所有 持续性predicate生效。
+
+12月18日，已通过了Hawkes、Self-correcting的测试。没有通过a_then_b测试。

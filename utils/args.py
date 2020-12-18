@@ -50,13 +50,7 @@ def get_args():
                         help='''folder to save and to load dataset cache, if empty then not use cache.cache file will be "data_cache_folder/dataset_name.pt"''')
     
     #trainer
-    parser.add_argument('--num_iter', type=int, default=100,)
-    parser.add_argument('--batch_size_test', type=int, default=0,
-                        help = "batch size of testing. if >0, randomly select a batch of testing data, if <=0, use whole testing data.")
-    parser.add_argument('--batch_size_train', type=int, default=50)
-
-    parser.add_argument('--lr', type=float, default=0.01,
-                        help="learning rate")
+    parser.add_argument('--num_iter', type=int, default=10,)
     parser.add_argument('--test_period', type=int, default=10,
                         help="after every test_period iters of training, test and print.")
     

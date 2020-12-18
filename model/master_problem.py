@@ -65,7 +65,7 @@ class Master_Problem:
             transition_state = np.array(data[neighbor_ind_]['state'])
             # only use history that falls in range [t - time_window, t)
             # and neighbors should follow neighbor_combination
-            mask = (transition_time >= t - time_window) * (transition_time <= t) * (transition_state == neighbor_combination[idx])
+            mask = (transition_time >= t - time_window) * (transition_time < t) * (transition_state == neighbor_combination[idx])
             transition_time = transition_time[mask]
             transition_time_list.append(transition_time)
             if len(transition_time) == 0:

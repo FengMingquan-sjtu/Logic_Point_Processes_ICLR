@@ -40,6 +40,11 @@ class Point_Process:
         self.template = {t:self.logic.get_template(t) for t in self.args.target_predicate}
         self.num_formula = self.logic.logic.num_formula
         self.num_predicate = self.logic.logic.num_predicate
+        self.clear_cache()
+    
+    def clear_cache(self):
+        self.feature_cache = dict()
+        self.feature_integral_cache = dict()
 
     def _check_state(self, seq:Dict[str, List], cur_time:float) -> int:
         """check state of seq at cur_time
@@ -71,7 +76,7 @@ class Point_Process:
             transition_state = np.array(data[neighbor_ind_]['state'])
             # only use history that falls in range [t - time_window, t)
             # and neighbors should follow neighbor_combination
-            mask = (transition_time >= t - time_window) * (transition_time <= t) * (transition_state == neighbor_combination[idx])
+            mask = (transition_time >= t - time_window) * (transition_time < t) * (transition_state == neighbor_combination[idx])
             transition_time = transition_time[mask]
             transition_time_list.append(transition_time)
             if len(transition_time) == 0:
@@ -251,10 +256,11 @@ class Point_Process:
         neighbor_ind, neighbor_combination, target_ind_in_predicate, time_template, formula_effect = template['neighbor_ind'],template['neighbor_combination'], template['target_ind_in_predicate'], template['time_template'], template['formula_effect']
         data = dataset[sample_ID][target_predicate]
         ta_tn_count = list()
-        # ta_tn_count is a list of (t_a, t_n, count)
+        # ta_tn_count is a list of (t_a, t_start, t_end, count)
         # where t_a = float, time of pred A
-        # t_n = float, time of latest pred
-        # count = int, number of such combination (not used in current version)
+        # t_start = float, when this combination start to be effective
+        # t_end = float, when such affect ends.
+        # count = int, number of such combination (always 1 in current version)
         if len(neighbor_ind) == 1:
             #t_a == t_n, where t_n is the latest body pred.
             t_a_idx = neighbor_ind[0]
