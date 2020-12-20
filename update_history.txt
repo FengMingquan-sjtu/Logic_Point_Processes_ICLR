@@ -147,7 +147,7 @@ sub-problem公式第一项分母加上bias，第二项符号为正。
 
 19. pp.filtering没有把t0=t筛掉，所以EQUAL总是被优先选择。改掉就好了
 
-20. sp的obj有时会比0小一点点，这些情况应该忽略。
+20. sp的obj有时会仅仅比0小一点点，这些情况应该忽略。
 
 21. sp的计算冗余：intensity、feature、integral等均可多次复用。
 

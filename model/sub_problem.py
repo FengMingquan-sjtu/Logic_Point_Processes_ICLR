@@ -24,6 +24,8 @@ class Sub_Problem:
         self.pp = Point_Process(self.args)
         self.pp_only_new_rule = Point_Process(self.args)
         self.logic = Logic(self.args) # avoid initialize to correct logic
+        self.feature_list_cache = dict()
+        self.feature_integral_cache = dict()
     
     def set_logic_and_param(self, logic, w, b, lambda_):
         self.pp.set_logic(logic)
@@ -95,13 +97,8 @@ class Sub_Problem:
         return False
     
     
-    def get_feature_list(self, new_rule_triplet, dataset, sample_ID, target_predicate):
-        '''returns list of feature of new rule'''
-        logic =  self.get_empty_logic()
-        logic.add_rule(*new_rule_triplet)
-        self.pp_only_new_rule.set_logic(logic)
-        # notice: set_logic also clears cache
-
+    def get_feature_list(self, dataset, sample_ID, target_predicate):
+        '''returns list of feature of self.pp_only_new_rule'''
         feature_list = list()
         is_duration_pred =  self.logic.logic.is_duration_pred[target_predicate]
         for idx,t  in enumerate(dataset[sample_ID][target_predicate]['time']):
@@ -111,36 +108,47 @@ class Sub_Problem:
             feature = self.pp_only_new_rule.get_feature(t, dataset, sample_ID, target_predicate)
             feature_list.append(feature[0])
         return torch.tensor(feature_list)
-
     
-    def get_feature_integral(self, new_rule_triplet, dataset, sample_ID, target_predicate):
-        '''returns feature integral of new rule'''
-        formula_ind = 0
-        start_time = 0
+    def get_batch_feature_list(self, new_rule_triplet, dataset, sample_ID_batch, target_predicate):
+        triplet = (tuple(i.tolist()) for i in new_rule_triplet)
+        key = (triplet, target_predicate)
+        if key in self.feature_list_cache:
+            return self.feature_list_cache[key]
+
         logic =  self.get_empty_logic()
         logic.add_rule(*new_rule_triplet)
         self.pp_only_new_rule.set_logic(logic)
-        # notice: set_logic also clears cache
+        feature_list = dict()
+        for sample_ID in sample_ID_batch:
+            feature_list[sample_ID] = self.get_feature_list(dataset, sample_ID, target_predicate)
+        self.feature_list_cache[key] = feature_list
+        return feature_list
 
+    def get_feature_integral(self, dataset, sample_ID, target_predicate):
+        '''returns feature integral of new rule'''
+        formula_ind = 0
+        start_time = 0
         end_time = self.pp_only_new_rule.get_end_time(dataset, sample_ID, target_predicate)
         feature_integral = self.pp_only_new_rule._closed_feature_integral(start_time, end_time, dataset, sample_ID, target_predicate, formula_ind)
         return feature_integral
-        
+    
+    def get_batch_feature_integral(self, new_rule_triplet, dataset, sample_ID_batch, target_predicate):
+        triplet = (tuple(i.tolist()) for i in new_rule_triplet)
+        key = (triplet, target_predicate)
+        if key in self.feature_integral_cache:
+            return self.feature_integral_cache[key]
 
-    def get_feature_sum_list(self, dataset, sample_ID, target_predicate):
-        feature_sum_list = list()
-        is_duration_pred =  self.logic.logic.is_duration_pred[target_predicate]
-        for idx,t  in enumerate(dataset[sample_ID][target_predicate]['time']):
-            if (not is_duration_pred) and dataset[sample_ID][target_predicate]['state'][idx]==0:
-                # filter out 'fake' states for instant pred.
-                continue
-            formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
-            #print("self.pp._parameters", self.pp._parameters)
-            weight = self.pp._parameters["weight"][formula_ind_list]
-            feature_list = self.pp.get_feature(t, dataset, sample_ID, target_predicate)
-            feature_sum = torch.sum(torch.mul(feature_list, weight))
-            feature_sum_list.append(feature_sum)
-        return torch.tensor(feature_sum_list)
+        logic =  self.get_empty_logic()
+        logic.add_rule(*new_rule_triplet)
+        self.pp_only_new_rule.set_logic(logic)
+        feature_integral_sum = 0
+        for sample_ID in sample_ID_batch:
+            feature_integral_sum += self.get_feature_integral(dataset, sample_ID, target_predicate)
+        
+        self.feature_integral_cache[key]= feature_integral_sum
+        return feature_integral_sum
+
+        
     
     def get_intensity_list(self, dataset, sample_ID, target_predicate):
         intensity_list = list()
@@ -156,13 +164,7 @@ class Sub_Problem:
     def objective(self, rule_complexity, sample_ID_batch, intensity_list, feature_list, feature_integral):
         term_1 = 0
         for sample_ID in sample_ID_batch:
-            #print("feature_list[sample_ID] = ", feature_list[sample_ID])
-            #print("feature_sum_list[sample_ID] = ", feature_sum_list[sample_ID])
-            # add CONST to let 0/0 = 1
-            #CONST = 1e-15
-            #term_1 -= torch.sum(torch.div(feature_list[sample_ID] + CONST, feature_sum_list[sample_ID] + CONST))
             term_1 -= torch.sum(torch.div(feature_list[sample_ID] , intensity_list[sample_ID]))
-        #term_1 /= len(sample_ID_batch)
         term_2 = feature_integral
         term_3 = self.lambda_ * rule_complexity
         print("term_1 =", term_1)
@@ -180,15 +182,9 @@ class Sub_Problem:
                 intensity_list[sample_ID] = self.get_intensity_list(dataset, sample_ID, target_predicate)
             for new_rule_triplet in self.generate_new_rule(target_predicate):
                 print("new_rule_triplet =", new_rule_triplet)
-                feature_list = dict()
-                feature_integral = 0
-                
-                for sample_ID in sample_ID_batch:
-                    feature_integral += self.get_feature_integral(new_rule_triplet, dataset, sample_ID, target_predicate)
-                    feature_list[sample_ID] = self.get_feature_list(new_rule_triplet, dataset, sample_ID, target_predicate)
-                    if sample_ID == 0:
-                        print("feature_list = ", feature_list[sample_ID])
-                self.pp_only_new_rule.logic.print_rules()
+                feature_list = self.get_batch_feature_list(new_rule_triplet, dataset, sample_ID_batch, target_predicate)
+                feature_integral = self.get_batch_feature_integral(new_rule_triplet, dataset, sample_ID_batch, target_predicate)
+                    
                 rule_complexity = np.sum(new_rule_triplet[2]) # rule_complexity = sum(R_arrray) = length of rule
                 obj = self.objective(rule_complexity, sample_ID_batch, intensity_list, feature_list, feature_integral)
                 

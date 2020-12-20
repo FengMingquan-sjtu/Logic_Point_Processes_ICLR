@@ -57,12 +57,12 @@ class CG_Solver:
             mp.set_logic(logic)
             # notice: set_logic also clears cache
 
-            #if num_iter == 0:
-            #    w = np.array([-9.02285332e-10])
-            #    b = np.array([0., 0.37099999])
-            #    lambda_ = 3.369082285172151e-08
-            #else:
-            w, b, lambda_ = mp.iter(self.train_dataset, self.train_sample_ID_set)
+            if num_iter == 0:
+                w = np.array([-9.02285332e-10])
+                b = np.array([0., 0.37099999])
+                lambda_ = 3.369082285172151e-08
+            else:
+                w, b, lambda_ = mp.iter(self.train_dataset, self.train_sample_ID_set)
             
             print("Master problem solved")
             print("w =", w)
