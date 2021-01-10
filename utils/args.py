@@ -73,6 +73,10 @@ def get_args():
     parser.add_argument('--time_decay_rate', type=float, default=0.2,
                         help="decay rate of history counts, the larger, the faster.")
     
+    #baselines
+    parser.add_argument('--bn_time_window', type=float, default=5.0,
+                        help="time_window in BN model, for converting temporal data to static data.")
+    
                         
 
     
