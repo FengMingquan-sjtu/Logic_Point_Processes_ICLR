@@ -14,8 +14,8 @@ from autograd import grad
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import export_graphviz
 from datasets import gen_synthetic_dataset
-from model import build_gru, build_mlp
-from model import softplus
+from tree import build_gru, build_mlp
+from tree import softplus
 
 
 class GRUTree(object):

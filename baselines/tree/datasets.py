@@ -107,20 +107,23 @@ if __name__ == "__main__":
 
     def map_3d_to_2d(X_arr, y_arr):
         """Convert 3d NumPy array to 2d NumPy array with fenceposts.
-
+        D: feature dim
+        T: discrete time
+        N: sample num
         @param X_arr: NumPy array
                       size D x T x N 
-        @param t_arr: NumPy array
-                      size O x T x N 
+        @param y_arr: NumPy array
+                      size 1 x T x N 
         @return X_arr_DM: NumPy array
                           size D x (T x N)
         @return y_arr_DM: NumPy array
-                          size O x (T x N)
+                          size 1 x (T x N)
         @return fenceposts_Np1: NumPy array (1-dimensional)
                                 represents splits between sequences.
         """
         n_in_dims, n_timesteps, n_seqs = X_arr.shape
         n_out_dims, _, _ = y_arr.shape
+        
 
         X_arr_DM = X_arr.swapaxes(0, 2).reshape((-1, n_in_dims)).T
         y_arr_DM = y_arr.swapaxes(0, 2).reshape((-1, n_out_dims)).T
