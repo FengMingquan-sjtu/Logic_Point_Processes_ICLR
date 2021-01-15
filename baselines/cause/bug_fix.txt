@@ -1,0 +1,10 @@
+1. (On mingquan's MACOS) when installing packages using pip in conda, 
+first cd to /opt/anaconda3/envs/molecule/bin
+then type './pip' instad of 'pip'.
+otherwise zsh calls local pip, and it installs to local python.
+
+2. run scripts to preprocess
+'./scripts/run_excitation.sh preprocess'
+then run each method with:
+'./scripts/run_excitation.sh <method>'
+where <method> is one of {HExp, HSG, NPHC, RPPN, ERPP}
