@@ -39,24 +39,32 @@ def train_bn(dataset, args):
     G = bn.plot(model)
 
 def train_mimic_bn(bn_args):
+    print("start train")
     df = pd.read_csv(bn_args.train_csv_path, index_col=0)
+    df = df.astype(int)
     df = df.drop('row_id', axis=1)
     model = bn.structure_learning.fit(df, methodtype='hc', scoretype='bic')
     model = bn.parameter_learning.fit(model, df, methodtype="bayes", verbose=2)
     with open(bn_args.model_save_path, 'wb') as f:
         pickle.dump(model, f)
+    print("train finished")
     
 def test_mimic_bn(bn_args):
+    print("start test")
     df = pd.read_csv(bn_args.test_csv_path, index_col=0)
+    df = df.astype(int)
     df = df.drop('row_id', axis=1)
     with open(bn_args.model_save_path, 'rb') as f:
         model = pickle.load(f)
+    bn.plot(model)
     target = ['flag','valuenum1','valuenum2']
     y = df[target]
     x = df.drop(target, axis=1)
     for index, x_row in x.iterrows():
-        print(dict(x_row))
-        y_hat = bn.inference.fit(model, variables=target, evidence=dict(x_row))
+        y_hat = bn.inference.fit(model, variables=target, evidence=dict(x_row), verbose=2)
+        print(y_hat)
+        raise ValueError
+    print("test finished")
 
 def get_bn_args():
     parser = argparse.ArgumentParser()
@@ -81,5 +89,7 @@ if __name__ == "__main__":
     #print(train_dataset)
     #_test_convert_dataset()
     #train_bn(train_dataset, args)
-    train_mimic_bn(bn_args)
-    #test_mimic_bn(bn_args)
+    if bn_args.task == "train":
+        train_mimic_bn(bn_args)
+    else:
+        test_mimic_bn(bn_args)
