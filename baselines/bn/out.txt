@@ -1,0 +1,2 @@
+[bnlearn] >Computing best DAG using [hc]
+[bnlearn] >Set scoring type at [bic]
