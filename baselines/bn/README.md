@@ -9,3 +9,7 @@ cite: @misc{erdogant2019bnlearn,
 requirements:
 bnlearn==0.3.11
 pgmpy==0.1.11
+
+notes:
+install at /anaconda3/envs/molecule/bin/
+not at /anaconda3/bin/

@@ -81,5 +81,5 @@ if __name__ == "__main__":
     #print(train_dataset)
     #_test_convert_dataset()
     #train_bn(train_dataset, args)
-    #train_mimic_bn(bn_args)
-    test_mimic_bn(bn_args)
+    train_mimic_bn(bn_args)
+    #test_mimic_bn(bn_args)
