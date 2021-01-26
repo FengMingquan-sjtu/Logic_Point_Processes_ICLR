@@ -1,2 +1,10 @@
-[bnlearn] >Computing best DAG using [hc]
-[bnlearn] >Set scoring type at [bic]
+start test
+target is ['flag']
+acc= 0.026696804936159814
+target is ['mechanical']
+acc= 0.09878428737247236
+target is ['median_dose_vaso']
+acc= 0.09059808173987416
+target is ['max_dose_vaso']
+acc= 0.05345470095913006
+test finished, result saved.

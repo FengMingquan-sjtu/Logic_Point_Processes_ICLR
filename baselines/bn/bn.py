@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd 
 import bnlearn as bn
 import pickle
+import sklearn
 
 from logic import Logic
 from dataloader import get_dataset
@@ -57,28 +58,61 @@ def test_mimic_bn(bn_args):
     with open(bn_args.model_save_path, 'rb') as f:
         model = pickle.load(f)
     
-    target = ['flag']
-    y_df = df[target]
-    x_df = df.drop(target, axis=1)
+    targets = ['flag','mechanical','median_dose_vaso','max_dose_vaso']
+    result = dict()
+    for t in targets:
+        target = [t]
+        y_df = df[target]
+        x_df = df.drop(target, axis=1)
 
-    acc = 0
-    y_hat_list = list()
-    y_true_list = list()
+        acc = 0
+        y_hat_list = list()
+        y_true_list = list()
 
-    for index, x_row in x_df.iterrows():
-        factors = bn.inference.fit(model, variables=target, evidence=dict(x_row), verbose=0)
-        y_hat = factors.values[0] #probability that flag=0
-        y_hat_list.append(y_hat)
-        y_true = y_df.loc[index, target].values
-        y_true_list.append(y_true)
-        if int(y_hat) == y_true:
-            acc +=1
-    print("acc=",acc/len(y_hat_list))
-    print(y_hat_list)
-    print(y_true_list)
+        for index, x_row in x_df.iterrows():
+            factors = bn.inference.fit(model, variables=target, evidence=dict(x_row), verbose=0)
+            ##raise ValueError
+            y_hat = factors.values[1] #probability that flag=1
+            y_hat_list.append(y_hat)
+            y_true = y_df.loc[index, target].values
+            y_true_list.append(y_true)
+            if int(round(y_hat)) == y_true:
+                acc +=1
+        print("target is", target)
+        print("acc=",acc/len(y_hat_list))
+        result[t] = [y_hat_list,y_true_list]
+    
     with open("test_result.pkl", 'wb') as f:
-        pickle.dump([y_hat_list,y_true_list], f)
+        pickle.dump(result, f)
     print("test finished, result saved.")
+
+def result_analyze():
+    with open("test_result.pkl", 'rb') as f:
+        d = pickle.load(f)
+    targets = ['flag','mechanical','median_dose_vaso','max_dose_vaso']
+    for t in targets:
+        y_hat_list,y_true_list = d[t]
+        y_hat = np.array(y_hat_list)
+        rand = np.random.random(y_hat.shape)
+        y_pred = (y_hat>rand).astype(int)
+        y_true = np.array(y_true_list).reshape((-1))
+        acc = sklearn.metrics.accuracy_score(y_true,y_pred)
+        f1 = sklearn.metrics.f1_score(y_true,y_pred)
+        confusion_matrix = sklearn.metrics.confusion_matrix(y_true, y_pred, normalize="all").ravel()
+        print("Target is ",t)
+        print("acc =",acc)
+        print("f1=",f1)
+        print("tn, fp, fn, tp =", confusion_matrix)
+        print("-------")
+    #y_hat = np.array(y_hat_list).round().astype(int)
+    #print(d["mechanical"])
+    #y_hat_list = [i>0.85 for i in y_hat_list]
+    #y_hat = np.array(y_hat_list).astype(int)
+    #y_true = np.array(y_true_list).reshape((-1))
+    #print(y_hat)
+    #acc_score = sklearn.metrics.accuracy_score(y_true,y_hat)
+    #print(acc_score)
+    #maybe add more sklearn.metrics
 
 def get_bn_args():
     parser = argparse.ArgumentParser()
@@ -101,27 +135,22 @@ def preprocess(bn_args):
         df = pd.read_csv(bn_args.test_csv_path)
 
     df = df.astype(int)
-    cur_id = None
-    index_list = list()
-    for index, row in df.iterrows():
-        icustay_id = row['icustay_id']
-        if cur_id is None:
-            cur_id = icustay_id
-        elif cur_id != icustay_id:
-            index_list.append(index-1)
-            cur_id = icustay_id
-    df = df.iloc[index_list]
-    #print(df)
     return df 
 
 def count_flag(df):
-    print(df['flag'].sum() / df['flag'].size)
-    #in test set: 0.34355345911949686
-    #in train set: 0.35031409501374167
+    targets = ['flag','mechanical','median_dose_vaso','max_dose_vaso']
+    for t in targets:
+        print(t)
+        print(df[t].sum() / df[t].size)
 
-    #dummy test acc = 0.6564465
-    #test acc = 0.6564465
-
+def print_graph(bn_args):
+    with open(bn_args.model_save_path, 'rb') as f:
+        model = pickle.load(f)
+    adj_df = model['adjmat']
+    targets = ['flag','mechanical','median_dose_vaso','max_dose_vaso']
+    for t in targets:
+        cause = adj_df[t][adj_df[t]].index.to_list()
+        print(t," <-- ",cause)
 
 
 if __name__ == "__main__":
@@ -132,9 +161,12 @@ if __name__ == "__main__":
     #print(train_dataset)
     #_test_convert_dataset()
     #train_bn(train_dataset, args)
-    if bn_args.task == "train":
-        train_mimic_bn(bn_args)
-    else:
-        test_mimic_bn(bn_args)
+    #if bn_args.task == "train":
+    #    train_mimic_bn(bn_args)
+    #if bn_args.task == "test":
+    #    test_mimic_bn(bn_args)
+    
     #df = preprocess(bn_args)
     #count_flag(df)
+    #result_analyze()
+    print_graph(bn_args)
