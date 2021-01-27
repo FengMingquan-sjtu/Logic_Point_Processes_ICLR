@@ -1,0 +1,68 @@
+1.一次训练在半小时以内，但一次测试却需要12h左右。因此可以考虑多开几个程序，每个程序跑一个target。
+2. 数据分布及测试结果：
+    # filtered flag:
+    #in test set: 0.343% positive
+    #dummy test acc = 0.6564465
+    #test acc = 0.6564465 (threshold=0.9)
+    #test acc = 0.6422955 (threshold=0.85)
+
+    #Raw data positive rate:
+    # flag
+    # 0.026696804936159814
+    # mechanical
+    # 0.9012157126275276
+    # median_dose_vaso
+    # 0.09059808173987416
+    # max_dose_vaso
+    # 0.05345470095913006
+
+    # Target is  flag
+    # acc = 0.9733031950638402
+    # f1= 0.0
+    # tn, fp, fn, tp = [0.9733032 0.        0.0266968 0.       ]
+    # -------
+    # Target is  mechanical
+    # acc = 0.9012157126275276
+    # f1= 0.9480415153754699
+    # tn, fp, fn, tp = [0.         0.09878429 0.         0.90121571]
+    # -------
+    # Target is  median_dose_vaso
+    # acc = 0.9094019182601258
+    # f1= 0.0
+    # tn, fp, fn, tp = [0.90940192 0.         0.09059808 0.        ]
+    # -------
+    # Target is  max_dose_vaso
+    # acc = 0.9465452990408699
+    # f1= 0.0
+    # tn, fp, fn, tp = [0.9465453 0.        0.0534547 0.       ]
+    # -------
+
+3. fixed bug: 输出的y应该是1的概率，而不是0的概率。
+4. 目前输出的结果比较极端，有些target全是0，有些全是1.
+    使用伯努利分布，转化成随机的0-1输出，得到结果如下：
+    Target is  flag
+    acc = 0.9438572912212109
+    f1= 0.021299254526091587
+    tn, fp, fn, tp = [9.43246380e-01 3.00568147e-02 2.60858941e-02 6.10910868e-04]
+    -------
+    Target is  mechanical
+    acc = 0.8213696621662899
+    f1= 0.9008141112618725
+    tn, fp, fn, tp = [0.01020221 0.08858208 0.09004826 0.81116745]
+    -------
+    Target is  median_dose_vaso
+    acc = 0.8325493310525994
+    f1= 0.11836603409456417
+    tn, fp, fn, tp = [0.82130857 0.08809335 0.07935732 0.01124076]
+    -------
+    Target is  max_dose_vaso
+    acc = 0.9037204471867555
+    f1= 0.0619047619047619
+    tn, fp, fn, tp = [0.90054371 0.04600159 0.05027796 0.00317674]
+    -------
+
+与target有关的连边：
+flag  <--  ['out_put', 'adm_order', 'paO2']
+mechanical  <--  ['weight', 'height', 'SGOT', 'Magnesium']
+median_dose_vaso  <--  ['out_put', 'Ht', 'sofa', 'max_dose_vaso']
+max_dose_vaso  <--  ['out_put', 'adm_order', 'Arterial_lactate', 'INR', 'sofa']
