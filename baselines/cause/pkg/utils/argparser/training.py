@@ -5,14 +5,12 @@ def add_base_arguments(parser):
     parser.add_argument(
         "--input_dir",
         type=str,
-        default="data/input",
-        help="default: data/input",
+        default="/home/fengmingquan/data/cause/input",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="data/output",
-        help="default: data/output",
+        default="/home/fengmingquan/data/cause/output",
     )
     parser.add_argument("--split_id", type=int, default=0, help="default: 0")
     parser.add_argument("--rand_seed", type=int, default=0, help="default: 0")

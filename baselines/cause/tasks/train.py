@@ -9,6 +9,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import pickle
 
 if "__file__" in globals():
     os.chdir(os.path.dirname(__file__) + "/..")
@@ -253,12 +254,15 @@ if __name__ == "__main__":
     export_json(vars(args), osp.join(output_path, "config.json"))
 
     # load data
-    input_path = osp.join(args.input_dir, args.dataset)
-    data = np.load(osp.join(input_path, "data.npz"), allow_pickle=True)
-    n_types = int(data["n_types"])
-    event_seqs = data["event_seqs"]
-    train_event_seqs = event_seqs[data["train_test_splits"][args.split_id][0]]
-    test_event_seqs = event_seqs[data["train_test_splits"][args.split_id][1]]
+    if args.dataset.startswith("mimic"):
+        train_file_path = ""
+    else:
+        input_path = osp.join(args.input_dir, args.dataset)
+        data = np.load(osp.join(input_path, "data.npz"), allow_pickle=True)
+        n_types = int(data["n_types"])
+        event_seqs = data["event_seqs"]
+        train_event_seqs = event_seqs[data["train_test_splits"][args.split_id][0]]
+        test_event_seqs = event_seqs[data["train_test_splits"][args.split_id][1]]
     # sorted test_event_seqs by their length
     test_event_seqs = sorted(test_event_seqs, key=lambda seq: len(seq))
 
@@ -296,8 +300,8 @@ if __name__ == "__main__":
             model.fit(train_cps)
             # TODO: many tick models can't be easily pickled. Probabily need to
             # write a wrapper class.
-            # with open(osp.join(output_path, "model.pkl"), "wb") as f:
-            # pickle.dump(model, f)
+            with open(osp.join(output_path, "model.pkl"), "wb") as f:
+                pickle.dump(model, f)
 
     # evaluate nll
     results = {}

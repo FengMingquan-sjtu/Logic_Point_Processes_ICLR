@@ -143,7 +143,7 @@ with Timer("Computing intensity"), Pool(cpu_count() // 2) as p:
     print("Optimal acc = {:4f}".format(sum(x == y for x, y in tmp) / len(tmp)))
 
 dataset = f"{args.name}-{args.n_seqs // 1000}K-{args.n_types}"
-output_path = f"data/input/{dataset}"
+output_path = f"/home/fengmingquan/data/cause/input/{dataset}"
 
 makedirs([output_path])
 export_json(vars(args), osp.join(output_path, "config.json"))

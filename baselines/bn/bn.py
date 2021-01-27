@@ -92,14 +92,18 @@ def result_analyze():
     targets = ['flag','mechanical','median_dose_vaso','max_dose_vaso']
     for t in targets:
         y_hat_list,y_true_list = d[t]
-        y_hat = np.array(y_hat_list)
-        rand = np.random.random(y_hat.shape)
-        y_pred = (y_hat>rand).astype(int)
         y_true = np.array(y_true_list).reshape((-1))
+        y_pred = np.array(y_hat_list)
+        auc = sklearn.metrics.roc_auc_score(y_true,y_pred)
+
+        #convert y_pred from probability to integer
+        rand = np.random.random(y_pred.shape)
+        y_pred = (y_pred>rand).astype(int)
         acc = sklearn.metrics.accuracy_score(y_true,y_pred)
         f1 = sklearn.metrics.f1_score(y_true,y_pred)
         confusion_matrix = sklearn.metrics.confusion_matrix(y_true, y_pred, normalize="all").ravel()
         print("Target is ",t)
+        print("auc=",auc)
         print("acc =",acc)
         print("f1=",f1)
         print("tn, fp, fn, tp =", confusion_matrix)
@@ -168,5 +172,5 @@ if __name__ == "__main__":
     
     #df = preprocess(bn_args)
     #count_flag(df)
-    #result_analyze()
-    print_graph(bn_args)
+    result_analyze()
+    #print_graph(bn_args)

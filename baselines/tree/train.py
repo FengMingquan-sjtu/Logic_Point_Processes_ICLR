@@ -37,10 +37,10 @@ class GRUTree(object):
                                                            X_train, F_train, y_train)
         return apl_batch
 
-    def train(self, X_train, F_train, y_train, iters_retrain=25, num_iters=1000,
+    def train(self, X_train, F_train, y_train, iters_retrain=25, gru_iters=1000, mlp_iters = 3000,
               batch_size=32, lr=1e-3, param_scale=0.01, log_every=10):
         npr.seed(42)
-        num_retrains = num_iters // iters_retrain
+        num_retrains = gru_iters // iters_retrain
         for i in range(num_retrains):
             self.gru.objective = self.objective
             # carry over weights from last training
@@ -53,7 +53,7 @@ class GRUTree(object):
             W_train = deepcopy(self.gru.saved_weights.T)
             APL_train = self.average_path_length_batch(W_train, X_train, F_train, y_train)
             print('training surrogate net... [%d/%d]' % (i + 1, num_retrains))
-            self.mlp.train(W_train[:self.gru.num_weights, :], APL_train, num_iters=3000,
+            self.mlp.train(W_train[:self.gru.num_weights, :], APL_train, num_iters=mlp_iters,
                            lr=1e-3, param_scale=0.1, log_every=250)
 
         self.pred_fun = self.gru.pred_fun

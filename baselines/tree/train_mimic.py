@@ -6,24 +6,23 @@ import argparse
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
+import sklearn
 import pickle
 
-from logic import Logic
 from dataloader import get_dataset
 from utils.args import get_args
 from dataset_utils import convert_temporal_to_static_data
-from train import GRUTree,visualize
+from train import GRUTree,visualize,GRU
 
 def preprocess(tr_args):
     """
     input: args
 
     output: 3 np arrays:
-        X(2-dim): num_neighbour * (T*N)
+        X(2-dim): Dx * (T*N)
         F(1-dim): N
-        y(2-dim): 1 * (T*N)
-        where X is neighbour, y is target, F is spliter of samples. T is discrete time, N is num of samples.
+        y(2-dim): Dy * (T*N)
+        where X is neighbour, y is target, F is spliter of samples. T is discrete time, N is num of samples, Dx is num of body predicates, Dy is num of targets
         As example of F: fenceposts_Np1 = np.arange(0, (n_seqs + 1) * n_timesteps, n_timesteps)
     """
     if tr_args.task == "train":
@@ -43,10 +42,10 @@ def preprocess(tr_args):
     F = np.array(index_list)
 
     #get X,y
-    df = df.drop(['row_id','icustay_id','valuenum1','valuenum2'], axis=1)
-    target = ['flag']
+    df = df.drop(['icustay_id'], axis=1)
+    target = ['flag','mechanical','median_dose_vaso','max_dose_vaso']
     y_df = df[target]
-    y = y_df.to_numpy().reshape((1,-1))
+    y = y_df.to_numpy().T
     x_df = df.drop(target, axis=1)
     X = x_df.to_numpy().T
 
@@ -55,24 +54,49 @@ def preprocess(tr_args):
 
 
 def train(tr_args):
+    print("start train", flush=1)
     X,F,y = preprocess(tr_args)
     in_count = X.shape[0]
     out_count = y.shape[0]
-    gru = GRUTree(in_count=in_count, state_count=20, hidden_sizes=[25], out_count=out_count, strength=1000.0) #strength means how much to weigh tree-regularization term.
-    gru.train(X, F, y, iters_retrain=1, num_iters=1, batch_size=10, lr=1e-2, param_scale=0.1, log_every=10)
-    visualize(gru.tree, './trained_models/pp_dataset_result.pdf')
-    with open('./trained_models/trained_tr_model.pkl', 'wb') as fp:
-        pickle.dump(gru, fp)
-    print('saved visualize pdf and model to ./trained_models')
+    state_count = 5
+    gru_args = (in_count, state_count, out_count)
+    gru = GRUTree(in_count=in_count, state_count=state_count, hidden_sizes=[25], out_count=out_count, strength=80.0) #strength means how much to weigh tree-regularization term.
+    gru.train(X, F, y, iters_retrain=25, gru_iters=300, mlp_iters=5000, batch_size=256, lr=1e-3, param_scale=0.1, log_every=100)
+    
+    visualize(gru.tree, './trained_models/vis.pdf')
+    with open('./trained_models/model.pkl', 'wb') as fp:
+        pickle.dump({'gru': gru.gru.weights, 'mlp': gru.mlp.weights, 'gru_args':gru_args}, fp)
+    print('saved visualize pdf and model to ./trained_models',flush=1)
     return gru
 
-def test(X,F,y):
-    with open('./trained_models/trained_tr_model.pkl', 'rb') as fp:
-        gru = pickle.load(fp)
-    y_hat = gru.pred_fun(gru.weights, X, F)
-    auc_test = roc_auc_score(y.T, y_hat.T)
-    print('Test AUC: {:.2f}'.format(auc_test))
+def test(tr_args):
+    X,F,y = preprocess(tr_args)
+    target = tr_args.target
+    with open('./trained_models/model.pkl', 'rb') as fp:
+        model = pickle.load(fp)
+        weights = model['gru']
+        gru_args = model['gru_args']
 
+    gru = GRU(*gru_args)
+    gru.weights = weights
+    y_hat = gru.pred_fun(gru.weights, X, F)
+    y_true = y.T 
+    y_pred = y_hat.T
+    #auc receives probability score of y_pred
+    auc = sklearn.metrics.roc_auc_score(y_true,y_pred)
+
+    #convert to binary y_pred
+    rand = np.random.random(y_pred.shape)
+    y_pred = (y_pred>rand).astype(int)
+    acc = sklearn.metrics.accuracy_score(y_true,y_pred)
+    f1 = sklearn.metrics.f1_score(y_true,y_pred)
+    confusion_matrix = sklearn.metrics.confusion_matrix(y_true, y_pred, normalize="all").ravel()
+    print("Target is ",target)
+    print("auc =",auc)
+    print("acc =",acc)
+    print("f1=",f1)
+    print("tn, fp, fn, tp =", confusion_matrix)
+    print("-------")
 
 def get_tr_args():
     parser = argparse.ArgumentParser()
@@ -87,6 +111,12 @@ def get_tr_args():
     tr_args = parser.parse_args()
     return tr_args
 
+def run(tr_args):
+    if tr_args.task == "train":
+        train(tr_args)
+    elif tr_args.task == "test":
+        test(tr_args)
+
 if __name__ == "__main__":
     #args = get_args()
     #train_dataset, test_dataset = get_dataset(args)
@@ -100,6 +130,6 @@ if __name__ == "__main__":
     #test(X,F,y,GRU)
     tr_args = get_tr_args()
     #X,F,y = preprocess(tr_args)
-    if tr_args.task == "train":
-        train(tr_args)
+    run(tr_args)
+            
     
