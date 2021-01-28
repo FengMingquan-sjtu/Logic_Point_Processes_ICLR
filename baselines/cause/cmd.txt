@@ -1,0 +1,2 @@
+setsid python3 run.py 1> out.txt 2> err.txt
+setsid python3 ./tasks/train.py HExp --decay 0.05 1> out.txt 2> err.txt

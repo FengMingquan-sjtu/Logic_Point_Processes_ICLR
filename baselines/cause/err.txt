@@ -1,0 +1,19 @@
+  0%|          | 0/10189 [00:00<?, ?it/s]  7%|▋         | 761/10189 [00:00<00:01, 7609.52it/s] 15%|█▌        | 1545/10189 [00:00<00:01, 7711.96it/s] 23%|██▎       | 2317/10189 [00:00<00:01, 7545.71it/s] 31%|███       | 3116/10189 [00:00<00:00, 7716.14it/s] 40%|███▉      | 4028/10189 [00:00<00:00, 8214.81it/s] 49%|████▊     | 4944/10189 [00:00<00:00, 8531.87it/s] 57%|█████▋    | 5849/10189 [00:00<00:00, 8697.23it/s] 66%|██████▋   | 6755/10189 [00:00<00:00, 8810.99it/s] 75%|███████▌  | 7660/10189 [00:00<00:00, 8882.62it/s] 84%|████████▍ | 8549/10189 [00:01<00:00, 8660.91it/s] 92%|█████████▏| 9417/10189 [00:01<00:00, 7747.39it/s]100%|██████████| 10189/10189 [00:01<00:00, 8008.71it/s]
+Traceback (most recent call last):
+  File "./tasks/train.py", line 306, in <module>
+    model.fit(train_cps)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/tick/hawkes/inference/base/learner_hawkes_param.py", line 173, in fit
+    model_obj.fit(events)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/tick/hawkes/model/base/model_hawkes.py", line 72, in fit
+    return ModelFirstOrder.fit(self, data)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/tick/base_model/model_first_order.py", line 63, in fit
+    Model.fit(self, *args)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/tick/base_model/model.py", line 81, in fit
+    self._set_data(*args)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/tick/hawkes/model/model_hawkes_expkern_leastsq.py", line 112, in _set_data
+    ModelHawkes._set_data(self, events)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/tick/hawkes/model/base/model_hawkes.py", line 94, in _set_data
+    end_times = np.array([max(map(max, e)) for e in non_empty_events])
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/tick/hawkes/model/base/model_hawkes.py", line 94, in <listcomp>
+    end_times = np.array([max(map(max, e)) for e in non_empty_events])
+ValueError: max() arg is an empty sequence

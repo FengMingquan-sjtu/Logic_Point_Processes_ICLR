@@ -203,7 +203,7 @@ class Logic_Model_Generator:
                 for t in np.arange(0, time_horizon, 0.1):
                     intensity_potential.append(self.intensity(t, head_predicate_idx, data[sample_ID]))
                 intensity_max = max(intensity_potential)
-                print(intensity_max)
+                #print(intensity_max)
                 # generate events via accept and reject
                 t = 0
                 while t < time_horizon:

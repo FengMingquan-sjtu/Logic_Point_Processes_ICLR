@@ -1,0 +1,2 @@
+Value is how the samples to test for information gain are split up. So at the root node, 32561 samples are divided into 24720 and 7841 samples each.
+https://stackoverflow.com/questions/47499142/what-is-the-meaning-of-the-value-property-in-a-generated-scikit-learn-decision-t#:~:text=value%20is%20the%20split%20of,24720%20and%207841%20samples%20each.%20%E2%80%93

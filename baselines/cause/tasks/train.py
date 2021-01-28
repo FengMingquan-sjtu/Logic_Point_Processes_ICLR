@@ -254,15 +254,21 @@ if __name__ == "__main__":
     export_json(vars(args), osp.join(output_path, "config.json"))
 
     # load data
+    input_path = osp.join(args.input_dir, args.dataset)
+
     if args.dataset.startswith("mimic"):
-        train_file_path = ""
+        data = np.load(osp.join(args.input_dir, "sepsis_logic.npz"), allow_pickle=True)
+        n_types = int(data["n_types"])
+        train_event_seqs = data["train_event_seqs"]
+        test_event_seqs =  data["test_event_seqs"]
+        event_seqs = np.concatenate((train_event_seqs,test_event_seqs))
     else:
-        input_path = osp.join(args.input_dir, args.dataset)
         data = np.load(osp.join(input_path, "data.npz"), allow_pickle=True)
         n_types = int(data["n_types"])
         event_seqs = data["event_seqs"]
         train_event_seqs = event_seqs[data["train_test_splits"][args.split_id][0]]
         test_event_seqs = event_seqs[data["train_test_splits"][args.split_id][1]]
+        
     # sorted test_event_seqs by their length
     test_event_seqs = sorted(test_event_seqs, key=lambda seq: len(seq))
 
