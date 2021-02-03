@@ -5,3 +5,4 @@ setsid python train_mimic.py.py --task test --test_csv_path /home/fengmingquan/d
 python train_mimic.py --task test --test_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_continuous/sepsis_continuous_test.csv
 
 python3.7 train_mimic.py --task test 
+

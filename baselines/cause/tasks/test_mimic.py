@@ -34,6 +34,7 @@ from pkg.utils.misc import (
     get_freer_gpu,
     makedirs,
     set_rand_seed,
+    AverageMeter
 )
 from pkg.utils.pp import (
     eval_nll_hawkes_exp_kern,
@@ -110,85 +111,10 @@ def get_hparam_str(args):
     return ",".join("{}={}".format(p, getattr(args, p)) for p in hparams)
 
 
-def train_nn_models(model, event_seqs, args):
-
-    train_dataloader = DataLoader(
-        EventSeqDataset(event_seqs), **dataloader_args
-    )
-
-    train_dataloader, valid_dataloader = split_dataloader(
-        train_dataloader, 8 / 9
-    )
-    if "bucket_seqs" in args and args.bucket_seqs:
-        train_dataloader = convert_to_bucketed_dataloader(
-            train_dataloader, key_fn=len
-        )
-    valid_dataloader = convert_to_bucketed_dataloader(
-        valid_dataloader, key_fn=len, shuffle_same_key=False
-    )
-
-    optimizer = getattr(torch.optim, args.optimizer)(
-        model.parameters(), lr=args.lr
-    )
-
-    model.train()
-    best_metric = float("nan")
-
-    for epoch in range(args.epochs):
-        train_metrics, valid_metrics = model.train_epoch(
-            train_dataloader,
-            optimizer,
-            valid_dataloader,
-            device=device,
-            **vars(args),
-        )
-
-        msg = f"[Training] Epoch={epoch}"
-        for k, v in train_metrics.items():
-            msg += f", {k}={v.avg:.4f}"
-        logger.info(msg)
-        msg = f"[Validation] Epoch={epoch}"
-        for k, v in valid_metrics.items():
-            msg += f", {k}={v.avg:.4f}"
-        logger.info(msg)
-
-        if compare_metric_value(
-            valid_metrics[args.tune_metric].avg, best_metric, args.tune_metric
-        ):
-            if epoch > args.epochs // 2:
-                logger.info(f"Found a better model at epoch {epoch}.")
-            best_metric = valid_metrics[args.tune_metric].avg
-            torch.save(model.state_dict(), osp.join(output_path, "model.pt"))
-
-    model.load_state_dict(torch.load(osp.join(output_path, "model.pt")))
-
-    return model
 
 
-def eval_nll(model, event_seqs, args):
-    if args.model in ["RME", "ERPP", "RPPN"]:
 
-        dataloader = DataLoader(
-            EventSeqDataset(event_seqs), shuffle=False, **dataloader_args
-        )
 
-        metrics = model.evaluate(dataloader, device=device)
-        logger.info(
-            "[Test]"
-            + ", ".join(f"{k}={v.avg:.4f}" for k, v in metrics.items())
-        )
-        nll = metrics["nll"].avg.item()
-
-    elif args.model == "HSG":
-        nll = eval_nll_hawkes_sum_gaussians(event_seqs, model, verbose=True)
-
-    elif args.model == "HExp":
-        nll = eval_nll_hawkes_exp_kern(event_seqs, model, verbose=True)
-    else:
-        nll = float("nan")
-        print("not supported yet")
-
-    return nll
 
 
 def predict_next_event(model, event_seqs, args):
@@ -230,6 +156,31 @@ def get_infectivity_matrix(model, event_seqs, args):
 
     return infectivity
 
+def calc_mean_absolute_error(event_seqs_true, event_seqs_pred, skip_first_n=0):
+    """
+    Args:
+        event_seqs_true (List[List[Tuple]]):
+        event_seqs_pred (List[List[Tuple]]):
+        skip_first_n (int, optional): Skipe prediction for the first
+          `skip_first_n` events. Defaults to 0.
+    """
+    mse = AverageMeter()
+    for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
+        if len(seq_true) <= skip_first_n:
+            continue
+        if skip_first_n == 0:
+            ts_true = [0] + [t for t, _ in seq_true]
+            ts_pred = [0] + [t for t, _ in seq_pred]
+        else:
+            ts_true = [t for t, _ in seq_true[skip_first_n - 1 :]]
+            ts_pred = [t for t, _ in seq_pred[skip_first_n - 1 :]]
+
+        mse.update(
+            np.absolute(np.diff(ts_true) - np.diff(ts_pred)).mean(),
+            len(ts_true) - 1,
+        )
+
+    return mse.avg
 
 if __name__ == "__main__":
 
@@ -277,7 +228,7 @@ if __name__ == "__main__":
     else:
         A_true = None
 
-    with Timer("Training model"):
+    with Timer("Loading trained model"):
         # define model
         model = get_model(args, n_types)
 
@@ -288,82 +239,30 @@ if __name__ == "__main__":
                 "num_workers": args.num_workers,
             }
             device = get_device(args.cuda)
+            model.load_state_dict(torch.load(osp.join(output_path, "model.pt")))
 
             model = model.to(device)
-            model = train_nn_models(model, train_event_seqs, args)
+            
 
         else:
-            # NOTE: may change to weighted sampling (by seq length)
-            if "max_seqs" in args and args.max_seqs > 0:
-                train_event_seqs = random.sample(
-                    list(train_event_seqs), args.max_seqs
-                )
+            with open(osp.join(output_path, "model.pkl"), "rb") as f:
+                model = pickle.load(f)
 
-            train_cps = [
-                event_seq_to_counting_proc(seq, n_types, to_numpy=True)
-                for seq in tqdm(train_event_seqs)
-            ]
-            model.fit(train_cps)
-            # TODO: many tick models can't be easily pickled. Probabily need to
-            # write a wrapper class.
-            try:
-                with open(osp.join(output_path, "model.pkl"), "wb") as f:
-                    pickle.dump(model, f)
-            except:
-                pass
-
-    # evaluate nll
     results = {}
-    with Timer("Evaluate negative log-likelihood"):
-        results["nll"] = eval_nll(model, test_event_seqs, args)
-        print("nll", results["nll"])
-
+    param_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print("param_num=",param_num)
+    raise ValueError
     # evaluate next event prediction
     if not args.skip_pred_next_event:
         with Timer("Predict the next event"):
             event_seqs_pred = predict_next_event(model, test_event_seqs, args)
+            with open("result_{}.pkl".format(args.model),'wb') as f:
+                pickle.dump((event_seqs_pred,test_event_seqs), f)
             if event_seqs_pred is not None:
-                for metric_name in ["rmse", "mae"]:
-                    results[metric_name] = eval_fns[metric_name](
-                        test_event_seqs, event_seqs_pred
-                    )
-                    print(metric_name, results[metric_name])
+                print(event_seqs_pred[0])
+                print(test_event_seqs[0])
+                mae = calc_mean_absolute_error(test_event_seqs, event_seqs_pred)
+                print(mae)
 
-    # evaluate infectivity matrix
-    if not args.skip_eval_infectivity:
-        A_pred = get_infectivity_matrix(model, event_seqs, args)
-        np.savetxt(osp.join(output_path, "scores_mat.txt"), A_pred)
 
-        if A_true is not None:
 
-            for metric_name in ["auc", "kendall_tau", "spearman_rho"]:
-                results[metric_name] = eval_fns[metric_name](A_true, A_pred)
-
-    # export evaluation results
-    time = pd.Timestamp.now()
-    df = pd.DataFrame(
-        columns=[
-            "timestamp",
-            "dataset",
-            "split_id",
-            "model",
-            "metric",
-            "value",
-            "config",
-        ]
-    )
-
-    for metric_name, val in results.items():
-
-        df.loc[len(df)] = (
-            time,
-            args.dataset,
-            args.split_id,
-            args.model,
-            metric_name,
-            val,
-            vars(args),
-        )
-
-    logger.info(df)
-    export_csv(df, osp.join(args.output_dir, "results.csv"), append=True)

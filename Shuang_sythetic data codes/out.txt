@@ -1,0 +1,3 @@
+Head = D, base = -0.0074
+Rule0: B --> D , B AFTER D, weight=0.0100
+Head = E, base = -0.1463

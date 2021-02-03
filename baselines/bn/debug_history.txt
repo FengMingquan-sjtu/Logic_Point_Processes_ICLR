@@ -70,3 +70,31 @@ flag  <--  ['out_put', 'adm_order', 'paO2']
 mechanical  <--  ['weight', 'height', 'SGOT', 'Magnesium']
 median_dose_vaso  <--  ['out_put', 'Ht', 'sofa', 'max_dose_vaso']
 max_dose_vaso  <--  ['out_put', 'adm_order', 'Arterial_lactate', 'INR', 'sofa']
+
+
+Only predict jumping:
+
+Target is  flag
+auc= 0.5503511041059019
+acc = 0.6567505720823799
+f1= 0.05063291139240506
+tn, fp, fn, tp = [0.64759725 0.01906941 0.32418002 0.00915332]
+-------
+Target is  mechanical
+auc= 0.5033702385016827
+acc = 0.5899772209567198
+f1= 0.7294589178356713
+tn, fp, fn, tp = [0.03720577 0.34624146 0.06378132 0.55277145]
+-------
+Target is  median_dose_vaso
+auc= 0.626284934147125
+acc = 0.5452380952380952
+f1= 0.21399176954732507
+tn, fp, fn, tp = [0.48333333 0.05571429 0.39904762 0.06190476]
+-------
+Target is  max_dose_vaso
+auc= 0.7238025468245716
+acc = 0.5599268069533394
+f1= 0.1486725663716814
+tn, fp, fn, tp = [0.52150046 0.02378774 0.41628545 0.03842635]
+-------
