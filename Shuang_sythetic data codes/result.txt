@@ -1,2 +1,22 @@
 first 100 data,
 {4: {0: {'body_predicate_idx': [0], 'body_predicate_sign': [-1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(0, 4)], 'temporal_relation_type': ['EQUAL']}, 1: {'body_predicate_idx': [2], 'body_predicate_sign': [1], 'head_predicate_sign': [1], 'temporal_relation_idx': [(2, 4)], 'temporal_relation_type': ['BEFORE']}, 2: {'body_predicate_idx': [3], 'body_predicate_sign': [1], 'head_predicate_sign': [1], 'temporal_relation_idx': [(3, 4)], 'temporal_relation_type': ['EQUAL']}, 3: {'body_predicate_idx': [2], 'body_predicate_sign': [1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(2, 4)], 'temporal_relation_type': ['BEFORE']}, 4: {'body_predicate_idx': [3], 'body_predicate_sign': [1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(3, 4)], 'temporal_relation_type': ['EQUAL']}}}
+
+Head = D, base = -0.0074
+Rule0: B --> D , B AFTER D, weight=0.0100
+Head = E, base = -0.1463
+
+
+Without SoftMax:
+Head = D, base = 0.0125
+Rule0: B --> Not D , B BEFORE Not D, weight=-1.2224
+Rule1: B --> D , B BEFORE D, weight=0.8303
+Rule2: E --> D , E BEFORE D, weight=-0.5963
+Rule3: E --> Not D , E BEFORE Not D, weight=-0.8852
+Rule4: E ^ B --> Not D , E BEFORE Not D ^ B BEFORE Not D, weight=3.4913
+Head = E, base = -0.3327
+
+With SoftMax:
+Head = D, base = 0.0147
+Rule0: Not A --> Not D , Not A EQUAL Not D, weight=2.2707
+Rule1: E --> D , E BEFORE D, weight=-2.2507
+Head = E, base = -0.1630

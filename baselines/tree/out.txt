@@ -1,1 +1,1160 @@
 start train
+training deep net... [1/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 88607.33 | apl: 2189.78
+building surrogate dataset...
+training surrogate net... [1/12]
+model: mlp | iter: 0 | loss: 2648218.10
+model: mlp | iter: 250 | loss: 2622027.77
+model: mlp | iter: 500 | loss: 2600791.48
+model: mlp | iter: 750 | loss: 2580080.12
+model: mlp | iter: 1000 | loss: 2559639.96
+model: mlp | iter: 1250 | loss: 2539392.68
+model: mlp | iter: 1500 | loss: 2519302.51
+model: mlp | iter: 1750 | loss: 2499349.39
+model: mlp | iter: 2000 | loss: 2479520.56
+model: mlp | iter: 2250 | loss: 2459807.20
+model: mlp | iter: 2500 | loss: 2440202.79
+model: mlp | iter: 2750 | loss: 2420702.40
+model: mlp | iter: 3000 | loss: 2401302.12
+model: mlp | iter: 3250 | loss: 2381998.85
+model: mlp | iter: 3500 | loss: 2362790.05
+model: mlp | iter: 3750 | loss: 2343673.68
+model: mlp | iter: 4000 | loss: 2324648.03
+model: mlp | iter: 4250 | loss: 2305711.72
+model: mlp | iter: 4500 | loss: 2286863.61
+model: mlp | iter: 4750 | loss: 2268102.74
+training deep net... [2/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 92220.48 | apl: 992.13
+building surrogate dataset...
+training surrogate net... [2/12]
+model: mlp | iter: 0 | loss: 465172.20
+model: mlp | iter: 250 | loss: 454425.72
+model: mlp | iter: 500 | loss: 445791.17
+model: mlp | iter: 750 | loss: 437424.93
+model: mlp | iter: 1000 | loss: 429230.68
+model: mlp | iter: 1250 | loss: 421176.88
+model: mlp | iter: 1500 | loss: 413247.92
+model: mlp | iter: 1750 | loss: 405434.25
+model: mlp | iter: 2000 | loss: 397729.22
+model: mlp | iter: 2250 | loss: 390127.81
+model: mlp | iter: 2500 | loss: 382626.10
+model: mlp | iter: 2750 | loss: 375220.88
+model: mlp | iter: 3000 | loss: 367909.49
+model: mlp | iter: 3250 | loss: 360689.72
+model: mlp | iter: 3500 | loss: 353559.71
+model: mlp | iter: 3750 | loss: 346517.91
+model: mlp | iter: 4000 | loss: 339562.98
+model: mlp | iter: 4250 | loss: 332693.81
+model: mlp | iter: 4500 | loss: 325909.47
+model: mlp | iter: 4750 | loss: 319209.15
+training deep net... [3/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 84236.77 | apl: 374.39
+building surrogate dataset...
+training surrogate net... [3/12]
+model: mlp | iter: 0 | loss: 77056.78
+model: mlp | iter: 250 | loss: 72509.36
+model: mlp | iter: 500 | loss: 69065.64
+model: mlp | iter: 750 | loss: 65795.01
+model: mlp | iter: 1000 | loss: 62657.35
+model: mlp | iter: 1250 | loss: 59637.45
+model: mlp | iter: 1500 | loss: 56726.50
+model: mlp | iter: 1750 | loss: 53918.30
+model: mlp | iter: 2000 | loss: 51208.03
+model: mlp | iter: 2250 | loss: 48591.75
+model: mlp | iter: 2500 | loss: 46066.14
+model: mlp | iter: 2750 | loss: 43628.37
+model: mlp | iter: 3000 | loss: 41276.00
+model: mlp | iter: 3250 | loss: 39006.89
+model: mlp | iter: 3500 | loss: 36819.20
+model: mlp | iter: 3750 | loss: 34711.29
+model: mlp | iter: 4000 | loss: 32681.73
+model: mlp | iter: 4250 | loss: 30729.22
+model: mlp | iter: 4500 | loss: 28852.61
+model: mlp | iter: 4750 | loss: 27050.88
+training deep net... [4/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 75395.97 | apl: 205.72
+building surrogate dataset...
+training surrogate net... [4/12]
+model: mlp | iter: 0 | loss: 24315.69
+model: mlp | iter: 250 | loss: 22000.09
+model: mlp | iter: 500 | loss: 20145.87
+model: mlp | iter: 750 | loss: 18439.45
+model: mlp | iter: 1000 | loss: 16852.95
+model: mlp | iter: 1250 | loss: 15374.04
+model: mlp | iter: 1500 | loss: 13994.63
+model: mlp | iter: 1750 | loss: 12708.45
+model: mlp | iter: 2000 | loss: 11510.31
+model: mlp | iter: 2250 | loss: 10395.79
+model: mlp | iter: 2500 | loss: 9360.99
+model: mlp | iter: 2750 | loss: 8402.43
+model: mlp | iter: 3000 | loss: 7516.97
+model: mlp | iter: 3250 | loss: 6701.71
+model: mlp | iter: 3500 | loss: 5953.94
+model: mlp | iter: 3750 | loss: 5271.09
+model: mlp | iter: 4000 | loss: 4650.67
+model: mlp | iter: 4250 | loss: 4090.24
+model: mlp | iter: 4500 | loss: 3587.34
+model: mlp | iter: 4750 | loss: 3139.51
+training deep net... [5/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 65705.97 | apl: 94.15
+building surrogate dataset...
+training surrogate net... [5/12]
+model: mlp | iter: 0 | loss: 7804.34
+model: mlp | iter: 250 | loss: 6386.74
+model: mlp | iter: 500 | loss: 5423.26
+model: mlp | iter: 750 | loss: 4582.97
+model: mlp | iter: 1000 | loss: 3846.88
+model: mlp | iter: 1250 | loss: 3203.68
+model: mlp | iter: 1500 | loss: 2644.49
+model: mlp | iter: 1750 | loss: 2161.66
+model: mlp | iter: 2000 | loss: 1748.30
+model: mlp | iter: 2250 | loss: 1398.10
+model: mlp | iter: 2500 | loss: 1105.10
+model: mlp | iter: 2750 | loss: 863.62
+model: mlp | iter: 3000 | loss: 668.14
+model: mlp | iter: 3250 | loss: 513.25
+model: mlp | iter: 3500 | loss: 393.62
+model: mlp | iter: 3750 | loss: 304.00
+model: mlp | iter: 4000 | loss: 239.25
+model: mlp | iter: 4250 | loss: 194.45
+model: mlp | iter: 4500 | loss: 165.00
+model: mlp | iter: 4750 | loss: 146.78
+training deep net... [6/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 55013.63 | apl: 62.76
+building surrogate dataset...
+training surrogate net... [6/12]
+model: mlp | iter: 0 | loss: 3037.41
+model: mlp | iter: 250 | loss: 2218.72
+model: mlp | iter: 500 | loss: 1684.40
+model: mlp | iter: 750 | loss: 1260.12
+model: mlp | iter: 1000 | loss: 925.49
+model: mlp | iter: 1250 | loss: 666.05
+model: mlp | iter: 1500 | loss: 469.48
+model: mlp | iter: 1750 | loss: 324.83
+model: mlp | iter: 2000 | loss: 222.13
+model: mlp | iter: 2250 | loss: 152.36
+model: mlp | iter: 2500 | loss: 107.42
+model: mlp | iter: 2750 | loss: 80.25
+model: mlp | iter: 3000 | loss: 65.01
+model: mlp | iter: 3250 | loss: 57.18
+model: mlp | iter: 3500 | loss: 53.51
+model: mlp | iter: 3750 | loss: 51.95
+model: mlp | iter: 4000 | loss: 51.32
+model: mlp | iter: 4250 | loss: 47.45
+model: mlp | iter: 4500 | loss: 45.65
+model: mlp | iter: 4750 | loss: 44.62
+training deep net... [7/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 44485.33 | apl: 39.42
+building surrogate dataset...
+training surrogate net... [7/12]
+model: mlp | iter: 0 | loss: 657.77
+model: mlp | iter: 250 | loss: 343.38
+model: mlp | iter: 500 | loss: 203.46
+model: mlp | iter: 750 | loss: 133.47
+model: mlp | iter: 1000 | loss: 103.21
+model: mlp | iter: 1250 | loss: 92.27
+model: mlp | iter: 1500 | loss: 88.91
+model: mlp | iter: 1750 | loss: 79.49
+model: mlp | iter: 2000 | loss: 74.70
+model: mlp | iter: 2250 | loss: 66.47
+model: mlp | iter: 2500 | loss: 58.91
+model: mlp | iter: 2750 | loss: 54.63
+model: mlp | iter: 3000 | loss: 47.96
+model: mlp | iter: 3250 | loss: 44.72
+model: mlp | iter: 3500 | loss: 42.72
+model: mlp | iter: 3750 | loss: 41.27
+model: mlp | iter: 4000 | loss: 40.13
+model: mlp | iter: 4250 | loss: 39.21
+model: mlp | iter: 4500 | loss: 38.32
+model: mlp | iter: 4750 | loss: 37.54
+training deep net... [8/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 34689.50 | apl: 7.98
+building surrogate dataset...
+training surrogate net... [8/12]
+model: mlp | iter: 0 | loss: 83.08
+model: mlp | iter: 250 | loss: 37.71
+model: mlp | iter: 500 | loss: 34.90
+model: mlp | iter: 750 | loss: 32.45
+model: mlp | iter: 1000 | loss: 27.25
+model: mlp | iter: 1250 | loss: 25.09
+model: mlp | iter: 1500 | loss: 24.01
+model: mlp | iter: 1750 | loss: 23.34
+model: mlp | iter: 2000 | loss: 22.97
+model: mlp | iter: 2250 | loss: 22.69
+model: mlp | iter: 2500 | loss: 22.52
+model: mlp | iter: 2750 | loss: 22.41
+model: mlp | iter: 3000 | loss: 22.34
+model: mlp | iter: 3250 | loss: 22.29
+model: mlp | iter: 3500 | loss: 22.25
+model: mlp | iter: 3750 | loss: 22.23
+model: mlp | iter: 4000 | loss: 22.21
+model: mlp | iter: 4250 | loss: 22.20
+model: mlp | iter: 4500 | loss: 22.18
+model: mlp | iter: 4750 | loss: 22.17
+training deep net... [9/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 28431.74 | apl: 1.00
+building surrogate dataset...
+training surrogate net... [9/12]
+model: mlp | iter: 0 | loss: 68.15
+model: mlp | iter: 250 | loss: 13.89
+model: mlp | iter: 500 | loss: 10.68
+model: mlp | iter: 750 | loss: 10.39
+model: mlp | iter: 1000 | loss: 10.30
+model: mlp | iter: 1250 | loss: 10.25
+model: mlp | iter: 1500 | loss: 10.22
+model: mlp | iter: 1750 | loss: 10.19
+model: mlp | iter: 2000 | loss: 10.18
+model: mlp | iter: 2250 | loss: 10.16
+model: mlp | iter: 2500 | loss: 10.14
+model: mlp | iter: 2750 | loss: 10.12
+model: mlp | iter: 3000 | loss: 10.10
+model: mlp | iter: 3250 | loss: 10.07
+model: mlp | iter: 3500 | loss: 10.02
+model: mlp | iter: 3750 | loss: 9.95
+model: mlp | iter: 4000 | loss: 9.84
+model: mlp | iter: 4250 | loss: 9.72
+model: mlp | iter: 4500 | loss: 9.62
+model: mlp | iter: 4750 | loss: 9.56
+training deep net... [10/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 25315.74 | apl: 6.94
+building surrogate dataset...
+training surrogate net... [10/12]
+model: mlp | iter: 0 | loss: 15.26
+model: mlp | iter: 250 | loss: 1.80
+model: mlp | iter: 500 | loss: 1.66
+model: mlp | iter: 750 | loss: 1.66
+model: mlp | iter: 1000 | loss: 1.66
+model: mlp | iter: 1250 | loss: 1.66
+model: mlp | iter: 1500 | loss: 1.66
+model: mlp | iter: 1750 | loss: 1.66
+model: mlp | iter: 2000 | loss: 1.66
+model: mlp | iter: 2250 | loss: 1.66
+model: mlp | iter: 2500 | loss: 1.66
+model: mlp | iter: 2750 | loss: 1.66
+model: mlp | iter: 3000 | loss: 1.66
+model: mlp | iter: 3250 | loss: 1.66
+model: mlp | iter: 3500 | loss: 1.66
+model: mlp | iter: 3750 | loss: 1.66
+model: mlp | iter: 4000 | loss: 1.66
+model: mlp | iter: 4250 | loss: 1.66
+model: mlp | iter: 4500 | loss: 1.66
+model: mlp | iter: 4750 | loss: 1.66
+training deep net... [11/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 24036.34 | apl: 1.00
+building surrogate dataset...
+training surrogate net... [11/12]
+model: mlp | iter: 0 | loss: 13.79
+model: mlp | iter: 250 | loss: 0.18
+model: mlp | iter: 500 | loss: 0.10
+model: mlp | iter: 750 | loss: 0.10
+model: mlp | iter: 1000 | loss: 0.10
+model: mlp | iter: 1250 | loss: 0.10
+model: mlp | iter: 1500 | loss: 0.10
+model: mlp | iter: 1750 | loss: 0.10
+model: mlp | iter: 2000 | loss: 0.10
+model: mlp | iter: 2250 | loss: 0.10
+model: mlp | iter: 2500 | loss: 0.10
+model: mlp | iter: 2750 | loss: 0.10
+model: mlp | iter: 3000 | loss: 0.10
+model: mlp | iter: 3250 | loss: 0.10
+model: mlp | iter: 3500 | loss: 0.10
+model: mlp | iter: 3750 | loss: 0.10
+model: mlp | iter: 4000 | loss: 0.10
+model: mlp | iter: 4250 | loss: 0.10
+model: mlp | iter: 4500 | loss: 0.10
+model: mlp | iter: 4750 | loss: 0.10
+training deep net... [12/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 20993.42 | apl: 1.00
+building surrogate dataset...
+training surrogate net... [12/12]
+model: mlp | iter: 0 | loss: 13.67
+model: mlp | iter: 250 | loss: 0.18
+model: mlp | iter: 500 | loss: 0.10
+model: mlp | iter: 750 | loss: 0.10
+model: mlp | iter: 1000 | loss: 0.10
+model: mlp | iter: 1250 | loss: 0.10
+model: mlp | iter: 1500 | loss: 0.10
+model: mlp | iter: 1750 | loss: 0.10
+model: mlp | iter: 2000 | loss: 0.10
+model: mlp | iter: 2250 | loss: 0.10
+model: mlp | iter: 2500 | loss: 0.10
+model: mlp | iter: 2750 | loss: 0.10
+model: mlp | iter: 3000 | loss: 0.10
+model: mlp | iter: 3250 | loss: 0.10
+model: mlp | iter: 3500 | loss: 0.10
+model: mlp | iter: 3750 | loss: 0.10
+model: mlp | iter: 4000 | loss: 0.10
+model: mlp | iter: 4250 | loss: 0.10
+model: mlp | iter: 4500 | loss: 0.10
+model: mlp | iter: 4750 | loss: 0.10
+saved visualize pdf and model to ./trained_models
+start train
+training deep net... [1/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 93018.29 | apl: 2363.86
+building surrogate dataset...
+training surrogate net... [1/12]
+model: mlp | iter: 0 | loss: 7422797.47
+model: mlp | iter: 250 | loss: 7377924.57
+model: mlp | iter: 500 | loss: 7341461.12
+model: mlp | iter: 750 | loss: 7305809.23
+model: mlp | iter: 1000 | loss: 7270538.88
+model: mlp | iter: 1250 | loss: 7235519.08
+model: mlp | iter: 1500 | loss: 7200691.17
+model: mlp | iter: 1750 | loss: 7166023.16
+model: mlp | iter: 2000 | loss: 7131495.27
+model: mlp | iter: 2250 | loss: 7097094.24
+model: mlp | iter: 2500 | loss: 7062810.66
+model: mlp | iter: 2750 | loss: 7028637.52
+model: mlp | iter: 3000 | loss: 6994569.49
+model: mlp | iter: 3250 | loss: 6960602.40
+model: mlp | iter: 3500 | loss: 6926732.94
+model: mlp | iter: 3750 | loss: 6892958.48
+model: mlp | iter: 4000 | loss: 6859276.88
+model: mlp | iter: 4250 | loss: 6825686.42
+model: mlp | iter: 4500 | loss: 6792185.69
+model: mlp | iter: 4750 | loss: 6758773.56
+training deep net... [2/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 100490.15 | apl: 2810.27
+building surrogate dataset...
+training surrogate net... [2/12]
+model: mlp | iter: 0 | loss: 6052280.73
+model: mlp | iter: 250 | loss: 6011951.12
+model: mlp | iter: 500 | loss: 5979321.84
+model: mlp | iter: 750 | loss: 5947373.43
+model: mlp | iter: 1000 | loss: 5915757.12
+model: mlp | iter: 1250 | loss: 5884365.79
+model: mlp | iter: 1500 | loss: 5853151.07
+model: mlp | iter: 1750 | loss: 5822086.32
+model: mlp | iter: 2000 | loss: 5791154.88
+model: mlp | iter: 2250 | loss: 5760345.47
+model: mlp | iter: 2500 | loss: 5729649.97
+model: mlp | iter: 2750 | loss: 5699062.28
+model: mlp | iter: 3000 | loss: 5668577.70
+model: mlp | iter: 3250 | loss: 5638192.53
+model: mlp | iter: 3500 | loss: 5607903.81
+model: mlp | iter: 3750 | loss: 5577709.15
+model: mlp | iter: 4000 | loss: 5547606.62
+model: mlp | iter: 4250 | loss: 5517594.63
+model: mlp | iter: 4500 | loss: 5487671.89
+model: mlp | iter: 4750 | loss: 5457837.35
+training deep net... [3/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 96863.97 | apl: 1893.30
+building surrogate dataset...
+training surrogate net... [3/12]
+model: mlp | iter: 0 | loss: 2602172.48
+model: mlp | iter: 250 | loss: 2574995.62
+model: mlp | iter: 500 | loss: 2553810.63
+model: mlp | iter: 750 | loss: 2533076.85
+model: mlp | iter: 1000 | loss: 2512586.89
+model: mlp | iter: 1250 | loss: 2492275.82
+model: mlp | iter: 1500 | loss: 2472113.58
+model: mlp | iter: 1750 | loss: 2452083.06
+model: mlp | iter: 2000 | loss: 2432173.22
+model: mlp | iter: 2250 | loss: 2412376.30
+model: mlp | iter: 2500 | loss: 2392686.51
+model: mlp | iter: 2750 | loss: 2373099.38
+model: mlp | iter: 3000 | loss: 2353611.37
+model: mlp | iter: 3250 | loss: 2334219.61
+model: mlp | iter: 3500 | loss: 2314921.76
+model: mlp | iter: 3750 | loss: 2295715.90
+model: mlp | iter: 4000 | loss: 2276600.44
+model: mlp | iter: 4250 | loss: 2257574.07
+model: mlp | iter: 4500 | loss: 2238635.70
+model: mlp | iter: 4750 | loss: 2219784.42
+training deep net... [4/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 92463.23 | apl: 1257.09
+building surrogate dataset...
+training surrogate net... [4/12]
+model: mlp | iter: 0 | loss: 1200097.62
+model: mlp | iter: 250 | loss: 1183124.40
+model: mlp | iter: 500 | loss: 1168724.48
+model: mlp | iter: 750 | loss: 1154695.06
+model: mlp | iter: 1000 | loss: 1140877.74
+model: mlp | iter: 1250 | loss: 1127222.35
+model: mlp | iter: 1500 | loss: 1113705.27
+model: mlp | iter: 1750 | loss: 1100312.78
+model: mlp | iter: 2000 | loss: 1087035.84
+model: mlp | iter: 2250 | loss: 1073867.92
+model: mlp | iter: 2500 | loss: 1060804.08
+model: mlp | iter: 2750 | loss: 1047840.44
+model: mlp | iter: 3000 | loss: 1034973.87
+model: mlp | iter: 3250 | loss: 1022201.79
+model: mlp | iter: 3500 | loss: 1009522.09
+model: mlp | iter: 3750 | loss: 996933.03
+model: mlp | iter: 4000 | loss: 984433.13
+model: mlp | iter: 4250 | loss: 972021.19
+model: mlp | iter: 4500 | loss: 959696.18
+model: mlp | iter: 4750 | loss: 947457.26
+training deep net... [5/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 87541.65 | apl: 793.59
+building surrogate dataset...
+training surrogate net... [5/12]
+model: mlp | iter: 0 | loss: 584551.18
+model: mlp | iter: 250 | loss: 571517.33
+model: mlp | iter: 500 | loss: 561647.32
+model: mlp | iter: 750 | loss: 552040.98
+model: mlp | iter: 1000 | loss: 542605.37
+model: mlp | iter: 1250 | loss: 533309.82
+model: mlp | iter: 1500 | loss: 524139.12
+model: mlp | iter: 1750 | loss: 515083.90
+model: mlp | iter: 2000 | loss: 506137.65
+model: mlp | iter: 2250 | loss: 497295.43
+model: mlp | iter: 2500 | loss: 488553.37
+model: mlp | iter: 2750 | loss: 479908.28
+model: mlp | iter: 3000 | loss: 471357.56
+model: mlp | iter: 3250 | loss: 462899.00
+model: mlp | iter: 3500 | loss: 454530.77
+model: mlp | iter: 3750 | loss: 446251.31
+model: mlp | iter: 4000 | loss: 438059.32
+model: mlp | iter: 4250 | loss: 429953.68
+model: mlp | iter: 4500 | loss: 421933.46
+model: mlp | iter: 4750 | loss: 413997.89
+training deep net... [6/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 82666.24 | apl: 545.10
+building surrogate dataset...
+training surrogate net... [6/12]
+model: mlp | iter: 0 | loss: 235605.79
+model: mlp | iter: 250 | loss: 227724.66
+model: mlp | iter: 500 | loss: 221494.12
+model: mlp | iter: 750 | loss: 215480.98
+model: mlp | iter: 1000 | loss: 209619.74
+model: mlp | iter: 1250 | loss: 203887.91
+model: mlp | iter: 1500 | loss: 198273.73
+model: mlp | iter: 1750 | loss: 192769.62
+model: mlp | iter: 2000 | loss: 187370.07
+model: mlp | iter: 2250 | loss: 182070.76
+model: mlp | iter: 2500 | loss: 176868.20
+model: mlp | iter: 2750 | loss: 171759.49
+model: mlp | iter: 3000 | loss: 166742.18
+model: mlp | iter: 3250 | loss: 161814.21
+model: mlp | iter: 3500 | loss: 156973.81
+model: mlp | iter: 3750 | loss: 152219.48
+model: mlp | iter: 4000 | loss: 147549.95
+model: mlp | iter: 4250 | loss: 142964.13
+model: mlp | iter: 4500 | loss: 138461.07
+model: mlp | iter: 4750 | loss: 134039.98
+training deep net... [7/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 77949.48 | apl: 348.20
+building surrogate dataset...
+training surrogate net... [7/12]
+model: mlp | iter: 0 | loss: 99645.77
+model: mlp | iter: 250 | loss: 94550.14
+model: mlp | iter: 500 | loss: 90589.19
+model: mlp | iter: 750 | loss: 86804.90
+model: mlp | iter: 1000 | loss: 83155.57
+model: mlp | iter: 1250 | loss: 79625.59
+model: mlp | iter: 1500 | loss: 76206.06
+model: mlp | iter: 1750 | loss: 72890.78
+model: mlp | iter: 2000 | loss: 69674.95
+model: mlp | iter: 2250 | loss: 66554.67
+model: mlp | iter: 2500 | loss: 63526.67
+model: mlp | iter: 2750 | loss: 60588.17
+model: mlp | iter: 3000 | loss: 57736.78
+model: mlp | iter: 3250 | loss: 54970.44
+model: mlp | iter: 3500 | loss: 52287.36
+model: mlp | iter: 3750 | loss: 49685.98
+model: mlp | iter: 4000 | loss: 47164.95
+model: mlp | iter: 4250 | loss: 44723.08
+model: mlp | iter: 4500 | loss: 42359.31
+model: mlp | iter: 4750 | loss: 40072.71
+training deep net... [8/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 73683.08 | apl: 223.50
+building surrogate dataset...
+training surrogate net... [8/12]
+model: mlp | iter: 0 | loss: 39860.70
+model: mlp | iter: 250 | loss: 36708.46
+model: mlp | iter: 500 | loss: 34269.87
+model: mlp | iter: 750 | loss: 31987.03
+model: mlp | iter: 1000 | loss: 29828.90
+model: mlp | iter: 1250 | loss: 27782.60
+model: mlp | iter: 1500 | loss: 25840.08
+model: mlp | iter: 1750 | loss: 23995.38
+model: mlp | iter: 2000 | loss: 22243.67
+model: mlp | iter: 2250 | loss: 20580.89
+model: mlp | iter: 2500 | loss: 19003.54
+model: mlp | iter: 2750 | loss: 17508.58
+model: mlp | iter: 3000 | loss: 16093.31
+model: mlp | iter: 3250 | loss: 14755.32
+model: mlp | iter: 3500 | loss: 13492.46
+model: mlp | iter: 3750 | loss: 12302.74
+model: mlp | iter: 4000 | loss: 11184.34
+model: mlp | iter: 4250 | loss: 10135.55
+model: mlp | iter: 4500 | loss: 9154.75
+model: mlp | iter: 4750 | loss: 8240.38
+training deep net... [9/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 69749.10 | apl: 147.91
+building surrogate dataset...
+training surrogate net... [9/12]
+model: mlp | iter: 0 | loss: 16752.66
+model: mlp | iter: 250 | loss: 14781.71
+model: mlp | iter: 500 | loss: 13277.27
+model: mlp | iter: 750 | loss: 11911.63
+model: mlp | iter: 1000 | loss: 10660.82
+model: mlp | iter: 1250 | loss: 9513.26
+model: mlp | iter: 1500 | loss: 8460.86
+model: mlp | iter: 1750 | loss: 7497.16
+model: mlp | iter: 2000 | loss: 6616.68
+model: mlp | iter: 2250 | loss: 5814.59
+model: mlp | iter: 2500 | loss: 5086.58
+model: mlp | iter: 2750 | loss: 4428.69
+model: mlp | iter: 3000 | loss: 3837.24
+model: mlp | iter: 3250 | loss: 3308.74
+model: mlp | iter: 3500 | loss: 2839.82
+model: mlp | iter: 3750 | loss: 2427.20
+model: mlp | iter: 4000 | loss: 2067.59
+model: mlp | iter: 4250 | loss: 1757.66
+model: mlp | iter: 4500 | loss: 1494.00
+model: mlp | iter: 4750 | loss: 1273.11
+training deep net... [10/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 65906.66 | apl: 81.39
+building surrogate dataset...
+training surrogate net... [10/12]
+model: mlp | iter: 0 | loss: 7648.74
+model: mlp | iter: 250 | loss: 6349.56
+model: mlp | iter: 500 | loss: 5397.89
+model: mlp | iter: 750 | loss: 4570.62
+model: mlp | iter: 1000 | loss: 3847.85
+model: mlp | iter: 1250 | loss: 3217.91
+model: mlp | iter: 1500 | loss: 2671.70
+model: mlp | iter: 1750 | loss: 2201.39
+model: mlp | iter: 2000 | loss: 1800.02
+model: mlp | iter: 2250 | loss: 1461.16
+model: mlp | iter: 2500 | loss: 1178.80
+model: mlp | iter: 2750 | loss: 947.17
+model: mlp | iter: 3000 | loss: 760.68
+model: mlp | iter: 3250 | loss: 613.85
+model: mlp | iter: 3500 | loss: 501.28
+model: mlp | iter: 3750 | loss: 417.69
+model: mlp | iter: 4000 | loss: 357.93
+model: mlp | iter: 4250 | loss: 317.09
+model: mlp | iter: 4500 | loss: 290.64
+model: mlp | iter: 4750 | loss: 274.55
+training deep net... [11/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 61927.26 | apl: 61.49
+building surrogate dataset...
+training surrogate net... [11/12]
+model: mlp | iter: 0 | loss: 4991.99
+model: mlp | iter: 250 | loss: 3924.53
+model: mlp | iter: 500 | loss: 3226.13
+model: mlp | iter: 750 | loss: 2640.46
+model: mlp | iter: 1000 | loss: 2150.44
+model: mlp | iter: 1250 | loss: 1744.14
+model: mlp | iter: 1500 | loss: 1411.40
+model: mlp | iter: 1750 | loss: 1143.09
+model: mlp | iter: 2000 | loss: 930.81
+model: mlp | iter: 2250 | loss: 766.70
+model: mlp | iter: 2500 | loss: 643.33
+model: mlp | iter: 2750 | loss: 553.65
+model: mlp | iter: 3000 | loss: 491.07
+model: mlp | iter: 3250 | loss: 449.46
+model: mlp | iter: 3500 | loss: 423.35
+model: mlp | iter: 3750 | loss: 408.05
+model: mlp | iter: 4000 | loss: 399.77
+model: mlp | iter: 4250 | loss: 395.66
+model: mlp | iter: 4500 | loss: 393.81
+model: mlp | iter: 4750 | loss: 363.59
+training deep net... [12/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 58515.79 | apl: 36.29
+building surrogate dataset...
+training surrogate net... [12/12]
+model: mlp | iter: 0 | loss: 2415.10
+model: mlp | iter: 250 | loss: 1693.65
+model: mlp | iter: 500 | loss: 1242.00
+model: mlp | iter: 750 | loss: 895.08
+model: mlp | iter: 1000 | loss: 632.32
+model: mlp | iter: 1250 | loss: 438.33
+model: mlp | iter: 1500 | loss: 299.80
+model: mlp | iter: 1750 | loss: 204.89
+model: mlp | iter: 2000 | loss: 143.12
+model: mlp | iter: 2250 | loss: 105.33
+model: mlp | iter: 2500 | loss: 83.86
+model: mlp | iter: 2750 | loss: 72.69
+model: mlp | iter: 3000 | loss: 67.42
+model: mlp | iter: 3250 | loss: 65.17
+model: mlp | iter: 3500 | loss: 64.30
+model: mlp | iter: 3750 | loss: 63.96
+model: mlp | iter: 4000 | loss: 63.80
+model: mlp | iter: 4250 | loss: 59.51
+model: mlp | iter: 4500 | loss: 58.38
+model: mlp | iter: 4750 | loss: 57.80
+saved visualize pdf and model to ./trained_models
+start train
+training deep net... [1/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 89138.57 | apl: 2168.80
+building surrogate dataset...
+training surrogate net... [1/12]
+model: mlp | iter: 0 | loss: 2702742.18
+model: mlp | iter: 250 | loss: 2676136.37
+model: mlp | iter: 500 | loss: 2654567.61
+model: mlp | iter: 750 | loss: 2633529.17
+model: mlp | iter: 1000 | loss: 2612764.02
+model: mlp | iter: 1250 | loss: 2592192.87
+model: mlp | iter: 1500 | loss: 2571779.48
+model: mlp | iter: 1750 | loss: 2551503.60
+model: mlp | iter: 2000 | loss: 2531352.33
+model: mlp | iter: 2250 | loss: 2511316.74
+model: mlp | iter: 2500 | loss: 2491390.29
+model: mlp | iter: 2750 | loss: 2471567.98
+model: mlp | iter: 3000 | loss: 2451845.90
+model: mlp | iter: 3250 | loss: 2432220.91
+model: mlp | iter: 3500 | loss: 2412690.47
+model: mlp | iter: 3750 | loss: 2393252.52
+model: mlp | iter: 4000 | loss: 2373905.34
+model: mlp | iter: 4250 | loss: 2354647.56
+model: mlp | iter: 4500 | loss: 2335478.01
+model: mlp | iter: 4750 | loss: 2316395.75
+training deep net... [2/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 93980.62 | apl: 1055.60
+building surrogate dataset...
+training surrogate net... [2/12]
+model: mlp | iter: 0 | loss: 602070.64
+model: mlp | iter: 250 | loss: 589685.97
+model: mlp | iter: 500 | loss: 579740.63
+model: mlp | iter: 750 | loss: 570085.13
+model: mlp | iter: 1000 | loss: 560610.15
+model: mlp | iter: 1250 | loss: 551280.25
+model: mlp | iter: 1500 | loss: 542078.18
+model: mlp | iter: 1750 | loss: 532993.53
+model: mlp | iter: 2000 | loss: 524019.15
+model: mlp | iter: 2250 | loss: 515149.73
+model: mlp | iter: 2500 | loss: 506381.12
+model: mlp | iter: 2750 | loss: 497710.00
+model: mlp | iter: 3000 | loss: 489133.59
+model: mlp | iter: 3250 | loss: 480649.64
+model: mlp | iter: 3500 | loss: 472256.22
+model: mlp | iter: 3750 | loss: 463951.74
+model: mlp | iter: 4000 | loss: 455734.85
+model: mlp | iter: 4250 | loss: 447604.41
+model: mlp | iter: 4500 | loss: 439559.48
+model: mlp | iter: 4750 | loss: 431599.25
+training deep net... [3/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 87569.06 | apl: 505.46
+building surrogate dataset...
+training surrogate net... [3/12]
+model: mlp | iter: 0 | loss: 161241.57
+model: mlp | iter: 250 | loss: 154534.45
+model: mlp | iter: 500 | loss: 149407.95
+model: mlp | iter: 750 | loss: 144481.93
+model: mlp | iter: 1000 | loss: 139700.77
+model: mlp | iter: 1250 | loss: 135044.87
+model: mlp | iter: 1500 | loss: 130503.69
+model: mlp | iter: 1750 | loss: 126070.23
+model: mlp | iter: 2000 | loss: 121739.29
+model: mlp | iter: 2250 | loss: 117506.76
+model: mlp | iter: 2500 | loss: 113369.25
+model: mlp | iter: 2750 | loss: 109323.92
+model: mlp | iter: 3000 | loss: 105368.38
+model: mlp | iter: 3250 | loss: 101500.58
+model: mlp | iter: 3500 | loss: 97718.75
+model: mlp | iter: 3750 | loss: 94021.40
+model: mlp | iter: 4000 | loss: 90407.23
+model: mlp | iter: 4250 | loss: 86875.12
+model: mlp | iter: 4500 | loss: 83424.12
+model: mlp | iter: 4750 | loss: 80053.37
+training deep net... [4/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 80433.77 | apl: 302.69
+building surrogate dataset...
+training surrogate net... [4/12]
+model: mlp | iter: 0 | loss: 63127.50
+model: mlp | iter: 250 | loss: 59305.30
+model: mlp | iter: 500 | loss: 56169.00
+model: mlp | iter: 750 | loss: 53205.83
+model: mlp | iter: 1000 | loss: 50375.21
+model: mlp | iter: 1250 | loss: 47661.73
+model: mlp | iter: 1500 | loss: 45056.47
+model: mlp | iter: 1750 | loss: 42553.09
+model: mlp | iter: 2000 | loss: 40146.67
+model: mlp | iter: 2250 | loss: 37833.16
+model: mlp | iter: 2500 | loss: 35609.17
+model: mlp | iter: 2750 | loss: 33471.78
+model: mlp | iter: 3000 | loss: 31418.47
+model: mlp | iter: 3250 | loss: 29447.03
+model: mlp | iter: 3500 | loss: 27555.56
+model: mlp | iter: 3750 | loss: 25742.33
+model: mlp | iter: 4000 | loss: 24005.83
+model: mlp | iter: 4250 | loss: 22344.68
+model: mlp | iter: 4500 | loss: 20757.64
+model: mlp | iter: 4750 | loss: 19243.57
+training deep net... [5/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 72893.22 | apl: 173.77
+building surrogate dataset...
+training surrogate net... [5/12]
+model: mlp | iter: 0 | loss: 15697.72
+model: mlp | iter: 250 | loss: 13668.62
+model: mlp | iter: 500 | loss: 12240.34
+model: mlp | iter: 750 | loss: 10946.24
+model: mlp | iter: 1000 | loss: 9764.74
+model: mlp | iter: 1250 | loss: 8684.90
+model: mlp | iter: 1500 | loss: 7698.87
+model: mlp | iter: 1750 | loss: 6800.23
+model: mlp | iter: 2000 | loss: 5983.46
+model: mlp | iter: 2250 | loss: 5243.68
+model: mlp | iter: 2500 | loss: 4576.43
+model: mlp | iter: 2750 | loss: 3977.65
+model: mlp | iter: 3000 | loss: 3443.51
+model: mlp | iter: 3250 | loss: 2970.34
+model: mlp | iter: 3500 | loss: 2554.61
+model: mlp | iter: 3750 | loss: 2192.81
+model: mlp | iter: 4000 | loss: 1881.44
+model: mlp | iter: 4250 | loss: 1616.93
+model: mlp | iter: 4500 | loss: 1395.63
+model: mlp | iter: 4750 | loss: 1213.77
+training deep net... [6/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 64850.08 | apl: 86.43
+building surrogate dataset...
+training surrogate net... [6/12]
+model: mlp | iter: 0 | loss: 6184.21
+model: mlp | iter: 250 | loss: 5027.03
+model: mlp | iter: 500 | loss: 4219.15
+model: mlp | iter: 750 | loss: 3531.56
+model: mlp | iter: 1000 | loss: 2944.64
+model: mlp | iter: 1250 | loss: 2446.20
+model: mlp | iter: 1500 | loss: 2026.41
+model: mlp | iter: 1750 | loss: 1676.69
+model: mlp | iter: 2000 | loss: 1389.25
+model: mlp | iter: 2250 | loss: 1156.88
+model: mlp | iter: 2500 | loss: 972.73
+model: mlp | iter: 2750 | loss: 830.27
+model: mlp | iter: 3000 | loss: 723.19
+model: mlp | iter: 3250 | loss: 645.46
+model: mlp | iter: 3500 | loss: 591.32
+model: mlp | iter: 3750 | loss: 555.43
+model: mlp | iter: 4000 | loss: 532.99
+model: mlp | iter: 4250 | loss: 519.89
+model: mlp | iter: 4500 | loss: 512.83
+model: mlp | iter: 4750 | loss: 509.34
+training deep net... [7/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 56917.46 | apl: 114.66
+building surrogate dataset...
+training surrogate net... [7/12]
+model: mlp | iter: 0 | loss: 8740.59
+model: mlp | iter: 250 | loss: 7280.59
+model: mlp | iter: 500 | loss: 6238.03
+model: mlp | iter: 750 | loss: 5322.05
+model: mlp | iter: 1000 | loss: 4512.53
+model: mlp | iter: 1250 | loss: 3798.08
+model: mlp | iter: 1500 | loss: 3169.93
+model: mlp | iter: 1750 | loss: 2620.67
+model: mlp | iter: 2000 | loss: 2143.69
+model: mlp | iter: 2250 | loss: 1733.00
+model: mlp | iter: 2500 | loss: 1382.96
+model: mlp | iter: 2750 | loss: 1088.27
+model: mlp | iter: 3000 | loss: 843.75
+model: mlp | iter: 3250 | loss: 644.35
+model: mlp | iter: 3500 | loss: 485.06
+model: mlp | iter: 3750 | loss: 360.90
+model: mlp | iter: 4000 | loss: 266.89
+model: mlp | iter: 4250 | loss: 198.15
+model: mlp | iter: 4500 | loss: 149.92
+model: mlp | iter: 4750 | loss: 117.69
+training deep net... [8/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 53650.09 | apl: 88.74
+building surrogate dataset...
+training surrogate net... [8/12]
+model: mlp | iter: 0 | loss: 7481.14
+model: mlp | iter: 250 | loss: 6153.92
+model: mlp | iter: 500 | loss: 5198.68
+model: mlp | iter: 750 | loss: 4369.81
+model: mlp | iter: 1000 | loss: 3646.10
+model: mlp | iter: 1250 | loss: 3015.55
+model: mlp | iter: 1500 | loss: 2468.90
+model: mlp | iter: 1750 | loss: 1998.29
+model: mlp | iter: 2000 | loss: 1596.69
+model: mlp | iter: 2250 | loss: 1257.68
+model: mlp | iter: 2500 | loss: 975.21
+model: mlp | iter: 2750 | loss: 743.50
+model: mlp | iter: 3000 | loss: 556.96
+model: mlp | iter: 3250 | loss: 410.09
+model: mlp | iter: 3500 | loss: 297.49
+model: mlp | iter: 3750 | loss: 213.88
+model: mlp | iter: 4000 | loss: 154.10
+model: mlp | iter: 4250 | loss: 113.25
+model: mlp | iter: 4500 | loss: 86.78
+model: mlp | iter: 4750 | loss: 70.67
+training deep net... [9/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 50212.15 | apl: 81.98
+building surrogate dataset...
+training surrogate net... [9/12]
+model: mlp | iter: 0 | loss: 9962.91
+model: mlp | iter: 250 | loss: 8451.73
+model: mlp | iter: 500 | loss: 7336.33
+model: mlp | iter: 750 | loss: 6353.64
+model: mlp | iter: 1000 | loss: 5480.36
+model: mlp | iter: 1250 | loss: 4704.33
+model: mlp | iter: 1500 | loss: 4016.63
+model: mlp | iter: 1750 | loss: 3409.87
+model: mlp | iter: 2000 | loss: 2877.62
+model: mlp | iter: 2250 | loss: 2414.05
+model: mlp | iter: 2500 | loss: 2013.79
+model: mlp | iter: 2750 | loss: 1671.75
+model: mlp | iter: 3000 | loss: 1383.04
+model: mlp | iter: 3250 | loss: 1142.88
+model: mlp | iter: 3500 | loss: 946.55
+model: mlp | iter: 3750 | loss: 789.30
+model: mlp | iter: 4000 | loss: 666.40
+model: mlp | iter: 4250 | loss: 573.09
+model: mlp | iter: 4500 | loss: 504.64
+model: mlp | iter: 4750 | loss: 456.45
+training deep net... [10/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 49016.11 | apl: 120.05
+building surrogate dataset...
+training surrogate net... [10/12]
+model: mlp | iter: 0 | loss: 11609.29
+model: mlp | iter: 250 | loss: 9959.42
+model: mlp | iter: 500 | loss: 8724.91
+model: mlp | iter: 750 | loss: 7623.21
+model: mlp | iter: 1000 | loss: 6632.19
+model: mlp | iter: 1250 | loss: 5740.30
+model: mlp | iter: 1500 | loss: 4939.11
+model: mlp | iter: 1750 | loss: 4221.69
+model: mlp | iter: 2000 | loss: 3582.02
+model: mlp | iter: 2250 | loss: 3014.71
+model: mlp | iter: 2500 | loss: 2514.82
+model: mlp | iter: 2750 | loss: 2077.72
+model: mlp | iter: 3000 | loss: 1699.02
+model: mlp | iter: 3250 | loss: 1374.43
+model: mlp | iter: 3500 | loss: 1099.73
+model: mlp | iter: 3750 | loss: 870.73
+model: mlp | iter: 4000 | loss: 683.16
+model: mlp | iter: 4250 | loss: 532.71
+model: mlp | iter: 4500 | loss: 414.98
+model: mlp | iter: 4750 | loss: 325.51
+training deep net... [11/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 48426.10 | apl: 123.90
+building surrogate dataset...
+training surrogate net... [11/12]
+model: mlp | iter: 0 | loss: 14799.97
+model: mlp | iter: 250 | loss: 12789.99
+model: mlp | iter: 500 | loss: 11391.31
+model: mlp | iter: 750 | loss: 10123.92
+model: mlp | iter: 1000 | loss: 8967.86
+model: mlp | iter: 1250 | loss: 7912.64
+model: mlp | iter: 1500 | loss: 6950.56
+model: mlp | iter: 1750 | loss: 6075.28
+model: mlp | iter: 2000 | loss: 5281.31
+model: mlp | iter: 2250 | loss: 4563.72
+model: mlp | iter: 2500 | loss: 3918.07
+model: mlp | iter: 2750 | loss: 3340.23
+model: mlp | iter: 3000 | loss: 2826.31
+model: mlp | iter: 3250 | loss: 2372.59
+model: mlp | iter: 3500 | loss: 1975.48
+model: mlp | iter: 3750 | loss: 1631.39
+model: mlp | iter: 4000 | loss: 1336.73
+model: mlp | iter: 4250 | loss: 1087.85
+model: mlp | iter: 4500 | loss: 881.01
+model: mlp | iter: 4750 | loss: 712.34
+training deep net... [12/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 48311.66 | apl: 142.95
+building surrogate dataset...
+training surrogate net... [12/12]
+model: mlp | iter: 0 | loss: 17598.75
+model: mlp | iter: 250 | loss: 15479.00
+model: mlp | iter: 500 | loss: 13924.33
+model: mlp | iter: 750 | loss: 12507.27
+model: mlp | iter: 1000 | loss: 11204.88
+model: mlp | iter: 1250 | loss: 10005.97
+model: mlp | iter: 1500 | loss: 8902.71
+model: mlp | iter: 1750 | loss: 7888.81
+model: mlp | iter: 2000 | loss: 6958.92
+model: mlp | iter: 2250 | loss: 6108.32
+model: mlp | iter: 2500 | loss: 5332.82
+model: mlp | iter: 2750 | loss: 4628.56
+model: mlp | iter: 3000 | loss: 3991.99
+model: mlp | iter: 3250 | loss: 3419.74
+model: mlp | iter: 3500 | loss: 2908.59
+model: mlp | iter: 3750 | loss: 2455.38
+model: mlp | iter: 4000 | loss: 2056.99
+model: mlp | iter: 4250 | loss: 1710.27
+model: mlp | iter: 4500 | loss: 1412.00
+model: mlp | iter: 4750 | loss: 1158.85
+saved visualize pdf and model to ./trained_models
+start train
+training deep net... [1/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 88855.34 | apl: 2154.95
+building surrogate dataset...
+training surrogate net... [1/12]
+model: mlp | iter: 0 | loss: 2603691.10
+model: mlp | iter: 250 | loss: 2577685.43
+model: mlp | iter: 500 | loss: 2556601.56
+model: mlp | iter: 750 | loss: 2536039.26
+model: mlp | iter: 1000 | loss: 2515746.87
+model: mlp | iter: 1250 | loss: 2495646.70
+model: mlp | iter: 1500 | loss: 2475703.22
+model: mlp | iter: 1750 | loss: 2455896.52
+model: mlp | iter: 2000 | loss: 2436213.94
+model: mlp | iter: 2250 | loss: 2416646.67
+model: mlp | iter: 2500 | loss: 2397188.27
+model: mlp | iter: 2750 | loss: 2377833.80
+model: mlp | iter: 3000 | loss: 2358579.39
+model: mlp | iter: 3250 | loss: 2339421.92
+model: mlp | iter: 3500 | loss: 2320358.90
+model: mlp | iter: 3750 | loss: 2301388.26
+model: mlp | iter: 4000 | loss: 2282508.33
+model: mlp | iter: 4250 | loss: 2263717.71
+model: mlp | iter: 4500 | loss: 2245015.26
+model: mlp | iter: 4750 | loss: 2226400.04
+training deep net... [2/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 93028.56 | apl: 1026.70
+building surrogate dataset...
+training surrogate net... [2/12]
+model: mlp | iter: 0 | loss: 459528.12
+model: mlp | iter: 250 | loss: 448839.25
+model: mlp | iter: 500 | loss: 440274.74
+model: mlp | iter: 750 | loss: 431976.76
+model: mlp | iter: 1000 | loss: 423850.08
+model: mlp | iter: 1250 | loss: 415863.47
+model: mlp | iter: 1500 | loss: 408001.46
+model: mlp | iter: 1750 | loss: 400254.58
+model: mlp | iter: 2000 | loss: 392616.22
+model: mlp | iter: 2250 | loss: 385081.39
+model: mlp | iter: 2500 | loss: 377646.17
+model: mlp | iter: 2750 | loss: 370307.37
+model: mlp | iter: 3000 | loss: 363062.35
+model: mlp | iter: 3250 | loss: 355908.90
+model: mlp | iter: 3500 | loss: 348845.16
+model: mlp | iter: 3750 | loss: 341869.57
+model: mlp | iter: 4000 | loss: 334980.81
+model: mlp | iter: 4250 | loss: 328177.77
+model: mlp | iter: 4500 | loss: 321459.51
+model: mlp | iter: 4750 | loss: 314825.24
+training deep net... [3/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 85645.39 | apl: 383.50
+building surrogate dataset...
+training surrogate net... [3/12]
+model: mlp | iter: 0 | loss: 79990.15
+model: mlp | iter: 250 | loss: 75328.83
+model: mlp | iter: 500 | loss: 71805.05
+model: mlp | iter: 750 | loss: 68455.44
+model: mlp | iter: 1000 | loss: 65239.30
+model: mlp | iter: 1250 | loss: 62141.29
+model: mlp | iter: 1500 | loss: 59152.52
+model: mlp | iter: 1750 | loss: 56266.80
+model: mlp | iter: 2000 | loss: 53479.28
+model: mlp | iter: 2250 | loss: 50786.04
+model: mlp | iter: 2500 | loss: 48183.75
+model: mlp | iter: 2750 | loss: 45669.60
+model: mlp | iter: 3000 | loss: 43241.15
+model: mlp | iter: 3250 | loss: 40896.29
+model: mlp | iter: 3500 | loss: 38633.16
+model: mlp | iter: 3750 | loss: 36450.16
+model: mlp | iter: 4000 | loss: 34345.86
+model: mlp | iter: 4250 | loss: 32319.00
+model: mlp | iter: 4500 | loss: 30368.43
+model: mlp | iter: 4750 | loss: 28493.13
+training deep net... [4/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 77283.57 | apl: 169.88
+building surrogate dataset...
+training surrogate net... [4/12]
+model: mlp | iter: 0 | loss: 28686.86
+model: mlp | iter: 250 | loss: 26115.63
+model: mlp | iter: 500 | loss: 24045.41
+model: mlp | iter: 750 | loss: 22127.65
+model: mlp | iter: 1000 | loss: 20332.32
+model: mlp | iter: 1250 | loss: 18646.65
+model: mlp | iter: 1500 | loss: 17062.49
+model: mlp | iter: 1750 | loss: 15573.63
+model: mlp | iter: 2000 | loss: 14175.04
+model: mlp | iter: 2250 | loss: 12862.40
+model: mlp | iter: 2500 | loss: 11632.01
+model: mlp | iter: 2750 | loss: 10480.56
+model: mlp | iter: 3000 | loss: 9405.12
+model: mlp | iter: 3250 | loss: 8403.01
+model: mlp | iter: 3500 | loss: 7471.78
+model: mlp | iter: 3750 | loss: 6609.14
+model: mlp | iter: 4000 | loss: 5812.91
+model: mlp | iter: 4250 | loss: 5080.99
+model: mlp | iter: 4500 | loss: 4411.32
+model: mlp | iter: 4750 | loss: 3801.86
+training deep net... [5/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 68254.37 | apl: 121.77
+building surrogate dataset...
+training surrogate net... [5/12]
+model: mlp | iter: 0 | loss: 10308.31
+model: mlp | iter: 250 | loss: 8688.11
+model: mlp | iter: 500 | loss: 7572.20
+model: mlp | iter: 750 | loss: 6583.76
+model: mlp | iter: 1000 | loss: 5702.85
+model: mlp | iter: 1250 | loss: 4918.40
+model: mlp | iter: 1500 | loss: 4221.97
+model: mlp | iter: 1750 | loss: 3606.45
+model: mlp | iter: 2000 | loss: 3065.55
+model: mlp | iter: 2250 | loss: 2593.57
+model: mlp | iter: 2500 | loss: 2185.19
+model: mlp | iter: 2750 | loss: 1835.41
+model: mlp | iter: 3000 | loss: 1539.40
+model: mlp | iter: 3250 | loss: 1292.43
+model: mlp | iter: 3500 | loss: 1089.83
+model: mlp | iter: 3750 | loss: 926.91
+model: mlp | iter: 4000 | loss: 798.97
+model: mlp | iter: 4250 | loss: 701.30
+model: mlp | iter: 4500 | loss: 629.19
+model: mlp | iter: 4750 | loss: 578.02
+training deep net... [6/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 58526.86 | apl: 55.14
+building surrogate dataset...
+training surrogate net... [6/12]
+model: mlp | iter: 0 | loss: 1800.22
+model: mlp | iter: 250 | loss: 1196.59
+model: mlp | iter: 500 | loss: 831.76
+model: mlp | iter: 750 | loss: 566.65
+model: mlp | iter: 1000 | loss: 378.78
+model: mlp | iter: 1250 | loss: 250.81
+model: mlp | iter: 1500 | loss: 167.99
+model: mlp | iter: 1750 | loss: 117.70
+model: mlp | iter: 2000 | loss: 89.44
+model: mlp | iter: 2250 | loss: 74.96
+model: mlp | iter: 2500 | loss: 68.27
+model: mlp | iter: 2750 | loss: 65.50
+model: mlp | iter: 3000 | loss: 64.43
+model: mlp | iter: 3250 | loss: 56.69
+model: mlp | iter: 3500 | loss: 54.97
+model: mlp | iter: 3750 | loss: 45.00
+model: mlp | iter: 4000 | loss: 42.10
+model: mlp | iter: 4250 | loss: 40.44
+model: mlp | iter: 4500 | loss: 39.29
+model: mlp | iter: 4750 | loss: 36.17
+training deep net... [7/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 46554.52 | apl: 24.42
+building surrogate dataset...
+training surrogate net... [7/12]
+model: mlp | iter: 0 | loss: 491.20
+model: mlp | iter: 250 | loss: 209.04
+model: mlp | iter: 500 | loss: 92.29
+model: mlp | iter: 750 | loss: 39.46
+model: mlp | iter: 1000 | loss: 19.55
+model: mlp | iter: 1250 | loss: 13.47
+model: mlp | iter: 1500 | loss: 11.89
+model: mlp | iter: 1750 | loss: 11.45
+model: mlp | iter: 2000 | loss: 11.28
+model: mlp | iter: 2250 | loss: 11.19
+model: mlp | iter: 2500 | loss: 11.12
+model: mlp | iter: 2750 | loss: 11.07
+model: mlp | iter: 3000 | loss: 11.03
+model: mlp | iter: 3250 | loss: 10.98
+model: mlp | iter: 3500 | loss: 10.82
+model: mlp | iter: 3750 | loss: 10.75
+model: mlp | iter: 4000 | loss: 10.69
+model: mlp | iter: 4250 | loss: 10.55
+model: mlp | iter: 4500 | loss: 10.48
+model: mlp | iter: 4750 | loss: 10.42
+training deep net... [8/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 39573.87 | apl: 8.76
+building surrogate dataset...
+training surrogate net... [8/12]
+model: mlp | iter: 0 | loss: 142.77
+model: mlp | iter: 250 | loss: 38.41
+model: mlp | iter: 500 | loss: 23.72
+model: mlp | iter: 750 | loss: 22.08
+model: mlp | iter: 1000 | loss: 21.77
+model: mlp | iter: 1250 | loss: 21.64
+model: mlp | iter: 1500 | loss: 21.56
+model: mlp | iter: 1750 | loss: 21.51
+model: mlp | iter: 2000 | loss: 21.47
+model: mlp | iter: 2250 | loss: 21.44
+model: mlp | iter: 2500 | loss: 21.41
+model: mlp | iter: 2750 | loss: 21.39
+model: mlp | iter: 3000 | loss: 21.38
+model: mlp | iter: 3250 | loss: 21.36
+model: mlp | iter: 3500 | loss: 21.36
+model: mlp | iter: 3750 | loss: 21.35
+model: mlp | iter: 4000 | loss: 21.34
+model: mlp | iter: 4250 | loss: 21.34
+model: mlp | iter: 4500 | loss: 21.34
+model: mlp | iter: 4750 | loss: 21.34
+training deep net... [9/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 33905.46 | apl: 8.31
+building surrogate dataset...
+training surrogate net... [9/12]
+model: mlp | iter: 0 | loss: 233.91
+model: mlp | iter: 250 | loss: 77.51
+model: mlp | iter: 500 | loss: 38.57
+model: mlp | iter: 750 | loss: 30.64
+model: mlp | iter: 1000 | loss: 29.20
+model: mlp | iter: 1250 | loss: 28.61
+model: mlp | iter: 1500 | loss: 27.84
+model: mlp | iter: 1750 | loss: 27.19
+model: mlp | iter: 2000 | loss: 26.37
+model: mlp | iter: 2250 | loss: 25.83
+model: mlp | iter: 2500 | loss: 25.45
+model: mlp | iter: 2750 | loss: 25.08
+model: mlp | iter: 3000 | loss: 24.88
+model: mlp | iter: 3250 | loss: 24.73
+model: mlp | iter: 3500 | loss: 24.61
+model: mlp | iter: 3750 | loss: 24.51
+model: mlp | iter: 4000 | loss: 24.45
+model: mlp | iter: 4250 | loss: 24.40
+model: mlp | iter: 4500 | loss: 24.36
+model: mlp | iter: 4750 | loss: 24.34
+training deep net... [10/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 31217.17 | apl: 15.17
+building surrogate dataset...
+training surrogate net... [10/12]
+model: mlp | iter: 0 | loss: 274.90
+model: mlp | iter: 250 | loss: 137.41
+model: mlp | iter: 500 | loss: 107.60
+model: mlp | iter: 750 | loss: 99.62
+model: mlp | iter: 1000 | loss: 89.08
+model: mlp | iter: 1250 | loss: 77.15
+model: mlp | iter: 1500 | loss: 67.11
+model: mlp | iter: 1750 | loss: 59.98
+model: mlp | iter: 2000 | loss: 55.69
+model: mlp | iter: 2250 | loss: 52.69
+model: mlp | iter: 2500 | loss: 50.52
+model: mlp | iter: 2750 | loss: 48.93
+model: mlp | iter: 3000 | loss: 47.73
+model: mlp | iter: 3250 | loss: 46.81
+model: mlp | iter: 3500 | loss: 46.10
+model: mlp | iter: 3750 | loss: 45.54
+model: mlp | iter: 4000 | loss: 45.09
+model: mlp | iter: 4250 | loss: 44.73
+model: mlp | iter: 4500 | loss: 44.43
+model: mlp | iter: 4750 | loss: 44.18
+training deep net... [11/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 31300.80 | apl: 33.72
+building surrogate dataset...
+training surrogate net... [11/12]
+model: mlp | iter: 0 | loss: 190.28
+model: mlp | iter: 250 | loss: 92.72
+model: mlp | iter: 500 | loss: 81.39
+model: mlp | iter: 750 | loss: 70.92
+model: mlp | iter: 1000 | loss: 57.10
+model: mlp | iter: 1250 | loss: 49.69
+model: mlp | iter: 1500 | loss: 44.96
+model: mlp | iter: 1750 | loss: 41.79
+model: mlp | iter: 2000 | loss: 39.58
+model: mlp | iter: 2250 | loss: 37.98
+model: mlp | iter: 2500 | loss: 36.78
+model: mlp | iter: 2750 | loss: 35.87
+model: mlp | iter: 3000 | loss: 35.16
+model: mlp | iter: 3250 | loss: 34.59
+model: mlp | iter: 3500 | loss: 34.13
+model: mlp | iter: 3750 | loss: 33.76
+model: mlp | iter: 4000 | loss: 33.46
+model: mlp | iter: 4250 | loss: 33.21
+model: mlp | iter: 4500 | loss: 33.01
+model: mlp | iter: 4750 | loss: 32.85
+training deep net... [12/12], learning rate: 0.0010
+model: gru | iter: 0 | loss: 28531.83 | apl: 5.92
+building surrogate dataset...
+training surrogate net... [12/12]
+model: mlp | iter: 0 | loss: 76.77
+model: mlp | iter: 250 | loss: 12.52
+model: mlp | iter: 500 | loss: 7.93
+model: mlp | iter: 750 | loss: 7.53
+model: mlp | iter: 1000 | loss: 7.44
+model: mlp | iter: 1250 | loss: 7.40
+model: mlp | iter: 1500 | loss: 7.39
+model: mlp | iter: 1750 | loss: 7.37
+model: mlp | iter: 2000 | loss: 7.37
+model: mlp | iter: 2250 | loss: 7.37
+model: mlp | iter: 2500 | loss: 7.36
+model: mlp | iter: 2750 | loss: 7.36
+model: mlp | iter: 3000 | loss: 7.36
+model: mlp | iter: 3250 | loss: 7.36
+model: mlp | iter: 3500 | loss: 7.36
+model: mlp | iter: 3750 | loss: 7.36
+model: mlp | iter: 4000 | loss: 7.36
+model: mlp | iter: 4250 | loss: 7.36
+model: mlp | iter: 4500 | loss: 7.36
+model: mlp | iter: 4750 | loss: 7.36
+saved visualize pdf and model to ./trained_models

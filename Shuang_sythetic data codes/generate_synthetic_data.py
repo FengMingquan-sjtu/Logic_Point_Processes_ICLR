@@ -18,7 +18,7 @@ class Logic_Model_Generator:
         self.BEFORE = 'BEFORE'
         self.EQUAL = 'EQUAL'
         self.AFTER = 'AFTER'
-        self.Time_tolerance = 0.3
+        self.Time_tolerance = 0.1
         self.body_predicate_set = [0, 1, 2] # the index set of all body predicates
         self.head_predicate_set = [3, 4] # the index set of all head predicates
         self.decay_rate = 1 # decay kernel
@@ -56,7 +56,7 @@ class Logic_Model_Generator:
         formula_idx = 0
         logic_template[head_predicate_idx][formula_idx] = {}
         logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0, 1]
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1, 1]  # use 1 to indicate True; use -1 to indicate False
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1, 1]  # use 1 to indicate True; use 0 to indicate False
         logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
         logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 1],  [0, 3]]
         logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.EQUAL, self.BEFORE]
@@ -65,8 +65,8 @@ class Logic_Model_Generator:
         formula_idx = 1
         logic_template[head_predicate_idx][formula_idx] = {}
         logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2]
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use -1 to indicate False
-        logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [-1]
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+        logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [0]
         logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2, 3]]
         logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE]
 
@@ -221,5 +221,5 @@ class Logic_Model_Generator:
 
 if __name__ == "__main__":
     logic_model_generator = Logic_Model_Generator()
-    data = logic_model_generator.generate_data(num_sample=5000, time_horizon=10)
+    data = logic_model_generator.generate_data(num_sample=500, time_horizon=10)
     np.save('data.npy', data)

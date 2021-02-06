@@ -1,0 +1,4 @@
+Head = D, base = 0.0147
+Rule0: Not A --> Not D , Not A EQUAL Not D, weight=2.2707
+Rule1: E --> D , E BEFORE D, weight=-2.2507
+Head = E, base = -0.1630

@@ -82,3 +82,20 @@ acc: {'flag': 0.8032036613272311, 'mechanical': 0.8568129330254042, 'median_dose
 HExp
 mae: {'flag': 1.2171770106755517, 'mechanical': 1.043241852670366, 'median_dose_vaso': 0.9900719153061964, 'max_dose_vaso': 0.953197906749598}
 acc: {'flag': 0.5903890160183066, 'mechanical': 0.6073903002309469, 'median_dose_vaso': 0.6357723577235772, 'max_dose_vaso': 0.64375}
+
+
+'ERPP'
+16 dim hidden and embedding
+15392
+MAE: ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+&1.187 &0.833 &0.413 &0.455
+ACC: ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+&0.565 &0.792 &0.904 &0.866
+
+RPPN
+16 dim hidden and embedding
+param_num= 3329
+MAE: ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+&0.749 &0.792 &0.096 &0.105
+ACC: ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+&0.796 &0.857 &0.985 &0.994

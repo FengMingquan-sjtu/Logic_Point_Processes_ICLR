@@ -257,7 +257,7 @@ if __name__ == "__main__":
     input_path = osp.join(args.input_dir, args.dataset)
 
     if args.dataset.startswith("mimic"):
-        data = np.load(osp.join(args.input_dir, "sepsis_logic.npz"), allow_pickle=True)
+        data = np.load(osp.join(args.input_dir, "sepsis_logic_cause.npz"), allow_pickle=True)
         n_types = int(data["n_types"])
         train_event_seqs = data["train_event_seqs"]
         test_event_seqs =  data["test_event_seqs"]
@@ -290,6 +290,8 @@ if __name__ == "__main__":
             device = get_device(args.cuda)
 
             model = model.to(device)
+            param_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            print("param_num=",param_num)
             model = train_nn_models(model, train_event_seqs, args)
 
         else:

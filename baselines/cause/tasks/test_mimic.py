@@ -208,7 +208,7 @@ if __name__ == "__main__":
     input_path = osp.join(args.input_dir, args.dataset)
 
     if args.dataset.startswith("mimic"):
-        data = np.load(osp.join(args.input_dir, "sepsis_logic.npz"), allow_pickle=True)
+        data = np.load(osp.join(args.input_dir, "sepsis_logic_cause.npz"), allow_pickle=True)
         n_types = int(data["n_types"])
         train_event_seqs = data["train_event_seqs"]
         test_event_seqs =  data["test_event_seqs"]
@@ -243,16 +243,16 @@ if __name__ == "__main__":
 
             model = model.to(device)
             
+            param_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            print("param_num=",param_num)
 
         else:
             with open(osp.join(output_path, "model.pkl"), "rb") as f:
                 model = pickle.load(f)
 
-    results = {}
-    param_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print("param_num=",param_num)
-    raise ValueError
+    
     # evaluate next event prediction
+    results = {}
     if not args.skip_pred_next_event:
         with Timer("Predict the next event"):
             event_seqs_pred = predict_next_event(model, test_event_seqs, args)

@@ -57,7 +57,7 @@ def preprocess():
     
     train_event_seqs = load_mimic(train_path, n_types)
     test_event_seqs = load_mimic(test_path, n_types)
-    np.savez_compressed(osp.join(data_path, "sepsis_logic.npz"),
+    np.savez_compressed(osp.join(data_path, "sepsis_logic_cause.npz"),
         train_event_seqs=train_event_seqs,
         test_event_seqs=test_event_seqs,
         n_types=n_types)
@@ -66,7 +66,7 @@ def preprocess():
 
 def test_load():
     data_path = "/home/fengmingquan/data/sepsis_data_three_versions/sepsis_logic/"
-    data = np.load(osp.join(data_path, "sepsis_logic.npz"), allow_pickle=True)
+    data = np.load(osp.join(data_path, "sepsis_logic_cause.npz"), allow_pickle=True)
     n_types = int(data["n_types"])
     train_event_seqs = data["train_event_seqs"]
     test_event_seqs =  data["test_event_seqs"]
@@ -105,7 +105,10 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
             if l:
                 result_dict[t].update(np.mean(l), len(l))
     
-    print("mae:",{t: mae.avg for t,mae in result_dict.items()})
+    target = ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+    mae = [result_dict[t].avg for t in target]
+    print("MAE:", target)
+    print("&{:.3f} &{:.3f} &{:.3f} &{:.3f}".format(*mae))
 
 def calc_acc(event_seqs_true, event_seqs_pred):
     """
@@ -122,7 +125,10 @@ def calc_acc(event_seqs_true, event_seqs_pred):
             if l:
                 result_dict[t].update(np.mean(l), len(l))
     
-    print("acc:",{t: mae.avg for t,mae in result_dict.items()})
+    target = ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+    acc = [result_dict[t].avg for t in target]
+    print("ACC:", target)
+    print("&{:.3f} &{:.3f} &{:.3f} &{:.3f}".format(*acc))
 
 def predicate_index():
     predicates = ['out_put', 'mechanical', '220277',  'adm_order', 'gender',  'weight', 'height', 'Arterial_BE', 'CO2_mEqL', 'Ionised_Ca', 'Glucose', 'Hb', 'Arterial_lactate', 'paCO2', 'ArterialpH', 'paO2', 'SGPT', 'Albumin', 'SGOT', 'HCO3', 'Direct_bili', 'CRP', 'Calcium', 'Chloride', 'Creatinine', 'Magnesium', 'Potassium_mEqL', 'Total_protein', 'Sodium', 'Troponin', 'BUN', 'Ht', 'INR', 'Platelets_count', 'PT', 'PTT', 'RBC_count', 'WBC_count','adm_order', 'gender','Total_bili','sofa', 'age','flag','valuenum1','valuenum2','median_dose_vaso','max_dose_vaso']
@@ -246,9 +252,9 @@ if __name__ == "__main__":
     #test_load()
     #load_mat()
     #load_mae("ERPP")
-    #load_mae("RPPN")
+    load_mae("RPPN")
     #load_mae("HExp")
     #predicate_index()
     #draw_mat("HExp")
-    draw_mat("RPPN")
-    draw_mat("ERPP")
+    #draw_mat("RPPN")
+    #draw_mat("ERPP")

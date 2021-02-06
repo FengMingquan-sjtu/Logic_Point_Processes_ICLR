@@ -44,10 +44,10 @@ def add_subparser_arguments(model, subparsers):
             "--n_bases", type=int, default=7, help="default: 7"
         )
         sub_parser.add_argument(
-            "--embedding_dim", type=int, default=64, help="default: 64"
+            "--embedding_dim", type=int, default=16, help="default: 64"
         )
         sub_parser.add_argument(
-            "--hidden_size", type=int, default=64, help="default: 64"
+            "--hidden_size", type=int, default=16, help="default: 64"
         )
         sub_parser.add_argument(
             "--rnn", type=str, default="GRU", help="default: GRU"
@@ -148,10 +148,10 @@ def add_subparser_arguments(model, subparsers):
         )
         add_base_arguments(sub_parser)
         sub_parser.add_argument(
-            "--embedding_dim", type=int, default=64, help="default: 64"
+            "--embedding_dim", type=int, default=16, help="default: 64"
         )
         sub_parser.add_argument(
-            "--hidden_size", type=int, default=64, help="default: 64"
+            "--hidden_size", type=int, default=16, help="default: 64"
         )
         sub_parser.add_argument(
             "--init_scale", type=float, default=10, help="default: 10"

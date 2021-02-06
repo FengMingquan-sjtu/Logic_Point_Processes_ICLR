@@ -1,7 +1,7 @@
 setsid python3 run.py 1> out.txt 2> err.txt
 setsid python3 ./tasks/train.py HExp --decay 0.05 1> out.txt 2> err.txt
 setsid python3 ./tasks/train.py HSG --max_mean 1000 --n_gaussians 5 --verbose 1> out.txt 2> err.txt
-setsid python3 ./tasks/train.py RPPN --epoch 200  --init_scale 50  --cuda 1> out.txt 2> err.txt
+setsid python3 ./tasks/train.py RPPN --epoch 200  --init_scale 50  1> out_.txt 2> err_.txt
 setsid python3 ./tasks/train.py ERPP --epoch 200 1> out.txt 2> err.txt
 
 python3 ./tasks/test_mimic.py ERPP

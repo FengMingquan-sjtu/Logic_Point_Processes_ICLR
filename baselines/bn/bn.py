@@ -276,7 +276,7 @@ def plot(model, pos=None, scale=1, figsize=(15, 8), verbose=3):
 def plot_graph_simple():
     bn_result = {"Mortality" :['urine_output', 'adm_order', 'paO2'],
             "Ventilation":['weight', 'height', 'SGOT', 'Magnesium'],
-            "Median-Vaso":['urine_output', 'Ht', 'sofa', 'max_dose_vaso'],
+            "Median-Vaso":['urine_output', 'Ht', 'sofa'],
             "Max-Vaso":['urine_output', 'adm_order', 'Arterial_lactate', 'INR', 'sofa']}
     graph = nx.Graph()    
     for child, parents in bn_result.items():
