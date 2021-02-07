@@ -63,3 +63,37 @@ mutual-information?
 
 14. BEFORE--> long-term mem, AFTER--> short-term mem.
 
+[Fixed]15. Why B-->C has negative grad?
+Because in log-grad, Only calculate feature, missing formula-effect 
+=== Test: Head = C, base = -0.0000
+Rule0: A --> C , A BEFORE C, weight=1.0000
+Rule1: B --> C , B BEFORE C, weight=1.0000 
+===
+Existing rule :
+Head = C, base = 0.1121
+Rule0: A --> C , A BEFORE C, weight=0.8428
+-------
+Current rule is: B --> C , B BEFORE C
+feature sum is tensor(4.1275, dtype=torch.float64)
+log-likelihood-grad is  tensor([-317.2500], dtype=torch.float64, grad_fn=<AddBackward0>)
+-------------
+
+
+[Fixed]16:
+in initialize, some filtered rules are wrongly added to table.  They take idx of 'rules', but do not take idx of 'performance'. Therefore indexing error.
+
+17. After fixing Bug#15, Rule(A->C ^ B->C) can be learned.
+    But generate too many simple rules.
+    For Rule(A^B->C), it still geenrates too many simple rules, reaching rule num limit.
+    Thus searching is ealy-stopped, no rule get expended.
+    Print out mid-result.
+    In initialize, Best rule is: A --> C , A BEFORE C, Best log-likelihood is 2.7047.
+    In first search, Best rule is: B --> C , B BEFORE C, Best log-likelihood-grad = 183.8322
+    But the updated log-likelihood is  -10.087690410035039. It is DECREASING !!!
+    In the second search, Best rule is: B --> Not C , B BEFORE Not C, Best log-likelihood-grad = 85.9430
+    The updated log-likelihood is -10.072779029779538
+    In later searches, the result is similar: log-grad is large and positive, but likelihood does not increase too much.
+    
+    Try to Fix: log-grad is large --> average it, do not use sum. 
+        Then, change searching-stopping criterion from (log-grad<=0) to (log-grad <= abs(log-like)*0.01) (No?) 
+        log-like decrease after first step: the optimization of init does not converge. Decrease epsilon form 0.1 to 0.05.

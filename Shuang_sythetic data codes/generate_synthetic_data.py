@@ -14,7 +14,7 @@ class Logic_Model_Generator:
 
         ### the following parameters are used to manually define the logic rules
         self.num_predicate = 3  # num_predicate is same as num_node
-        self.num_formula = 2
+        self.num_formula = 1
         self.BEFORE = 'BEFORE'
         self.EQUAL = 'EQUAL'
         self.AFTER = 'AFTER'
@@ -34,13 +34,15 @@ class Logic_Model_Generator:
         formula_idx = 0
         self.model_parameter[head_predicate_idx][formula_idx] = {}
         self.model_parameter[head_predicate_idx][formula_idx]['weight'] = 1.0
-        formula_idx = 1
-        self.model_parameter[head_predicate_idx][formula_idx] = {}
-        self.model_parameter[head_predicate_idx][formula_idx]['weight'] = 1.0
+
+
+        self.body_intensity= {0:0.5, 1:1.0}
 
         self.logic_template = self.logic_rule()
         print("generate following rules:")
         self.print_rule()
+        for body_idx in self.body_predicate_set:
+            print("Intensity {} is {}".format(self.predicate_notation[body_idx], self.body_intensity[body_idx]))
 
     def logic_rule(self):
         # encode rule information
@@ -52,19 +54,11 @@ class Logic_Model_Generator:
         # A and B-->C, A Before C and B Before C.
         formula_idx = 0
         logic_template[head_predicate_idx][formula_idx] = {}
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,1]
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
         logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 2]]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE]
-
-        formula_idx = 1
-        logic_template[head_predicate_idx][formula_idx] = {}
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1]
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
-        logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1, 2]]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 2],[1,2]]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE,self.BEFORE]
 
 
         return logic_template
@@ -181,12 +175,6 @@ class Logic_Model_Generator:
 
     def generate_data(self, num_sample, time_horizon):
         data={}
-        intensity = {}
-        # initialize intensity function for body predicates
-        #for body_predicate_idx in self.body_predicate_set:
-        #    intensity[body_predicate_idx] = 0.5 # can change at will
-        intensity[0] = 0.5
-        intensity[1] = 1
 
         for sample_ID in np.arange(0, num_sample, 1):
             data[sample_ID] = {}
@@ -200,7 +188,7 @@ class Logic_Model_Generator:
             for body_predicate_idx in self.body_predicate_set:
                 t = 0
                 while t < time_horizon:
-                    time_to_event = np.random.exponential(scale=1.0 / intensity[body_predicate_idx])
+                    time_to_event = np.random.exponential(scale=1.0 / self.body_intensity[body_predicate_idx])
                     t += time_to_event
                     if t >= time_horizon:
                         break
