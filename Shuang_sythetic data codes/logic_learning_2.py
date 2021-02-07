@@ -22,8 +22,8 @@ class Logic_Learning_Model(nn.Module):
 
         ### the following parameters are used to manually define the logic rules
 
-        self.predicate_set= [0, 1, 2, 3, 4] # the set of all meaningful predicates
-        self.predicate_notation = ['A','B','C','D','E']
+        self.predicate_set= [0, 1, 2] # the set of all meaningful predicates
+        self.predicate_notation = ['A','B', 'C']
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
         self.BEFORE = 'BEFORE'
@@ -36,6 +36,7 @@ class Logic_Learning_Model(nn.Module):
         self.integral_resolution = 0.3
         self.decay_rate = 1
         self.batch_size = 16
+        self.num_batch_check_for_feature = 4
         self.num_batch_check_for_gradient = 20
         self.num_iter  = 5
         self.max_rule_body_length = 3 #
@@ -155,7 +156,7 @@ class Logic_Learning_Model(nn.Module):
 
     def intensity_log_sum(self, head_predicate_idx, data_sample):
         intensity_transition = []
-        for t in data_sample[head_predicate_idx]['time'][1:]:
+        for t in data_sample[head_predicate_idx]['time'][:]:
             cur_intensity = self.intensity(t, head_predicate_idx, data_sample)
             intensity_transition.append(cur_intensity)
         if len(intensity_transition) == 0: # only survival term, not event happens
@@ -258,7 +259,7 @@ class Logic_Learning_Model(nn.Module):
             end_time = T_max # Note for different sample_ID, the T_max can be different
             # compute new feature at the transition times
             new_feature_transition_times = []
-            for t in data_sample[head_predicate_idx]['time'][1:]:
+            for t in data_sample[head_predicate_idx]['time'][:]:
                 new_feature_transition_times.append(self.get_feature(cur_time=t, head_predicate_idx=head_predicate_idx,
                                                     history=data_sample, template =new_rule_template))
             new_feature_grid_times = []
@@ -290,7 +291,8 @@ class Logic_Learning_Model(nn.Module):
     # we assume that the number of important rules should be smaller thant K
     # we assume that the length of the body predicates should be smaller thant L
     def get_feature_sum_for_screen(self, dataset, head_predicate_idx, template):
-        sample_ID_batch = list(dataset.keys())[:self.batch_size]
+        sample_ID_batch = random.sample(dataset.keys(), self.batch_size * self.num_batch_check_for_feature)
+        #sample_ID_batch = dataset.keys()
         feature_sum = 0
         for sample_ID in sample_ID_batch:
             # iterate over head predicates; each predicate corresponds to one intensity
@@ -298,16 +300,16 @@ class Logic_Learning_Model(nn.Module):
             effect_formula = []
             feature_formula= []
 
-            for cur_time in data_sample[head_predicate_idx]['time'][1:]:
+            for cur_time in data_sample[head_predicate_idx]['time'][:]:
                 feature_formula.append(self.get_feature(cur_time=cur_time, head_predicate_idx=head_predicate_idx,
                                                         history=data_sample, template=template))
                 effect_formula.append(self.get_formula_effect(cur_time=cur_time, head_predicate_idx=head_predicate_idx,
                                                         history=data_sample, template=template))
             if len(feature_formula) != 0:
                 feature_sum += torch.sum(torch.cat(feature_formula, dim=0) * torch.cat(effect_formula, dim=0))
-                print("data_sample=", data_sample)
-                print("effect_formula =", torch.cat(effect_formula, dim=0))
-                print("feature_formula=", torch.cat(feature_formula, dim=0))
+                #print("data_sample=", data_sample)
+                #print("effect_formula =", torch.cat(effect_formula, dim=0))
+                #print("feature_formula=", torch.cat(feature_formula, dim=0))
         return feature_sum
                 
             
@@ -441,6 +443,11 @@ class Logic_Learning_Model(nn.Module):
 
                         if self.check_repeat(new_rule_template[head_predicate_idx], head_predicate_idx): # Repeated rule is not allowed.
                             continue
+                        
+                        feature_sum = self.get_feature_sum_for_screen(dataset, head_predicate_idx, new_rule_template[head_predicate_idx])
+                        if feature_sum == 0:
+                            print("This rule is filtered, feature_sum={}, ".format(feature_sum), self.get_rule_str(new_rule_template[head_predicate_idx], head_predicate_idx))
+                            continue
 
                         new_rule_table[head_predicate_idx]['body_predicate_idx'].append(new_rule_template[head_predicate_idx]['body_predicate_idx'] )
                         new_rule_table[head_predicate_idx]['body_predicate_sign'].append(new_rule_template[head_predicate_idx]['body_predicate_sign'])
@@ -523,6 +530,11 @@ class Logic_Learning_Model(nn.Module):
                         if self.check_repeat(new_rule_template[head_predicate_idx], head_predicate_idx): # Repeated rule is not allowed.
                             continue
                         
+                        feature_sum = self.get_feature_sum_for_screen(dataset, head_predicate_idx, new_rule_template[head_predicate_idx])
+                        if feature_sum == 0:
+                            print("This rule is filtered, feature_sum={}, ".format(feature_sum), self.get_rule_str(new_rule_template[head_predicate_idx], head_predicate_idx))
+                            continue
+                        
                         new_rule_table[head_predicate_idx]['body_predicate_idx'].append(new_rule_template[head_predicate_idx]['body_predicate_idx'] )
                         new_rule_table[head_predicate_idx]['body_predicate_sign'].append(new_rule_template[head_predicate_idx]['body_predicate_sign'])
                         new_rule_table[head_predicate_idx]['head_predicate_sign'].append(new_rule_template[head_predicate_idx]['head_predicate_sign'])
@@ -585,6 +597,7 @@ class Logic_Learning_Model(nn.Module):
         for cur_body_length in range(1, self.max_rule_body_length + 1):
             for existing_rule_template in list(self.logic_template[head_predicate_idx].values()):
                 if self.num_formula >= self.max_num_rule:
+                    print("Maximum rule number reached.")
                     break
                 if len(existing_rule_template['body_predicate_idx']) == cur_body_length: 
                     rule_accepted = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, existing_rule_template)
@@ -600,40 +613,45 @@ class Logic_Learning_Model(nn.Module):
         for head_predicate_idx, rules in self.logic_template.items():
             print("Head = {}, base = {:.4f}".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
             for rule_id, rule in rules.items():
-                body_predicate_idx = rule['body_predicate_idx']
-                body_predicate_sign = rule['body_predicate_sign']
-                head_predicate_sign = rule['head_predicate_sign'][0]
-                temporal_relation_idx = rule['temporal_relation_idx']
-                temporal_relation_type = rule['temporal_relation_type']
                 rule_str = "Rule{}: ".format(rule_id)
-                negative_predicate_list = list()
-                for i in range(len(body_predicate_idx)):
-                    if body_predicate_sign[i] == 0:
-                        rule_str += "Not "
-                        negative_predicate_list.append(body_predicate_idx[i])
-                    rule_str += self.predicate_notation[body_predicate_idx[i]]
-                    if i <= len(body_predicate_idx) - 2:
-                        rule_str += " ^ "
-                rule_str += " --> "
-                if head_predicate_sign == 0:
-                    rule_str += "Not "
-                    negative_predicate_list.append(head_predicate_idx)
-                rule_str += self.predicate_notation[head_predicate_idx]
-                rule_str += " , "
-
-                for i in range(len(temporal_relation_idx)):
-                    if temporal_relation_idx[i][0] in negative_predicate_list:
-                        rule_str += "Not "
-                    rule_str += self.predicate_notation[temporal_relation_idx[i][0]]
-                    rule_str += " {} ".format(temporal_relation_type[i])
-                    if temporal_relation_idx[i][1] in negative_predicate_list:
-                        rule_str += "Not "
-                    rule_str += self.predicate_notation[temporal_relation_idx[i][1]]
-                    if i <= len(temporal_relation_idx) - 2:
-                        rule_str += " ^ "
+                rule_str += self.get_rule_str(rule, head_predicate_idx)
                 weight = self.model_parameter[head_predicate_idx][rule_id]['weight'].data[0]
                 rule_str += ", weight={:.4f}".format(weight)
                 print(rule_str)
+    
+    def get_rule_str(self, rule, head_predicate_idx):
+        body_predicate_idx = rule['body_predicate_idx']
+        body_predicate_sign = rule['body_predicate_sign']
+        head_predicate_sign = rule['head_predicate_sign'][0]
+        temporal_relation_idx = rule['temporal_relation_idx']
+        temporal_relation_type = rule['temporal_relation_type']
+        rule_str = ""
+        negative_predicate_list = list()
+        for i in range(len(body_predicate_idx)):
+            if body_predicate_sign[i] == 0:
+                rule_str += "Not "
+                negative_predicate_list.append(body_predicate_idx[i])
+            rule_str += self.predicate_notation[body_predicate_idx[i]]
+            if i <= len(body_predicate_idx) - 2:
+                rule_str += " ^ "
+        rule_str += " --> "
+        if head_predicate_sign == 0:
+            rule_str += "Not "
+            negative_predicate_list.append(head_predicate_idx)
+        rule_str += self.predicate_notation[head_predicate_idx]
+        rule_str += " , "
+
+        for i in range(len(temporal_relation_idx)):
+            if temporal_relation_idx[i][0] in negative_predicate_list:
+                rule_str += "Not "
+            rule_str += self.predicate_notation[temporal_relation_idx[i][0]]
+            rule_str += " {} ".format(temporal_relation_type[i])
+            if temporal_relation_idx[i][1] in negative_predicate_list:
+                rule_str += "Not "
+            rule_str += self.predicate_notation[temporal_relation_idx[i][1]]
+            if i <= len(temporal_relation_idx) - 2:
+                rule_str += " ^ "   
+        return rule_str     
 
                 
                 
@@ -642,9 +660,9 @@ class Logic_Learning_Model(nn.Module):
 
 
 if __name__ == "__main__":
-    head_predicate_idx = [3,4]
+    head_predicate_idx = [2]
     model = Logic_Learning_Model(head_predicate_idx = head_predicate_idx)
-    num_samples = 5000
+ 
     T_max = 10
     dataset = np.load('data.npy', allow_pickle='TRUE').item()
 

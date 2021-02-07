@@ -20,3 +20,49 @@ Head = D, base = 0.0147
 Rule0: Not A --> Not D , Not A EQUAL Not D, weight=2.2707
 Rule1: E --> D , E BEFORE D, weight=-2.2507
 Head = E, base = -0.1630
+
+=== Test A-->B, A Before B, base=0, w=1 ====
+Initialize with this rule:
+Head = B, base = 0.1344
+Rule0: A --> B , A BEFORE B, weight=1.1057
+start generate simple rule
+start calculate intensity log and integral.
+start searching.
+Train finished, Final rule set is:
+Head = B, base = 0.1344
+Rule0: A --> B , A BEFORE B, weight=1.1057
+
+
+=== Test A-->B, A Equal B, base=0, w=1 ===
+Train finished, Final rule set is:
+Head = B, base = 0.0282
+Rule0: A --> Not B , A BEFORE Not B, weight=0.0066
+Rule1: A --> B , A EQUAL B, weight=1.1607
+
+=== Test Not A-->B, Not A Equal B, base=0, w=1 ===
+Head = B, base = 0.1756
+Rule0: A --> B , A BEFORE B, weight=0.1120
+Rule1: Not A --> B , Not A EQUAL B, weight=0.7057
+
+=== Test :Head = C, base = -0.0000
+Rule0: A ^ B --> C , A BEFORE C ^ B BEFORE C, weight=1.0000  ===
+=== Result:
+Head = C, base = 0.0962
+Rule0: A --> C , A BEFORE C, weight=0.5884
+Rule1: A --> Not C , A EQUAL Not C, weight=0.1326
+Rule2: B ^ A --> C , B EQUAL A ^ A BEFORE C, weight=0.5019
+Rule3: B ^ A --> Not C , B EQUAL A ^ A EQUAL Not C, weight=-0.2682
+
+=== Test: Head = C, base = -0.0000
+Rule0: A ^ B --> C , A BEFORE C ^ A EQUAL B, weight=1.0000 ===
++++ NOT Passed=== Result:
+Head = C, base = 0.1218
+Rule0: Not B --> C , Not B EQUAL C, weight=0.1066
+Rule1: B --> C , B BEFORE C, weight=-0.0557
+
+=== Test: Head = C, base = -0.0000
+Rule0: A --> C , A BEFORE C, weight=1.0000
+Rule1: B --> C , B BEFORE C, weight=1.0000 ===
+Head = C, base = 0.1804
+Rule0: A --> C , A BEFORE C, weight=0.9067
+

@@ -1,0 +1,65 @@
+1. initialize better, no random
+2. stopping criter: grad on last 20 batches
+print out to see whether decrease
+3. return loglikelihood on last 20 batches
+
+debug funcitons one by one.
+test simple rule
+
+4. ignore temporal softmax 
+
+
+[Updated]Softmax on weight leads to error when len(weight) = 1.  Gradient on weight is very small.
+Weight gradient represent relavence.
+
+[Fixed]5. SoftMax wrong gradient formula? Must re-derive corrent formula.
+Also, Softmax constraints weight to sum to 1 (Prior), this may be wrong in real dataset.
+(This is used for samll dataset, where prior is important.)
+
+[Fixed]6. Use 0/1 to represent data state, but use -1/+1 to represent rule.
+
+[Fixed]7. self.Time_tolerance = 0.3 is TOO LARGE. Equal is always matched.
+Also, Equal has least decay, therefore feature is large.
+
+[Fixed]8. The heading t=0,state=0 datum prefer to Not predicate.
+
+9. Not E --> Not D  ===  D --> E.  This is bug when D,E are both target and body.
+Logic != Causal.
+
+10.Not greedy?
+GT = Rule0: A ^ B --> C , A BEFORE C ^ A EQUAL B
+But in first round, the potential rules are not selected, since its feature_sum is negative.
+This rule is filtered, feature_sum=-0.2548675558009907,  A --> C , A BEFORE C
+This rule is filtered, feature_sum=-1.9511806252016348,  A --> C , A EQUAL C
+This rule is filtered, feature_sum=0.0,  A --> C , A AFTER C
+This rule is filtered, feature_sum=-0.5697855822403801,  B --> C , B BEFORE C
+
+To fixt this, I tried to midify filtering condition to feature_sum==0, thus nagetive feature_sum is allowed,
+but still get wrong answer:
+Head = C, base = 0.1218
+Rule0: Not B --> C , Not B EQUAL C, weight=0.1066
+Rule1: B --> C , B BEFORE C, weight=-0.0557
+(Let A^B=D, see whether D-->C?  Traditional method can not discover?)
+(Modify search process?)
+(Maybe data too small)
+(Intensity A, B large/small? if A large, B small, then B --> C
+transition counts.)
+mutual-information?
+(1-optimize, relaxation for 1-iter?)
+
+
+11. The AFTER relation is never matched, featrue is always zero, even no noise.
+    This is because, in get_feature() function:
+    mask = (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
+    this line blocks AFTER.
+    b-->a has no AFTER.
+    only len(body)>2 involves AFTER.
+
+12. intensity larger on event,  better? But what if negative event?
+ 2 intensities
+ 2-state markov chain.
+
+13. decay. if too large, forget too fast. 
+
+14. BEFORE--> long-term mem, AFTER--> short-term mem.
+
