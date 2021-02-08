@@ -19,9 +19,9 @@ class Synthetic:
         self.num_predicate = self.logic.logic.num_predicate
         self.num_formula = self.logic.logic.num_formula
         #self.model._parameters["weight"] = torch.rand(self.num_formula) * 0.2
-        self.model._parameters["weight"] = torch.ones(self.num_formula) * args.synthetic_weight
+        self.model._parameters["weight"] = (torch.ones(self.num_formula) * args.synthetic_weight).double()
         #self.model._parameters["base"] = torch.rand(self.num_predicate) * 0.2
-        self.model._parameters["base"] = torch.ones(self.num_predicate) * args.synthetic_base  
+        self.model._parameters["base"] = (torch.ones(self.num_predicate) * args.synthetic_base).double()
         print("=>Generating synthetic dataset.")
         print("=>Weight = ", self.model._parameters["weight"])
         print("=>Base = ", self.model._parameters["base"]) 
@@ -138,7 +138,8 @@ class Synthetic:
                     # the next event
                     dwell_time = rng.exponential(scale=1.0/ np.sum(intensity_m))
                     
-                    pred_idx = rng.choice(self.num_predicate, 1, p=intensity_m / np.sum(intensity_m)).item()
+                    #pred_idx = rng.choice(self.num_predicate, 1, p=intensity_m / np.sum(intensity_m)).item()
+                    pred_idx =1
                     # since copied predicates have 0 probabililty, they won't be sampeld.
                     # only the real predicates will be sampled.
 
@@ -198,10 +199,10 @@ if __name__ == "__main__":
     
     args.synthetic_training_sample_num = 1
     args.synthetic_testing_sample_num = 0
-    args.synthetic_time_horizon = 50
+    args.synthetic_time_horizon = 2
     args.synthetic_weight = 0.2
     args.synthetic_base = 0.4
-    args.time_tolerence = 5
+    args.time_tolerence = 1
     s = Synthetic(args)
     s.draw_dataset()
     train_data_set = s.generate_data(sample_ID_lb=0, sample_ID_ub=1, seed=1)

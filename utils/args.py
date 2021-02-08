@@ -66,7 +66,7 @@ def get_args():
                         help="tolerence of time relation BEFORE,EQUAL.")
     parser.add_argument('--target_predicate', nargs='+',  type=int, default=[1],
                         help="int list, indices of target predicates.")
-    parser.add_argument('--non_negative_map', type=str, default="max",
+    parser.add_argument('--non_negative_map', type=str, default="exp",
                         help="type of non_negative mapping in intenisty calculation.")
     parser.add_argument('--init_weight_range', type=float, default=0.3,
                         help="initial weight range is (0,x). Notice x should be small, like 0.001.")

@@ -29,8 +29,8 @@ class Point_Process:
     
     def set_parameters(self, w, b, requires_grad:bool=True):
         if isinstance(w, torch.Tensor) or isinstance(w, np.ndarray):
-            self._parameters["weight"] = torch.autograd.Variable(torch.tensor(w), requires_grad=requires_grad)
-            self._parameters["base"] = torch.autograd.Variable(torch.tensor(b), requires_grad=requires_grad)
+            self._parameters["weight"] = torch.autograd.Variable(torch.tensor(w).double(), requires_grad=requires_grad)
+            self._parameters["base"] = torch.autograd.Variable(torch.tensor(b).double(), requires_grad=requires_grad)
         else:
             self._parameters["weight"] = torch.autograd.Variable((torch.ones(self.num_formula)* w).double(), requires_grad=requires_grad)
             self._parameters["base"] = torch.autograd.Variable((torch.ones(self.num_predicate)* b).double(), requires_grad=requires_grad)
@@ -144,12 +144,13 @@ class Point_Process:
     def intensity(self, t:float, dataset:Dict, sample_ID:int, target_predicate:int) -> torch.Tensor:
         """Calculate intensity of target_predicate given dataset[sample_ID], following Eq(9).
         """
-        feature_list = self.get_feature(t, dataset, sample_ID, target_predicate)
+        feature_list = self.get_feature(t, dataset, sample_ID, target_predicate).double()
         formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
         #weight = F.softmax(self._parameters["weight"][formula_ind_list], dim=0) 
         weight = self._parameters["weight"][formula_ind_list]
         #weight = torch.clamp(self._parameters["weight"][formula_ind_list], min=0.001, max=0.99)
         base = self._parameters["base"][target_predicate]
+
         f = torch.add(torch.sum(torch.mul(feature_list, weight)), base)
         intensity = self._non_negative_map(f)
         intensity = intensity.reshape((1,)) # convert scalar to tensor, for conveninent grad

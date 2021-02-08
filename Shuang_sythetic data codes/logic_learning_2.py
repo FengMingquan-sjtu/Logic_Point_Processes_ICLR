@@ -1,12 +1,15 @@
 import numpy as np
 import itertools
 import random
-from generate_synthetic_data import Logic_Model_Generator
+
 import torch.nn as nn
 from torch.autograd import Variable
 import torch
 import torch.optim as optim
 import pickle
+import cvxpy as cp
+
+from generate_synthetic_data import Logic_Model_Generator
 ##################################################################
 
 class Logic_Learning_Model(nn.Module):
@@ -50,6 +53,7 @@ class Logic_Learning_Model(nn.Module):
         for idx in head_predicate_idx:
             self.model_parameter[idx] = {}
             self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
+            self.model_parameter[idx]['base_cp'] = cp.Variable(1)
             self.logic_template[idx] = {}
 
     def get_model_parameters(self):
@@ -58,9 +62,8 @@ class Logic_Learning_Model(nn.Module):
         for head_predicate_idx in self.head_predicate_set:
             parameters.append(self.model_parameter[head_predicate_idx]['base'])
             for formula_idx in self.model_parameter[head_predicate_idx].keys():
-                if formula_idx == 'base':
-                    continue
-                parameters.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
+                if isinstance(formula_idx, int):
+                    parameters.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
         return parameters
 
 
@@ -81,15 +84,27 @@ class Logic_Learning_Model(nn.Module):
             #intensity = torch.exp(torch.cat(weight_formula, dim=0))/torch.sum(torch.exp(torch.cat(weight_formula, dim=0)), dim=0) * torch.cat(feature_formula, dim=0) * torch.cat(effect_formula, dim=0)
             #NOTE: Softmax on weight leads to error when len(weight) = 1. Gradient on weight is very small.
             intensity =  torch.cat(weight_formula, dim=0) * torch.cat(feature_formula, dim=0) * torch.cat(effect_formula, dim=0)
-            
-            # without Softmax on weight, gradient is like:
-            #batch_gradient =  (tensor([-12.2186], dtype=torch.float64), tensor([-0.9893], dtype=torch.float64), tensor([4.3846], dtype=torch.float64))
-            # with Softmax, gradient is like:
-            #batch_gradient =  (tensor([13.8510], dtype=torch.float64), tensor([-9.9920e-16], dtype=torch.float64), tensor([7.7664], dtype=torch.float64))
+
         else:
             intensity = torch.zeros(1)
         intensity = self.model_parameter[head_predicate_idx]['base'] + torch.sum(intensity)
         intensity = torch.exp(intensity)
+
+        return intensity
+    
+    def intensity_cp(self, cur_time, head_predicate_idx, history, mapping=True):
+        intensity = np.zeros(1)
+
+        for formula_idx in list(self.logic_template[head_predicate_idx].keys()):
+            w = self.model_parameter[head_predicate_idx][formula_idx]['weight_cp']
+            f = self.get_feature(cur_time=cur_time, head_predicate_idx=head_predicate_idx,history=history, template=self.logic_template[head_predicate_idx][formula_idx])
+            fe =self.get_formula_effect(cur_time=cur_time, head_predicate_idx=head_predicate_idx,history=history, template=self.logic_template[head_predicate_idx][formula_idx])
+            intensity += f.item() * fe.item() * w
+
+        intensity += self.model_parameter[head_predicate_idx]['base_cp']
+        
+        if mapping:
+            intensity = cp.exp(intensity)
 
         return intensity
 
@@ -153,6 +168,16 @@ class Logic_Learning_Model(nn.Module):
                 intensity_integral = self.intensity_integral(head_predicate_idx, data_sample, T_max)
                 log_likelihood += (intensity_log_sum - intensity_integral)
         return log_likelihood
+    
+    def log_likelihood_cp(self, dataset, sample_ID_batch, T_max):
+        log_likelihood = np.zeros(1)
+        for sample_ID in sample_ID_batch:
+            for head_predicate_idx in self.head_predicate_set:
+                data_sample = dataset[sample_ID]
+                intensity_log_sum = self.intensity_log_sum_cp(head_predicate_idx, data_sample)
+                intensity_integral = self.intensity_integral_cp(head_predicate_idx, data_sample, T_max)
+                log_likelihood += intensity_log_sum - intensity_integral
+        return log_likelihood
 
     def intensity_log_sum(self, head_predicate_idx, data_sample):
         intensity_transition = []
@@ -163,6 +188,14 @@ class Logic_Learning_Model(nn.Module):
             log_sum = torch.tensor([0], dtype=torch.float64)
         else:
             log_sum = torch.sum(torch.log(torch.cat(intensity_transition, dim=0)))
+        return log_sum
+    
+    def intensity_log_sum_cp(self, head_predicate_idx, data_sample):
+        log_sum = np.zeros(1)
+        for t in data_sample[head_predicate_idx]['time'][:]:
+            # directly calculate log-intensity, to avoid DCPError of cvxpy.
+            log_intensity = self.intensity_cp(t, head_predicate_idx, data_sample, mapping=False)
+            log_sum += log_intensity
         return log_sum
 
     def intensity_integral(self, head_predicate_idx, data_sample, T_max):
@@ -175,6 +208,14 @@ class Logic_Learning_Model(nn.Module):
         integral = torch.sum(torch.cat(intensity_grid, dim=0) * self.integral_resolution)
         return integral
 
+    def intensity_integral_cp(self, head_predicate_idx, data_sample, T_max):
+        start_time = 0
+        end_time = T_max
+        integral = np.zeros(1)
+        for t in np.arange(start_time, end_time, self.integral_resolution):
+            cur_intensity = self.intensity_cp(t, head_predicate_idx, data_sample)
+            integral += cur_intensity * self.integral_resolution
+        return integral
 
     def optimize_log_likelihood(self, dataset, T_max):
         print("start optimize:", flush=1)
@@ -214,12 +255,22 @@ class Logic_Learning_Model(nn.Module):
             if gradient_norm <= epsilon:
                     break
 
+        #use the avg of last several batches log_likelihood
         log_likelihood = np.mean(log_likelihood_batch[-self.num_batch_check_for_gradient:])/self.batch_size
         print('Finish screening one variable, the log likelihood is', log_likelihood)
         print("Params ", params)
-        #use the last batch log_likelihood
+        
         return log_likelihood
 
+    def optimize_log_likelihood_cp(self, dataset, T_max):
+        # optimize using cvxpy
+        print("start optimize using cp:", flush=1)
+        sample_ID_batch =  list(dataset.keys())
+        log_likelihood = self.log_likelihood_cp(dataset, sample_ID_batch, T_max)
+        objective = cp.Maximize(log_likelihood)
+        prob = cp.Problem(objective)
+        opt_log_likelihood = prob.solve()
+        return opt_log_likelihood / len(sample_ID_batch)
 
 
     def intensity_log_gradient(self, head_predicate_idx, data_sample):
@@ -328,6 +379,7 @@ class Logic_Learning_Model(nn.Module):
         new_rule_table[head_predicate_idx]['temporal_relation_type'] = []
         new_rule_table[head_predicate_idx]['performance_gain'] = []
         new_rule_table[head_predicate_idx]['weight'] = []
+        new_rule_table[head_predicate_idx]['weight_cp'] = []
 
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         
@@ -350,6 +402,7 @@ class Logic_Learning_Model(nn.Module):
 
                         self.model_parameter[head_predicate_idx][self.num_formula] = {}
                         self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) ).double(), requires_grad=True)
+                        self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1) 
                         self.num_formula +=1
 
                         # filter zero-feature rules.
@@ -363,6 +416,14 @@ class Logic_Learning_Model(nn.Module):
                             print("Current rule is:", self.get_rule_str(self.logic_template[head_predicate_idx][self.num_formula-1], head_predicate_idx))
                             print("feature sum is", feature_sum)
                             print("log-likelihood is ", gain)
+                            print("weight =", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'].item())
+                            print("base =", self.model_parameter[head_predicate_idx]['base'].item())
+                            print("----",flush=1)
+
+                            gain_cp = self.optimize_log_likelihood_cp(dataset, T_max)
+                            print("log-likelihood-CP is ", gain_cp)
+                            print("weight=", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value)
+                            print("base=", self.model_parameter[head_predicate_idx]['base_cp'].value)
                             print("-------------",flush=1)
                             new_rule_table[head_predicate_idx]['performance_gain'].append(feature_sum)
                             new_rule_table[head_predicate_idx]['body_predicate_idx'].append([body_predicate_idx])
@@ -502,7 +563,9 @@ class Logic_Learning_Model(nn.Module):
             self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
             # update model parameter
             l = self.optimize_log_likelihood(dataset, T_max)
-            print("Update Log-likelihood = ", l)
+            print("Update Log-likelihood (torch)= ", l)
+            l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
+            print("Update Log-likelihood (cvxpy)= ", l_cp)
             self.num_formula += 1
             return True
         else:
@@ -600,6 +663,8 @@ class Logic_Learning_Model(nn.Module):
             # update model parameter
             l = self.optimize_log_likelihood(dataset, T_max)
             print("Update Log-likelihood = ", l, flush=1)
+            l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
+            print("Update Log-likelihood (cvxpy)= ", l_cp)
             self.num_formula += 1
             return True
         else:
@@ -616,7 +681,7 @@ class Logic_Learning_Model(nn.Module):
     def search_algorithm(self, head_predicate_idx, dataset, T_max):
         self.initialize_rule_set(head_predicate_idx, dataset, T_max)
         print("Initialize with this rule:")
-        self.print_rule()
+        self.print_rule_cp()
         #Begin Breadth(width) First Search
         #generate new rule from scratch
         while self.num_formula < self.max_num_rule:
@@ -625,7 +690,7 @@ class Logic_Learning_Model(nn.Module):
                 break
             else:
                 print("Add a simple rule. Current rule set is:")
-                self.print_rule()
+                self.print_rule_cp()
         
         #generate new rule by extending existing rules
         for cur_body_length in range(1, self.max_rule_body_length + 1):
@@ -637,7 +702,7 @@ class Logic_Learning_Model(nn.Module):
                     rule_accepted = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, existing_rule_template)
                     if rule_accepted:
                         print("Extend an existing rule. Current rule set is:")
-                        self.print_rule()
+                        self.print_rule_cp()
 
         print("Train finished, Final rule set is:")
         self.print_rule()
@@ -651,6 +716,17 @@ class Logic_Learning_Model(nn.Module):
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
                 weight = self.model_parameter[head_predicate_idx][rule_id]['weight'].data[0]
                 rule_str += ", weight={:.4f}".format(weight)
+                print(rule_str)
+    
+    def print_rule_cp(self):
+        for head_predicate_idx, rules in self.logic_template.items():
+            print("Head = {}, base(torch) = {:.4f}, base(cp) = {:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].item(), self.model_parameter[head_predicate_idx]['base_cp'].value[0]))
+            for rule_id, rule in rules.items():
+                rule_str = "Rule{}: ".format(rule_id)
+                rule_str += self.get_rule_str(rule, head_predicate_idx)
+                weight = self.model_parameter[head_predicate_idx][rule_id]['weight'].item()
+                weight_cp = self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value[0]
+                rule_str += ", weight(torch)={:.4f}, weight(cp)={:.4f}.".format(weight, weight_cp)
                 print(rule_str)
     
     def get_rule_str(self, rule, head_predicate_idx):

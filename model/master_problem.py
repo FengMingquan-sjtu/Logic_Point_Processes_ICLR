@@ -3,6 +3,9 @@ Modified from ./model/point_process.py
 Change solver from pytorch to cvxpy.
 implement Master problem
 """
+import sys
+sys.path.append("./")
+sys.path.append("../")
 from collections import OrderedDict
 import itertools
 from typing import List,Tuple,Dict,Any
@@ -11,6 +14,8 @@ import numpy as np
 import cvxpy as cp
 import torch
 from logic import Logic
+
+from utils.args import get_args
 
 class Master_Problem:
     """Master problem of Column Generation.
@@ -134,8 +139,8 @@ class Master_Problem:
         base = self._parameters["base"][target_predicate]
         f = cp.sum(cp.multiply(feature_list, weight)) + base
         #TODO : due to DCPError, we skip non-neg-map
-        intensity = f
-        #intensity = self._non_negative_map(f)
+        #intensity = f
+        intensity = self._non_negative_map(f)
         return intensity
 
     def _non_negative_map(self, f):
@@ -155,8 +160,16 @@ class Master_Problem:
             if (not is_duration_pred) and dataset[sample_ID][target_predicate]['state'][idx]==0:
                 # filter out 'fake' states for instant pred.
                 continue
-            cur_intensity = self.intensity(t, dataset, sample_ID, target_predicate)
-            intensity_sum += cp.log(cur_intensity)
+            if self.args.non_negative_map == "exp":
+                feature_list = self.get_feature(t, dataset, sample_ID, target_predicate)
+                formula_ind_list = list(self.template[target_predicate].keys()) # extract formulas related to target_predicate
+                weight = self._parameters["weight"][formula_ind_list]
+                base = self._parameters["base"][target_predicate]
+                f = cp.sum(cp.multiply(feature_list, weight)) + base
+                intensity_sum += f
+            else:
+                cur_intensity = self.intensity(t, dataset, sample_ID, target_predicate)
+                intensity_sum += cp.log(cur_intensity)
             
         return intensity_sum
         
@@ -344,3 +357,17 @@ class Master_Problem:
         b = self._parameters["base"].value
         lambda_ = constraints[1].dual_value
         return w,b,lambda_
+
+if __name__ == '__main__':
+    args = get_args()
+    args.target_predicate = [1]
+    args.synthetic_logic_name = "self_correcting"
+    sample_ID = 1
+    pred0 = {"time":[0, 1, 1, 2, 2], "state":[0,1,0,1,0]}
+    pred1 = pred0.copy()
+    dataset = {sample_ID:{0:pred0, 1:pred1}}
+
+    model = Master_Problem(args)
+    model.iter(dataset, [sample_ID])
+
+

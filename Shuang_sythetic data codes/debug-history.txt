@@ -97,3 +97,6 @@ in initialize, some filtered rules are wrongly added to table.  They take idx of
     Try to Fix: log-grad is large --> average it, do not use sum. 
         Then, change searching-stopping criterion from (log-grad<=0) to (log-grad <= abs(log-like)*0.01) (No?) 
         log-like decrease after first step: the optimization of init does not converge. Decrease epsilon form 0.1 to 0.05.
+    Try DFS?
+    Try SoftMax on weights?
+    Try CVXPY
