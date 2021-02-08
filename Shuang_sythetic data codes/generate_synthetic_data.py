@@ -57,8 +57,8 @@ class Logic_Model_Generator:
         logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,1]
         logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
         logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 2],[1,2]]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE,self.BEFORE]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 2],[0,1]]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE,self.EQUAL]
 
 
         return logic_template

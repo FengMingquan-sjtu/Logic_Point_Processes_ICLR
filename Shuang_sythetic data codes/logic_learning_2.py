@@ -42,15 +42,16 @@ class Logic_Learning_Model(nn.Module):
         self.num_batch_check_for_feature = 1
         self.num_batch_check_for_gradient = 20
         self.num_iter  = 5
+        self.epsilon = 0.01
         self.max_rule_body_length = 3 #
-        self.max_num_rule = 5
+        self.max_num_rule = 10
         
         
         #claim parameters and rule set
         self.model_parameter = {}
         self.logic_template = {}
 
-        for idx in head_predicate_idx:
+        for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
             self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             self.model_parameter[idx]['base_cp'] = cp.Variable(1)
@@ -225,7 +226,7 @@ class Logic_Learning_Model(nn.Module):
         log_likelihood_batch = []
         gradient_batch = []
         log_likelihood = torch.tensor([0], dtype=torch.float64)
-        epsilon = 0.05
+        epsilon = self.epsilon
         gradient_norm = 100
 
         for i in range(self.num_iter):
@@ -382,7 +383,7 @@ class Logic_Learning_Model(nn.Module):
         new_rule_table[head_predicate_idx]['weight_cp'] = []
 
         ## search for the new rule from by minimizing the gradient of the log-likelihood
-        
+        flag = 0
         for head_predicate_sign in [1, 0]:  # consider head_predicate_sign = 1/0
             for body_predicate_sign in [1, 0]:
                 for body_predicate_idx in self.predicate_set:  
@@ -418,12 +419,12 @@ class Logic_Learning_Model(nn.Module):
                             print("log-likelihood is ", gain)
                             print("weight =", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'].item())
                             print("base =", self.model_parameter[head_predicate_idx]['base'].item())
-                            print("----",flush=1)
+                            #print("----",flush=1)
 
-                            gain_cp = self.optimize_log_likelihood_cp(dataset, T_max)
-                            print("log-likelihood-CP is ", gain_cp)
-                            print("weight=", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value)
-                            print("base=", self.model_parameter[head_predicate_idx]['base_cp'].value)
+                            #gain_cp = self.optimize_log_likelihood_cp(dataset, T_max)
+                            #print("log-likelihood-CP is ", gain_cp)
+                            #print("weight=", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value)
+                            #print("base=", self.model_parameter[head_predicate_idx]['base_cp'].value)
                             print("-------------",flush=1)
                             new_rule_table[head_predicate_idx]['performance_gain'].append(feature_sum)
                             new_rule_table[head_predicate_idx]['body_predicate_idx'].append([body_predicate_idx])
@@ -432,11 +433,22 @@ class Logic_Learning_Model(nn.Module):
                             new_rule_table[head_predicate_idx]['temporal_relation_idx'].append([(body_predicate_idx, head_predicate_idx)])
                             new_rule_table[head_predicate_idx]['temporal_relation_type'].append([temporal_relation_type])
                             new_rule_table[head_predicate_idx]['weight'].append(self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'])
+                            new_rule_table[head_predicate_idx]['weight_cp'].append(self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'])
 
                         #remove the new rule.
                         self.num_formula -=1
                         self.logic_template[head_predicate_idx][self.num_formula] = {}
                         self.model_parameter[head_predicate_idx][self.num_formula] = {}
+
+                        if feature_sum !=0:
+                            flag = 1
+                            break
+                    if flag:
+                        break
+                if flag:
+                    break
+            if flag:
+                break
 
         idx = np.argmax(new_rule_table[head_predicate_idx]['performance_gain'])
         best_gain = new_rule_table[head_predicate_idx]['performance_gain'][idx]
@@ -454,13 +466,21 @@ class Logic_Learning_Model(nn.Module):
         # add model parameter
         self.model_parameter[head_predicate_idx][self.num_formula] = {}
         self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = new_rule_table[head_predicate_idx]['weight'][idx]
+        self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = new_rule_table[head_predicate_idx]['weight_cp'][idx]
         self.num_formula += 1
 
         #update params
-        l = self.optimize_log_likelihood(dataset, T_max)
-        print("Update Log-likelihood = ", l)
+        #l = self.optimize_log_likelihood(dataset, T_max) #update base.
+        #print("Update Log-likelihood (torch) = ", l)
+        l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
+        print("Update Log-likelihood (cvxpy) = ", l_cp)
+        w = self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value[0]
+        self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
+        
+        self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
 
         return
+
 
     def check_repeat(self, new_rule, head_predicate_idx):
         new_rule_body_predicate_set = set(zip(new_rule['body_predicate_idx'], new_rule['body_predicate_sign']))
@@ -546,7 +566,7 @@ class Logic_Learning_Model(nn.Module):
         # choose the logic rule that leads to the optimal log-likelihood
         idx = np.argmax(new_rule_table[head_predicate_idx]['performance_gain'])
         best_gain = new_rule_table[head_predicate_idx]['performance_gain'][idx]
-        threshold = 0
+        threshold = 0.0
         if  best_gain > threshold:
             # add new rule
             self.logic_template[head_predicate_idx][self.num_formula] = {}
@@ -561,12 +581,18 @@ class Logic_Learning_Model(nn.Module):
             # add model parameter
             self.model_parameter[head_predicate_idx][self.num_formula] = {}
             self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
+            self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1)
             # update model parameter
-            l = self.optimize_log_likelihood(dataset, T_max)
-            print("Update Log-likelihood (torch)= ", l)
+            #l = self.optimize_log_likelihood(dataset, T_max)
+            #print("Update Log-likelihood (torch)= ", l)
             l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
             print("Update Log-likelihood (cvxpy)= ", l_cp)
+            for f_idx in range(0, self.num_formula+1):
+                w = self.model_parameter[head_predicate_idx][f_idx]['weight_cp'].value[0]
+                self.model_parameter[head_predicate_idx][f_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
+            self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
             self.num_formula += 1
+            
             return True
         else:
             return False
@@ -645,7 +671,7 @@ class Logic_Learning_Model(nn.Module):
         # choose the logic rule that leads to the optimal log-likelihood
         idx = np.argmax(new_rule_table[head_predicate_idx]['performance_gain'])
         best_gain = new_rule_table[head_predicate_idx]['performance_gain'][idx]
-        threshold = 0.1
+        threshold = 0.0
         if  best_gain > threshold:
             # add new rule
             self.logic_template[head_predicate_idx][self.num_formula] = {}
@@ -660,11 +686,16 @@ class Logic_Learning_Model(nn.Module):
             # add model parameter
             self.model_parameter[head_predicate_idx][self.num_formula] = {}
             self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
+            self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1)
             # update model parameter
-            l = self.optimize_log_likelihood(dataset, T_max)
-            print("Update Log-likelihood = ", l, flush=1)
+            #l = self.optimize_log_likelihood(dataset, T_max)
+            #print("Update Log-likelihood = ", l, flush=1)
             l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
             print("Update Log-likelihood (cvxpy)= ", l_cp)
+            for f_idx in range(0, self.num_formula+1):
+                w = self.model_parameter[head_predicate_idx][f_idx]['weight_cp'].value[0]
+                self.model_parameter[head_predicate_idx][f_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
+            self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
             self.num_formula += 1
             return True
         else:
@@ -720,13 +751,21 @@ class Logic_Learning_Model(nn.Module):
     
     def print_rule_cp(self):
         for head_predicate_idx, rules in self.logic_template.items():
-            print("Head = {}, base(torch) = {:.4f}, base(cp) = {:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].item(), self.model_parameter[head_predicate_idx]['base_cp'].value[0]))
+            base = self.model_parameter[head_predicate_idx]['base'].item()
+            base_cp = self.model_parameter[head_predicate_idx]['base_cp'].value
+            if base_cp:
+                print("Head = {}, base(torch) = {:.4f}, base(cp) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base, base_cp[0]))
+            else:
+                print("Head = {}, base(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
                 weight = self.model_parameter[head_predicate_idx][rule_id]['weight'].item()
-                weight_cp = self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value[0]
-                rule_str += ", weight(torch)={:.4f}, weight(cp)={:.4f}.".format(weight, weight_cp)
+                weight_cp = self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value
+                if weight_cp:
+                    rule_str += ", weight(torch)={:.4f}, weight(cp)={:.4f}.".format(weight, weight_cp[0])
+                else:
+                    rule_str += ", weight(torch)={:.4f}.".format(weight)
                 print(rule_str)
     
     def get_rule_str(self, rule, head_predicate_idx):

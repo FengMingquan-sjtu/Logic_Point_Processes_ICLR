@@ -56,7 +56,10 @@ Rule2: B ^ A --> C , B EQUAL A ^ A BEFORE C, weight=0.5019
 Rule3: B ^ A --> Not C , B EQUAL A ^ A EQUAL Not C, weight=-0.2682
 
 === Test: Head = C, base = -0.0000
-Rule0: A ^ B --> C , A BEFORE C ^ A EQUAL B, weight=1.0000 ===
+Rule0: A ^ B --> C , A BEFORE C ^ A EQUAL B, weight=1.0000
+Intensity A is 0.5
+Intensity B is 1.0
+ ===
 +++ NOT Passed=== Result:
 Head = C, base = 0.1218
 Rule0: Not B --> C , Not B EQUAL C, weight=0.1066
@@ -64,7 +67,10 @@ Rule1: B --> C , B BEFORE C, weight=-0.0557
 
 === Test: Head = C, base = -0.0000
 Rule0: A --> C , A BEFORE C, weight=1.0000
-Rule1: B --> C , B BEFORE C, weight=1.0000 ===
+Rule1: B --> C , B BEFORE C, weight=1.0000 
+Intensity A is 0.5
+Intensity B is 1.0
+===
 == Result:
 Maximum rule number reached.
 Train finished, Final rule set is:

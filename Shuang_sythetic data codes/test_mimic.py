@@ -3,7 +3,7 @@ import os.path as osp
 import numpy as np
 import pandas as pd
 import pickle
-from logic_learning import Logic_Learning_Model
+from logic_learning_2 import Logic_Learning_Model
 
 def load_mimic(file_path, n_types):
     df = pd.read_csv(file_path)
@@ -47,9 +47,9 @@ def preprocess():
 
     print("preprocess finished")
 
-def load_data():
+def load_data(use_small = True ):
     data_path = "/home/fengmingquan/data/sepsis_data_three_versions/sepsis_logic/"
-    use_small = True 
+    
     if use_small:
         file_name = "sepsis_logic_pp_small.pkl"
     else:
@@ -62,13 +62,14 @@ def train():
     n_types = 48
     target_dict = {'flag': 44, 'mechanical': 2, 'median_dose_vaso': 47, 'max_dose_vaso': 48}
     predicate_set = list(range(1,1+n_types))
-    predicate_notation = ['out_put', 'mechanical', '220277',  'adm_order', 'gender',  'weight', 'height', 'Arterial_BE', 'CO2_mEqL', 'Ionised_Ca', 'Glucose', 'Hb', 'Arterial_lactate', 'paCO2', 'ArterialpH', 'paO2', 'SGPT', 'Albumin', 'SGOT', 'HCO3', 'Direct_bili', 'CRP', 'Calcium', 'Chloride', 'Creatinine', 'Magnesium', 'Potassium_mEqL', 'Total_protein', 'Sodium', 'Troponin', 'BUN', 'Ht', 'INR', 'Platelets_count', 'PT', 'PTT', 'RBC_count', 'WBC_count','adm_order', 'gender','Total_bili','sofa', 'age','flag','valuenum1','valuenum2','median_dose_vaso','max_dose_vaso']
+    predicate_notation_list = ['out_put', 'mechanical', '220277',  'adm_order', 'gender',  'weight', 'height', 'Arterial_BE', 'CO2_mEqL', 'Ionised_Ca', 'Glucose', 'Hb', 'Arterial_lactate', 'paCO2', 'ArterialpH', 'paO2', 'SGPT', 'Albumin', 'SGOT', 'HCO3', 'Direct_bili', 'CRP', 'Calcium', 'Chloride', 'Creatinine', 'Magnesium', 'Potassium_mEqL', 'Total_protein', 'Sodium', 'Troponin', 'BUN', 'Ht', 'INR', 'Platelets_count', 'PT', 'PTT', 'RBC_count', 'WBC_count','adm_order', 'gender','Total_bili','sofa', 'age','flag','valuenum1','valuenum2','median_dose_vaso','max_dose_vaso']
+    predicate_notation = {idx+1 : name for idx,name in enumerate(predicate_notation_list)}
     model = Logic_Learning_Model(head_predicate_idx = list(target_dict.values()))
     model.predicate_set = predicate_set
     model.predicate_notation = predicate_notation
     model.batch_size = 32
     T_max = 15
-    train_data, test_data = load_data()
+    train_data, test_data = load_data(use_small = False)
     #print(type(train_data)) -->dict
     for idx in target_dict.values():
         model.search_algorithm(head_predicate_idx=idx, dataset=train_data, T_max=T_max)
