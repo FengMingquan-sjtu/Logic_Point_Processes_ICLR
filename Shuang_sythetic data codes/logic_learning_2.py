@@ -25,8 +25,8 @@ class Logic_Learning_Model(nn.Module):
 
         ### the following parameters are used to manually define the logic rules
 
-        self.predicate_set= [0, 1, 2] # the set of all meaningful predicates
-        self.predicate_notation = ['A','B', 'C']
+        self.predicate_set= [0, 1, 2, 3] # the set of all meaningful predicates
+        self.predicate_notation = ['A','B', 'C', 'D']
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
         self.BEFORE = 'BEFORE'
@@ -43,8 +43,9 @@ class Logic_Learning_Model(nn.Module):
         self.num_batch_check_for_gradient = 20
         self.num_iter  = 5
         self.epsilon = 0.01
+        self.threshold = 0.01
         self.max_rule_body_length = 3 #
-        self.max_num_rule = 10
+        self.max_num_rule = 20
         
         
         #claim parameters and rule set
@@ -566,8 +567,8 @@ class Logic_Learning_Model(nn.Module):
         # choose the logic rule that leads to the optimal log-likelihood
         idx = np.argmax(new_rule_table[head_predicate_idx]['performance_gain'])
         best_gain = new_rule_table[head_predicate_idx]['performance_gain'][idx]
-        threshold = 0.0
-        if  best_gain > threshold:
+        
+        if  best_gain > self.threshold:
             # add new rule
             self.logic_template[head_predicate_idx][self.num_formula] = {}
             self.logic_template[head_predicate_idx][self.num_formula]['body_predicate_idx'] = new_rule_table[head_predicate_idx]['body_predicate_idx'][idx]
@@ -671,8 +672,8 @@ class Logic_Learning_Model(nn.Module):
         # choose the logic rule that leads to the optimal log-likelihood
         idx = np.argmax(new_rule_table[head_predicate_idx]['performance_gain'])
         best_gain = new_rule_table[head_predicate_idx]['performance_gain'][idx]
-        threshold = 0.0
-        if  best_gain > threshold:
+        
+        if  best_gain > self.threshold:
             # add new rule
             self.logic_template[head_predicate_idx][self.num_formula] = {}
             self.logic_template[head_predicate_idx][self.num_formula]['body_predicate_idx'] = new_rule_table[head_predicate_idx]['body_predicate_idx'][idx]
@@ -809,7 +810,7 @@ class Logic_Learning_Model(nn.Module):
 
 
 if __name__ == "__main__":
-    head_predicate_idx = [2]
+    head_predicate_idx = [3]
     model = Logic_Learning_Model(head_predicate_idx = head_predicate_idx)
  
     T_max = 10

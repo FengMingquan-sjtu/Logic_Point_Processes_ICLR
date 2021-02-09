@@ -48,22 +48,42 @@ Rule1: Not A --> B , Not A EQUAL B, weight=0.7057
 Rule0: A ^ B --> C , A BEFORE C ^ B BEFORE C, weight=1.0000
 Intensity A is 0.5
 Intensity B is 1.0  ===
-=== Result:
-Head = C, base = 0.0962
-Rule0: A --> C , A BEFORE C, weight=0.5884
-Rule1: A --> Not C , A EQUAL Not C, weight=0.1326
-Rule2: B ^ A --> C , B EQUAL A ^ A BEFORE C, weight=0.5019
-Rule3: B ^ A --> Not C , B EQUAL A ^ A EQUAL Not C, weight=-0.2682
+=== Result (1) torch, eps=0.01 ===
+Head = C, base = 0.0942
+Rule0: B --> C , B BEFORE C, weight=0.0137
+Rule1: A --> C , A BEFORE C, weight=-0.0233
+Rule2: A ^ B --> C , A BEFORE C ^ B BEFORE C, weight=0.9279
+=== Result (2) torch, eps=0.01 ===
+Head = C, base = 0.0561
+Rule0: Not B --> C , Not B BEFORE C, weight=-0.0056
+Rule1: B --> C , B BEFORE C, weight=0.1109
+Rule2: A --> C , A BEFORE C, weight=0.0451
+Rule3: B --> Not C , B BEFORE Not C, weight=0.1174
+Rule4: A ^ Not B --> C , A BEFORE C ^ Not B BEFORE C, weight=-0.1049
+Rule5: A ^ B --> C , A BEFORE C ^ B BEFORE C, weight=0.9502
+=== Result (3) cp ===
+Head = C, base = 0.0620
+Rule0: A --> C , A BEFORE C, weight=0.0042
+Rule1: B --> C , B BEFORE C, weight=0.0317
+Rule2: B ^ A --> C , B BEFORE C ^ A BEFORE C, weight=0.9425
 
 === Test: Head = C, base = -0.0000
 Rule0: A ^ B --> C , A BEFORE C ^ A EQUAL B, weight=1.0000
 Intensity A is 0.5
 Intensity B is 1.0
  ===
-+++ NOT Passed=== Result:
-Head = C, base = 0.1218
-Rule0: Not B --> C , Not B EQUAL C, weight=0.1066
-Rule1: B --> C , B BEFORE C, weight=-0.0557
+=== Result:
+Head = C, base = 0.0858
+Rule0: A --> C , A BEFORE C, weight=0.0498
+Rule1: B --> C , B EQUAL C, weight=0.0157
+Rule2: B --> Not C , B BEFORE Not C, weight=0.0720
+Rule3: Not B --> C , Not B BEFORE C, weight=0.0521
+Rule4: A --> C , A EQUAL C, weight=0.1571
+Rule5: B ^ A --> C , B EQUAL A ^ A BEFORE C, weight=0.5651
+Rule6: A ^ B --> C , A BEFORE B ^ B EQUAL C, weight=0.5265
+Rule7: A ^ B --> Not C , A EQUAL Not C ^ B BEFORE Not C, weight=0.2641
+Rule8: Not A ^ Not B --> C , Not A BEFORE C ^ Not B BEFORE C, weight=0.0889
+==
 
 === Test: Head = C, base = -0.0000
 Rule0: A --> C , A BEFORE C, weight=1.0000
@@ -80,4 +100,11 @@ Rule1: A --> C , A BEFORE C, weight=0.5964
 Rule2: Not B --> C , Not B BEFORE C, weight=0.2056
 Rule3: B --> Not C , B BEFORE Not C, weight=-0.0247
 Rule4: Not B --> Not C , Not B BEFORE Not C, weight=-0.0598
+
+=== Test:Head = D, base = -0.0000
+Rule0: A ^ B ^ C --> D , A BEFORE D ^ B BEFORE D ^ C BEFORE D, weight=1.0000
+Intensity A is 0.5
+Intensity B is 1.0
+Intensity C is 0.7
+===
 

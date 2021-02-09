@@ -99,4 +99,15 @@ in initialize, some filtered rules are wrongly added to table.  They take idx of
         log-like decrease after first step: the optimization of init does not converge. Decrease epsilon form 0.1 to 0.05.
     Try DFS?
     Try SoftMax on weights?
-    Try CVXPY
+    Try CVXPY 
+
+    [Fixed]: compare torch optimization result with cvxpy. torch result is sometimes far from correct.
+            decrease epsilon from 0.05 to 0.01 gives more precise result, and solves Rule(A^B->C).
+            Also, directly use weight/base of cvxpy also solves Rule(A^B->C).
+
+18. use cvpy to fit Rule(A ^ B --> C , A BEFORE C ^ A EQUAL B).
+    threshold is 0. model finds too much simple rules, such that searching stopped for max-rule.
+    the last rule has likelihood-grad=[2.8546e-09].
+    thus, set threshold=0.01.
+
+19. Mixture searching? BFS+DFS
