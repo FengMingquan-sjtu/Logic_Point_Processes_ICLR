@@ -106,5 +106,73 @@ Rule0: A ^ B ^ C --> D , A BEFORE D ^ B BEFORE D ^ C BEFORE D, weight=1.0000
 Intensity A is 0.5
 Intensity B is 1.0
 Intensity C is 0.7
-===
+=== Result:
+Head = D, base = 0.0960
+Rule0: A --> D , A BEFORE D, weight=-0.0487
+Rule1: B --> D , B BEFORE D, weight=0.0827
+Rule2: C --> D , C BEFORE D, weight=0.0230
+Rule3: Not B --> Not D , Not B BEFORE Not D, weight=0.0114
+Rule4: Not A --> Not D , Not A BEFORE Not D, weight=-0.1040
+Rule5: Not C --> Not D , Not C BEFORE Not D, weight=0.0192
+Rule6: Not B --> Not D , Not B EQUAL Not D, weight=0.0591
+Rule7: A --> Not D , A EQUAL Not D, weight=-0.1344
+Rule8: Not C --> Not D , Not C EQUAL Not D, weight=0.0695
+Rule9: C --> D , C EQUAL D, weight=0.0750
+Rule10: C ^ A --> D , C BEFORE D ^ A BEFORE D, weight=0.0232
+Rule11: C ^ B --> D , C BEFORE D ^ B BEFORE D, weight=-0.0216
+Rule12: Not B ^ C --> D , Not B EQUAL C ^ C BEFORE D, weight=0.4289
+Rule13: Not A ^ Not B --> Not D , Not A BEFORE Not D ^ Not B BEFORE Not D, weight=0.2839
+Rule14: B ^ Not A --> Not D , B EQUAL Not D ^ Not A BEFORE Not D, weight=0.3520
+Rule15: A ^ Not C --> Not D , A EQUAL Not D ^ Not C BEFORE Not D, weight=0.3776
+Rule16: B ^ A --> Not D , B BEFORE Not D ^ A EQUAL Not D, weight=0.3313
+Rule17: B ^ C ^ A --> D , B BEFORE D ^ C BEFORE D ^ A BEFORE D, weight=1.1841
 
+
+=== Test:Head = D, base = -0.0000
+Rule0: A ^ B --> D , A BEFORE D ^ B EQUAL D, weight=1.0000
+Rule1: C --> D , C BEFORE D, weight=1.0000
+Intensity A is 0.5
+Intensity B is 1.0
+Intensity C is 0.7
+=== Result: (with cvxpy log-like is slowly but consistently going down.)
+Head = D, base = 0.0918
+Rule0: A --> D , A BEFORE D, weight=-0.1433
+Rule1: C --> D , C BEFORE D, weight=0.6066
+Rule2: B --> D , B EQUAL D, weight=0.1544
+Rule3: Not C --> Not D , Not C BEFORE Not D, weight=0.0297
+Rule4: Not B --> D , Not B BEFORE D, weight=0.0810
+Rule5: Not B --> D , Not B EQUAL D, weight=0.0178
+Rule6: B --> Not D , B BEFORE Not D, weight=0.0434
+Rule7: C --> D , C EQUAL D, weight=0.0003
+Rule8: Not A --> Not D , Not A BEFORE Not D, weight=-0.0550
+Rule9: B ^ A --> D , B AFTER A ^ A BEFORE D, weight=0.3973
+Rule10: Not B ^ Not C --> Not D , Not B AFTER Not C ^ Not C BEFORE Not D, weight=0.4452
+Rule11: A ^ Not B --> D , A BEFORE D ^ Not B EQUAL D, weight=0.3910
+Rule12: C ^ B --> Not D , C BEFORE Not D ^ B BEFORE Not D, weight=0.0740
+Rule13: Not B ^ C --> D , Not B EQUAL C ^ C EQUAL D, weight=0.4855
+Rule14: Not B ^ Not A --> Not D , Not B BEFORE Not A ^ Not A BEFORE Not D, weight=0.3075
+
+
+=== Test:Head = D, base = -0.0000
+Rule0: A ^ B --> D , A BEFORE D ^ B EQUAL D, weight=1.0000
+Rule1: B ^ C --> D , B BEFORE C ^ C EQUAL D, weight=1.0000
+Intensity A is 0.5
+Intensity B is 1.0
+Intensity C is 0.7
+num_sample= 500
+=== Result:Head = D, base = 0.0584
+Rule0: A --> D , A BEFORE D, weight=-0.1133
+Rule1: B --> D , B BEFORE D, weight=0.0653
+Rule2: Not C --> Not D , Not C BEFORE Not D, weight=0.0642
+Rule3: C --> D , C EQUAL D, weight=0.1100
+Rule4: B --> D , B EQUAL D, weight=-0.0141
+Rule5: Not A --> D , Not A BEFORE D, weight=0.0453
+Rule6: Not A --> D , Not A EQUAL D, weight=0.1032
+Rule7: A --> Not D , A EQUAL Not D, weight=-0.0732
+Rule8: Not B --> D , Not B EQUAL D, weight=0.0406
+Rule9: Not B ^ A --> D , Not B BEFORE D ^ A BEFORE D, weight=0.0838
+Rule10: C ^ B --> D , C AFTER B ^ B BEFORE D, weight=0.2905
+Rule11: Not A ^ Not C --> Not D , Not A EQUAL Not C ^ Not C BEFORE Not D, weight=0.7127
+Rule12: A ^ B --> D , A BEFORE D ^ B EQUAL D, weight=0.3974
+Rule13: C ^ Not A --> D , C BEFORE D ^ Not A BEFORE D, weight=0.1295
+Rule14: Not B ^ A --> Not D , Not B BEFORE Not D ^ A EQUAL Not D, weight=0.4066

@@ -46,6 +46,7 @@ class Logic_Learning_Model(nn.Module):
         self.threshold = 0.01
         self.max_rule_body_length = 3 #
         self.max_num_rule = 20
+        self.batch_size_cp = 500 # batch size used in cp. If too large, may out of memory.
         
         
         #claim parameters and rule set
@@ -267,11 +268,11 @@ class Logic_Learning_Model(nn.Module):
     def optimize_log_likelihood_cp(self, dataset, T_max):
         # optimize using cvxpy
         print("start optimize using cp:", flush=1)
-        sample_ID_batch =  list(dataset.keys())
+        sample_ID_batch =  random.sample(dataset.keys(), self.batch_size_cp)
         log_likelihood = self.log_likelihood_cp(dataset, sample_ID_batch, T_max)
         objective = cp.Maximize(log_likelihood)
         prob = cp.Problem(objective)
-        opt_log_likelihood = prob.solve()
+        opt_log_likelihood = prob.solve(verbose=True)
         return opt_log_likelihood / len(sample_ID_batch)
 
 
@@ -816,7 +817,8 @@ if __name__ == "__main__":
     T_max = 10
     dataset = np.load('data.npy', allow_pickle='TRUE').item()
 
-    small_dataset = {i:dataset[i] for i in range(500)}
+    small_dataset = {i:dataset[i] for i in range(1000)}
+    model.batch_size_cp = 1000
     model.search_algorithm(head_predicate_idx[0], small_dataset, T_max)
     #model.model_parameter = {4: {'base': torch.tensor([-0.2000], dtype=torch.float64, requires_grad=True), 0: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 1: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 2: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 3: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 4: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}}}
     #model.logic_template = {4: {0: {'body_predicate_idx': [0], 'body_predicate_sign': [-1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(0, 4)], 'temporal_relation_type': ['EQUAL']}, 1: {'body_predicate_idx': [2], 'body_predicate_sign': [1], 'head_predicate_sign': [1], 'temporal_relation_idx': [(2, 4)], 'temporal_relation_type': ['BEFORE']}, 2: {'body_predicate_idx': [3], 'body_predicate_sign': [1], 'head_predicate_sign': [1], 'temporal_relation_idx': [(3, 4)], 'temporal_relation_type': ['EQUAL']}, 3: {'body_predicate_idx': [2], 'body_predicate_sign': [1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(2, 4)], 'temporal_relation_type': ['BEFORE']}, 4: {'body_predicate_idx': [3], 'body_predicate_sign': [1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(3, 4)], 'temporal_relation_type': ['EQUAL']}}}

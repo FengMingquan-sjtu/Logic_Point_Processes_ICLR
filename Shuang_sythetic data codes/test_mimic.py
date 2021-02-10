@@ -68,8 +68,10 @@ def train():
     model.predicate_set = predicate_set
     model.predicate_notation = predicate_notation
     model.batch_size = 32
+    model.batch_size_cp = 100
     T_max = 15
     train_data, test_data = load_data(use_small = False)
+    #print(len(train_data.keys()))
     #print(type(train_data)) -->dict
     for idx in target_dict.values():
         model.search_algorithm(head_predicate_idx=idx, dataset=train_data, T_max=T_max)
@@ -79,14 +81,5 @@ def train():
     
 
 if __name__ == "__main__":
-    head_predicate_idx = [3,4]
-    #model = Logic_Learning_Model(head_predicate_idx = head_predicate_idx)
-    num_samples = 5000
-    T_max = 10
-    #dataset = np.load('data.npy', allow_pickle='TRUE').item()
 
-    #small_dataset = {i:dataset[i] for i in range(1)}
-    #print(small_dataset)
-    #preprocess()
-    #load_data()
     train()

@@ -111,3 +111,7 @@ in initialize, some filtered rules are wrongly added to table.  They take idx of
     thus, set threshold=0.01.
 
 19. Mixture searching? BFS+DFS
+
+20. mimicdata, batch-size-cp=1000, killed by system. Out of Mem?
+
+21. Complex rules, reuslt is not accurate, more data may help?

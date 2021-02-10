@@ -1,140 +1,500 @@
 start optimize:
 Head = D, base = -0.2000
 Rule0: A --> D , A BEFORE D, weight=1.0000
-Finish screening one variable, the log likelihood is -10.141790383305683
-Params  [tensor([0.0841], dtype=torch.float64, requires_grad=True), tensor([0.1639], dtype=torch.float64, requires_grad=True)]
+Finish screening one variable, the log likelihood is -10.172782661496742
+Params  [tensor([0.0688], dtype=torch.float64, requires_grad=True), tensor([0.0219], dtype=torch.float64, requires_grad=True)]
 Current rule is: A --> D , A BEFORE D
-feature sum is tensor(-0.0339, dtype=torch.float64)
-log-likelihood is  -10.141790383305683
-weight = 0.16393404214870694
-base = 0.08407546123983729
+feature sum is tensor(-0.0759, dtype=torch.float64)
+log-likelihood is  -10.172782661496742
+weight = 0.02185159978070622
+base = 0.06882536543483773
 -------------
 Best rule is: A --> D , A BEFORE D
-Best log-likelihood = tensor(-0.0339, dtype=torch.float64)
+Best log-likelihood = tensor(-0.0759, dtype=torch.float64)
 start optimize using cp:
-Update Log-likelihood (cvxpy) =  -10.131472979936344
+Update Log-likelihood (cvxpy) =  -10.156856110066727
 Initialize with this rule:
-Head = D, base(torch) = 0.0967, base(cp) = 0.0967,
-Rule0: A --> D , A BEFORE D, weight(torch)=0.1613, weight(cp)=0.1613.
+Head = D, base(torch) = 0.0885, base(cp) = 0.0885,
+Rule0: A --> D , A BEFORE D, weight(torch)=0.0305, weight(cp)=0.0305.
 start generate simple rule
 start calculate intensity log and integral.
 start searching.
 Current rule is: A --> D , A EQUAL D
-feature sum is tensor(-1.8297, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0186], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(0.9561, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0288], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  A --> D , A AFTER D
 -------------
 Current rule is: B --> D , B BEFORE D
-feature sum is tensor(6.4803, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.2565], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-3.0062, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0595], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: B --> D , B EQUAL D
-feature sum is tensor(-3.8713, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0086], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-2.7941, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0999], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  B --> D , B AFTER D
 -------------
 Current rule is: C --> D , C BEFORE D
-feature sum is tensor(2.6666, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.2022], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(7.8088, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0474], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: C --> D , C EQUAL D
-feature sum is tensor(0.0681, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0245], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(1.9820, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0856], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  C --> D , C AFTER D
 -------------
 Current rule is: Not A --> D , Not A BEFORE D
-feature sum is tensor(0.9051, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0078], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-1.3249, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0286], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: Not A --> D , Not A EQUAL D
-feature sum is tensor(-0.9264, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0115], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(0.9248, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0030], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  Not A --> D , Not A AFTER D
 -------------
 Current rule is: Not B --> D , Not B BEFORE D
-feature sum is tensor(1.5184, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.1171], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(2.0849, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0601], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: Not B --> D , Not B EQUAL D
-feature sum is tensor(-1.9077, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0023], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-0.9697, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0184], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  Not B --> D , Not B AFTER D
 -------------
 Current rule is: Not C --> D , Not C BEFORE D
-feature sum is tensor(2.4734, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0837], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(3.1992, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0552], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: Not C --> D , Not C EQUAL D
-feature sum is tensor(4.8432, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0076], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(1.9750, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0091], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  Not C --> D , Not C AFTER D
 -------------
 Current rule is: A --> Not D , A BEFORE Not D
-feature sum is tensor(-2.9125, dtype=torch.float64)
-log-likelihood-grad is  tensor([9.4610e-09], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-1.2237, dtype=torch.float64)
+log-likelihood-grad is  tensor([-2.5436e-10], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: A --> Not D , A EQUAL Not D
-feature sum is tensor(0.9868, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0186], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-0.0718, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0288], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  A --> Not D , A AFTER Not D
 -------------
 Current rule is: B --> Not D , B BEFORE Not D
-feature sum is tensor(-2.6786, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.2565], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-7.5441, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0595], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: B --> Not D , B EQUAL Not D
-feature sum is tensor(-0.9140, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0086], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-1.9832, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0999], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  B --> Not D , B AFTER Not D
 -------------
 Current rule is: C --> Not D , C BEFORE Not D
-feature sum is tensor(-2.9748, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.2022], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-0.4103, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0474], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: C --> Not D , C EQUAL Not D
-feature sum is tensor(-1.9622, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0245], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(1.9445, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0856], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  C --> Not D , C AFTER Not D
 -------------
 Current rule is: Not A --> Not D , Not A BEFORE Not D
-feature sum is tensor(3.3774, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0078], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(0.8837, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0286], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: Not A --> Not D , Not A EQUAL Not D
-feature sum is tensor(-1.9570, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0115], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(0.9533, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0030], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  Not A --> Not D , Not A AFTER Not D
 -------------
 Current rule is: Not B --> Not D , Not B BEFORE Not D
-feature sum is tensor(-1.9731, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.1171], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(1.4156, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0601], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: Not B --> Not D , Not B EQUAL Not D
-feature sum is tensor(5.7114, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0023], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-2.0292, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0184], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  Not B --> Not D , Not B AFTER Not D
 -------------
 Current rule is: Not C --> Not D , Not C BEFORE Not D
-feature sum is tensor(-1.6413, dtype=torch.float64)
-log-likelihood-grad is  tensor([-0.0837], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(0.4243, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0552], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 Current rule is: Not C --> Not D , Not C EQUAL Not D
-feature sum is tensor(-1.8730, dtype=torch.float64)
-log-likelihood-grad is  tensor([0.0076], dtype=torch.float64, grad_fn=<DivBackward0>)
+feature sum is tensor(-2.8202, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0091], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not C --> Not D , Not C AFTER Not D
+-------------
+Best rule is: B --> D , B EQUAL D
+Best log-likelihood-grad = tensor([0.0999], dtype=torch.float64, grad_fn=<DivBackward0>)
+start optimize using cp:
+Update Log-likelihood (cvxpy)=  -10.146948876285563
+Add a simple rule. Current rule set is:
+Head = D, base(torch) = 0.0875, base(cp) = 0.0875,
+Rule0: A --> D , A BEFORE D, weight(torch)=0.0128, weight(cp)=0.0128.
+Rule1: B --> D , B EQUAL D, weight(torch)=0.1977, weight(cp)=0.1977.
+start generate simple rule
+start calculate intensity log and integral.
+start searching.
+Current rule is: A --> D , A EQUAL D
+feature sum is tensor(-1.9279, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0265], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  A --> D , A AFTER D
+-------------
+Current rule is: B --> D , B BEFORE D
+feature sum is tensor(2.2635, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0500], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  B --> D , B AFTER D
+-------------
+Current rule is: C --> D , C BEFORE D
+feature sum is tensor(-0.1922, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0279], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: C --> D , C EQUAL D
+feature sum is tensor(1.7534, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0843], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  C --> D , C AFTER D
+-------------
+Current rule is: Not A --> D , Not A BEFORE D
+feature sum is tensor(-1.5319, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0340], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not A --> D , Not A EQUAL D
+feature sum is tensor(1.8391, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0031], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not A --> D , Not A AFTER D
+-------------
+Current rule is: Not B --> D , Not B BEFORE D
+feature sum is tensor(-2.1784, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0276], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not B --> D , Not B EQUAL D
+feature sum is tensor(0.9158, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0095], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not B --> D , Not B AFTER D
+-------------
+Current rule is: Not C --> D , Not C BEFORE D
+feature sum is tensor(-0.3574, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0393], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not C --> D , Not C EQUAL D
+feature sum is tensor(-1.8573, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0075], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not C --> D , Not C AFTER D
+-------------
+Current rule is: A --> Not D , A BEFORE Not D
+feature sum is tensor(0.8800, dtype=torch.float64)
+log-likelihood-grad is  tensor([2.4843e-09], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: A --> Not D , A EQUAL Not D
+feature sum is tensor(-1.9274, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0265], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  A --> Not D , A AFTER Not D
+-------------
+Current rule is: B --> Not D , B BEFORE Not D
+feature sum is tensor(-5.4463, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0500], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: B --> Not D , B EQUAL Not D
+feature sum is tensor(0.1406, dtype=torch.float64)
+log-likelihood-grad is  tensor([5.4844e-09], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  B --> Not D , B AFTER Not D
+-------------
+Current rule is: C --> Not D , C BEFORE Not D
+feature sum is tensor(-0.1516, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0279], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: C --> Not D , C EQUAL Not D
+feature sum is tensor(-2.8172, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0843], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  C --> Not D , C AFTER Not D
+-------------
+Current rule is: Not A --> Not D , Not A BEFORE Not D
+feature sum is tensor(0.9916, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0340], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not A --> Not D , Not A EQUAL Not D
+feature sum is tensor(-0.9930, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0031], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not A --> Not D , Not A AFTER Not D
+-------------
+Current rule is: Not B --> Not D , Not B BEFORE Not D
+feature sum is tensor(-0.7443, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0276], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not B --> Not D , Not B EQUAL Not D
+feature sum is tensor(3.7767, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0095], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not B --> Not D , Not B AFTER Not D
+-------------
+Current rule is: Not C --> Not D , Not C BEFORE Not D
+feature sum is tensor(-1.3030, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0393], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not C --> Not D , Not C EQUAL Not D
+feature sum is tensor(-0.8957, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0075], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not C --> Not D , Not C AFTER Not D
+-------------
+Best rule is: C --> D , C EQUAL D
+Best log-likelihood-grad = tensor([0.0843], dtype=torch.float64, grad_fn=<DivBackward0>)
+start optimize using cp:
+Update Log-likelihood (cvxpy)=  -10.137267053361498
+Add a simple rule. Current rule set is:
+Head = D, base(torch) = 0.0867, base(cp) = 0.0867,
+Rule0: A --> D , A BEFORE D, weight(torch)=-0.0018, weight(cp)=-0.0018.
+Rule1: B --> D , B EQUAL D, weight(torch)=0.1949, weight(cp)=0.1949.
+Rule2: C --> D , C EQUAL D, weight(torch)=0.2289, weight(cp)=0.2289.
+start generate simple rule
+start calculate intensity log and integral.
+start searching.
+Current rule is: A --> D , A EQUAL D
+feature sum is tensor(-1.9025, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0246], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  A --> D , A AFTER D
+-------------
+Current rule is: B --> D , B BEFORE D
+feature sum is tensor(2.7329, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0286], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  B --> D , B AFTER D
+-------------
+Current rule is: C --> D , C BEFORE D
+feature sum is tensor(-0.4707, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0243], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  C --> D , C AFTER D
+-------------
+Current rule is: Not A --> D , Not A BEFORE D
+feature sum is tensor(2.2551, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0386], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not A --> D , Not A EQUAL D
+feature sum is tensor(1.1695, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0034], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not A --> D , Not A AFTER D
+-------------
+Current rule is: Not B --> D , Not B BEFORE D
+feature sum is tensor(3.6018, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0099], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not B --> D , Not B EQUAL D
+feature sum is tensor(-1.8531, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0065], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not B --> D , Not B AFTER D
+-------------
+Current rule is: Not C --> D , Not C BEFORE D
+feature sum is tensor(-0.3192, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0175], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not C --> D , Not C EQUAL D
+feature sum is tensor(-3.7377, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0043], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not C --> D , Not C AFTER D
+-------------
+Current rule is: A --> Not D , A BEFORE Not D
+feature sum is tensor(-1.9275, dtype=torch.float64)
+log-likelihood-grad is  tensor([-6.6919e-10], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: A --> Not D , A EQUAL Not D
+feature sum is tensor(-0.0944, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0246], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  A --> Not D , A AFTER Not D
+-------------
+Current rule is: B --> Not D , B BEFORE Not D
+feature sum is tensor(-1.7084, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0286], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: B --> Not D , B EQUAL Not D
+feature sum is tensor(-1.8481, dtype=torch.float64)
+log-likelihood-grad is  tensor([-2.7265e-09], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  B --> Not D , B AFTER Not D
+-------------
+Current rule is: C --> Not D , C BEFORE Not D
+feature sum is tensor(-1.3051, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0243], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: C --> Not D , C EQUAL Not D
+feature sum is tensor(-0.9889, dtype=torch.float64)
+log-likelihood-grad is  tensor([-3.7244e-11], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  C --> Not D , C AFTER Not D
+-------------
+Current rule is: Not A --> Not D , Not A BEFORE Not D
+feature sum is tensor(5.4923, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0386], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not A --> Not D , Not A EQUAL Not D
+feature sum is tensor(-0.9049, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0034], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not A --> Not D , Not A AFTER Not D
+-------------
+Current rule is: Not B --> Not D , Not B BEFORE Not D
+feature sum is tensor(-1.1462, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0099], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not B --> Not D , Not B EQUAL Not D
+feature sum is tensor(-0.8731, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0065], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not B --> Not D , Not B AFTER Not D
+-------------
+Current rule is: Not C --> Not D , Not C BEFORE Not D
+feature sum is tensor(2.0629, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0175], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not C --> Not D , Not C EQUAL Not D
+feature sum is tensor(-0.0195, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0043], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not C --> Not D , Not C AFTER Not D
+-------------
+Best rule is: Not A --> Not D , Not A BEFORE Not D
+Best log-likelihood-grad = tensor([0.0386], dtype=torch.float64, grad_fn=<DivBackward0>)
+start optimize using cp:
+Update Log-likelihood (cvxpy)=  -10.13630573042669
+Add a simple rule. Current rule set is:
+Head = D, base(torch) = 0.0865, base(cp) = 0.0865,
+Rule0: A --> D , A BEFORE D, weight(torch)=0.0230, weight(cp)=0.0230.
+Rule1: B --> D , B EQUAL D, weight(torch)=0.1975, weight(cp)=0.1975.
+Rule2: C --> D , C EQUAL D, weight(torch)=0.2316, weight(cp)=0.2316.
+Rule3: Not A --> Not D , Not A BEFORE Not D, weight(torch)=0.0498, weight(cp)=0.0498.
+start generate simple rule
+start calculate intensity log and integral.
+start searching.
+Current rule is: A --> D , A EQUAL D
+feature sum is tensor(0.9840, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0273], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  A --> D , A AFTER D
+-------------
+Current rule is: B --> D , B BEFORE D
+feature sum is tensor(1.1430, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0451], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  B --> D , B AFTER D
+-------------
+Current rule is: C --> D , C BEFORE D
+feature sum is tensor(1.1128, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0353], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  C --> D , C AFTER D
+-------------
+Current rule is: Not A --> D , Not A BEFORE D
+feature sum is tensor(1.0286, dtype=torch.float64)
+log-likelihood-grad is  tensor([-1.3898e-10], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not A --> D , Not A EQUAL D
+feature sum is tensor(-0.9425, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0045], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not A --> D , Not A AFTER D
+-------------
+Current rule is: Not B --> D , Not B BEFORE D
+feature sum is tensor(-4.7771, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0267], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not B --> D , Not B EQUAL D
+feature sum is tensor(-0.9455, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0082], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not B --> D , Not B AFTER D
+-------------
+Current rule is: Not C --> D , Not C BEFORE D
+feature sum is tensor(1.5434, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0291], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not C --> D , Not C EQUAL D
+feature sum is tensor(-0.9448, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0055], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not C --> D , Not C AFTER D
+-------------
+Current rule is: A --> Not D , A BEFORE Not D
+feature sum is tensor(-0.2548, dtype=torch.float64)
+log-likelihood-grad is  tensor([-1.3529e-10], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: A --> Not D , A EQUAL Not D
+feature sum is tensor(1.9167, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0273], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  A --> Not D , A AFTER Not D
+-------------
+Current rule is: B --> Not D , B BEFORE Not D
+feature sum is tensor(-2.5151, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0451], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: B --> Not D , B EQUAL Not D
+feature sum is tensor(1.8662, dtype=torch.float64)
+log-likelihood-grad is  tensor([1.6376e-09], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  B --> Not D , B AFTER Not D
+-------------
+Current rule is: C --> Not D , C BEFORE Not D
+feature sum is tensor(0.0836, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0353], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: C --> Not D , C EQUAL Not D
+feature sum is tensor(1.7595, dtype=torch.float64)
+log-likelihood-grad is  tensor([-9.0283e-10], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  C --> Not D , C AFTER Not D
+-------------
+Current rule is: Not A --> Not D , Not A EQUAL Not D
+feature sum is tensor(-3.7686, dtype=torch.float64)
+log-likelihood-grad is  tensor([0.0045], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not A --> Not D , Not A AFTER Not D
+-------------
+Current rule is: Not B --> Not D , Not B BEFORE Not D
+feature sum is tensor(3.6896, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0267], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not B --> Not D , Not B EQUAL Not D
+feature sum is tensor(0.9461, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0082], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+This rule is filtered, feature_sum=0.0,  Not B --> Not D , Not B AFTER Not D
+-------------
+Current rule is: Not C --> Not D , Not C BEFORE Not D
+feature sum is tensor(-0.9362, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0291], dtype=torch.float64, grad_fn=<DivBackward0>)
+-------------
+Current rule is: Not C --> Not D , Not C EQUAL Not D
+feature sum is tensor(-3.8873, dtype=torch.float64)
+log-likelihood-grad is  tensor([-0.0055], dtype=torch.float64, grad_fn=<DivBackward0>)
 -------------
 This rule is filtered, feature_sum=0.0,  Not C --> Not D , Not C AFTER Not D
 -------------
 Best rule is: B --> D , B BEFORE D
-Best log-likelihood-grad = tensor([0.2565], dtype=torch.float64, grad_fn=<DivBackward0>)
+Best log-likelihood-grad = tensor([0.0451], dtype=torch.float64, grad_fn=<DivBackward0>)
 start optimize using cp:

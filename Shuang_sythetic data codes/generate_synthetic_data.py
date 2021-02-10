@@ -14,7 +14,7 @@ class Logic_Model_Generator:
 
         ### the following parameters are used to manually define the logic rules
         self.num_predicate = 4  # num_predicate is same as num_node
-        self.num_formula = 1
+        self.num_formula = 2
         self.BEFORE = 'BEFORE'
         self.EQUAL = 'EQUAL'
         self.AFTER = 'AFTER'
@@ -34,6 +34,9 @@ class Logic_Model_Generator:
         formula_idx = 0
         self.model_parameter[head_predicate_idx][formula_idx] = {}
         self.model_parameter[head_predicate_idx][formula_idx]['weight'] = 1.0
+        formula_idx = 1
+        self.model_parameter[head_predicate_idx][formula_idx] = {}
+        self.model_parameter[head_predicate_idx][formula_idx]['weight'] = 1.0
 
 
         self.body_intensity= {0:0.5, 1:1.0, 2:0.7}
@@ -51,15 +54,22 @@ class Logic_Model_Generator:
         head_predicate_idx = 3
         logic_template[head_predicate_idx] = {} # here 3 is the index of the head predicate; we could have multiple head predicates
 
-        # A and B and C-->D, A Before D and B Before D and C Before D.
+        #
         formula_idx = 0
         logic_template[head_predicate_idx][formula_idx] = {}
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,1,2]
-        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1,1]  # use 1 to indicate True; use 0 to indicate False
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,1]
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
         logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 3],[1,3],[2,3]]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE,self.BEFORE,self.BEFORE]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 3],[1,3]]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE,self.EQUAL]
 
+        formula_idx = 1
+        logic_template[head_predicate_idx][formula_idx] = {}
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+        logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+        logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,2], [2,3]]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE,self.EQUAL]
 
         return logic_template
 
@@ -174,6 +184,8 @@ class Logic_Model_Generator:
 
 
     def generate_data(self, num_sample, time_horizon):
+        print("Generate {} samples".format(num_sample))
+        
         data={}
 
         for sample_ID in np.arange(0, num_sample, 1):
@@ -231,5 +243,5 @@ class Logic_Model_Generator:
 
 if __name__ == "__main__":
     logic_model_generator = Logic_Model_Generator()
-    data = logic_model_generator.generate_data(num_sample=500, time_horizon=10)
+    data = logic_model_generator.generate_data(num_sample=1000, time_horizon=10)
     np.save('data.npy', data)
