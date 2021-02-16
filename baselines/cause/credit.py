@@ -6,32 +6,23 @@ import pickle
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def load_mhp():
-    input_path = "/home/fengmingquan/data/cause/input/mhp-1K-10"
-    data = np.load(osp.join(input_path, "data.npz"), allow_pickle=True)
-    n_types = int(data["n_types"])
-    #print(n_types)
-    event_seqs = data["event_seqs"]
-    print(type(event_seqs))
-    split_id = 0
-    train_event_seqs = event_seqs[data["train_test_splits"][split_id][0]]
-    test_event_seqs = event_seqs[data["train_test_splits"][split_id][1]]
-    #print(len(test_event_seqs))
-    #print(test_event_seqs[0])
-    # [(1094.5910501207484, 4), (1098.1079940088416, 7), (1100.4624087040852, 1), (1101.3163237708202, 1), (1105.8506944816406, 1), (1106.1821513888342, 0), (1106.1918308538147, 8)]
 
-def load_mimic(file_path, n_types):
+def load_credit(file_path, n_types):
     df = pd.read_csv(file_path)
+    df = df.drop_duplicates()  #remove duplicate rows
     #print(df)
 
     event_seqs = list()
-    patient_id_array = df['patient_id'].unique()
+    cust_id_array = df['custAttr1'].unique()
+    print("cust num=",len(cust_id_array))
 
-    for patient_id in patient_id_array:
-        patient_df = df[df['patient_id']==patient_id]
-        patient_list = list()
-        for predicateID in range(1,n_types+1):
-            pred_df = patient_df[patient_df['predicateID']==predicateID].sort_values(by=['time'])
+    
+
+    for cust_id in cust_id_array:
+        cust_df = df[df['custAttr1']==cust_id]
+        cust_list = list()
+        for predicateID in range(0,n_types):
+            pred_df = cust_df[cust_df['itemid']==predicateID].sort_values(by=['time'])
             state = None
             init_state = None
             for _, row in pred_df.iterrows():
@@ -40,24 +31,29 @@ def load_mimic(file_path, n_types):
                     init_state = state
                 elif state != row['value']: 
                     if state == init_state: #only record jumping from init_state to other.
-                        patient_list.append((row['time'], predicateID-1)) 
+                        cust_list.append((row['time'], predicateID)) 
                     state = row['value']
-        if len(patient_list)==0:
+        if len(cust_list)==0:
             continue
-        patient_list.sort(key=lambda x:x[0]) #sort by time
-        event_seqs.append(patient_list)
+        cust_list.sort(key=lambda x:x[0]) #sort by time
+        event_seqs.append(cust_list)
     return np.array(event_seqs,dtype=object)
 
 def preprocess():
     print("preprocess start")
-    n_types = 48 # num of predicates, including both body and target
-    data_path = "/home/fengmingquan/data/sepsis_data_three_versions/sepsis_logic/"
-    test_path = osp.join(data_path,"sepsis_logic_test.csv")
-    train_path = osp.join(data_path,"sepsis_logic_train.csv")
+    n_types = 9 # num of predicates, including both body and target
+    data_path = "/home/fengmingquan/data/train_test_data_credit/"
+    test_path = osp.join(data_path,"test_credit_balance_add26.csv")
+    train_path = osp.join(data_path,"train_credit_50000_add26.csv")
     
-    train_event_seqs = load_mimic(train_path, n_types)
-    test_event_seqs = load_mimic(test_path, n_types)
-    np.savez_compressed(osp.join(data_path, "sepsis_logic_cause.npz"),
+    train_event_seqs = load_credit(train_path, n_types)
+    test_event_seqs = load_credit(test_path, n_types)
+
+    print(train_event_seqs)
+    print(test_event_seqs)
+    raise ValueError
+
+    np.savez_compressed(osp.join(data_path, "credit_cause.npz"),
         train_event_seqs=train_event_seqs,
         test_event_seqs=test_event_seqs,
         n_types=n_types)
@@ -248,11 +244,11 @@ def draw_mat(model_name):
 if __name__ == "__main__":
     #load_mimic()
     #load_mhp()
-    #preprocess()
+    preprocess()
     #test_load()
     #load_mat()
     #load_mae("ERPP")
-    load_mae("RPPN")
+    #load_mae("RPPN")
     #load_mae("HExp")
     #predicate_index()
     #draw_mat("HExp")

@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "test_mimic.py", line 85, in <module>
+    train()
+  File "test_mimic.py", line 77, in train
+    model.search_algorithm(head_predicate_idx=idx, dataset=train_data, T_max=T_max)
+  File "/mnt/nas/home/fengmingquan/codes/Learn_Logic_PP/Shuang_sythetic data codes/logic_learning_2.py", line 715, in search_algorithm
+    self.initialize_rule_set(head_predicate_idx, dataset, T_max)
+  File "/mnt/nas/home/fengmingquan/codes/Learn_Logic_PP/Shuang_sythetic data codes/logic_learning_2.py", line 477, in initialize_rule_set
+    l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
+  File "/mnt/nas/home/fengmingquan/codes/Learn_Logic_PP/Shuang_sythetic data codes/logic_learning_2.py", line 275, in optimize_log_likelihood_cp
+    opt_log_likelihood = prob.solve(verbose=True)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/cvxpy/problems/problem.py", line 401, in solve
+    return solve_func(self, *args, **kwargs)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/cvxpy/problems/problem.py", line 819, in _solve
+    self.unpack_results(solution, solving_chain, inverse_data)
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/cvxpy/problems/problem.py", line 1133, in unpack_results
+    "Try another solver, or solve with verbose=True for more "
+cvxpy.error.SolverError: Solver 'ECOS' failed. Try another solver, or solve with verbose=True for more information.

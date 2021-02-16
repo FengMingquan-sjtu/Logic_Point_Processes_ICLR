@@ -56,3 +56,19 @@ gru weights  715
 mlp weights  17926
 total weight  18641
 hidden state 25
+
+=====Begin Credit ===
+state = 4
+mlp = 16
+mlp-iter 500
+iter-retrain 20
+gre-iter 200
+
+total weight  2821
+Target is  8
+GT pos rate =  0.3672566371681416
+auc = 0.49559777571825764
+acc = 0.6039823008849557
+f1= 0.12682926829268293
+tn, fp, fn, tp = [0.57522124 0.05752212 0.33849558 0.02876106]
+-------

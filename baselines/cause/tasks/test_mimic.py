@@ -256,7 +256,7 @@ if __name__ == "__main__":
     if not args.skip_pred_next_event:
         with Timer("Predict the next event"):
             event_seqs_pred = predict_next_event(model, test_event_seqs, args)
-            with open("result_{}.pkl".format(args.model),'wb') as f:
+            with open("./mimic/result_{}.pkl".format(args.model),'wb') as f:
                 pickle.dump((event_seqs_pred,test_event_seqs), f)
             if event_seqs_pred is not None:
                 print(event_seqs_pred[0])

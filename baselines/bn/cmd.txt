@@ -1,7 +1,7 @@
-setsid python bn.py --task train --train_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_train.csv 1>out.txt 2>err.txt
-python bn.py --task train --train_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_train.csv
+setsid python bn_mimic.py --task train --train_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_train.csv 1>out.txt 2>err.txt
+python bn_mimic.py --task train --train_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_train.csv
 
-setsid python bn.py --task test --test_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_test.csv 1>out.txt 2>err.txt
-python bn.py --task test --test_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_test.csv
+setsid python bn_mimic.py --task test --test_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_test.csv 1>out.txt 2>err.txt
+python bn_mimic.py --task test --test_csv_path /home/fengmingquan/data/sepsis_data_three_versions/sepsis_01/sepsis_01_test.csv
 
-python3.7 bn.py --task test 
+python3.7 bn_mimic.py --task test 

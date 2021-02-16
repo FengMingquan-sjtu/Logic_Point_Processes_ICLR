@@ -75,26 +75,48 @@ max_dose_vaso  <--  ['out_put', 'adm_order', 'Arterial_lactate', 'INR', 'sofa']
 Only predict jumping:
 
 Target is  flag
+GT pos rate =  0.3333333333333333
 auc= 0.5503511041059019
 acc = 0.6567505720823799
 f1= 0.05063291139240506
 tn, fp, fn, tp = [0.64759725 0.01906941 0.32418002 0.00915332]
 -------
 Target is  mechanical
+GT pos rate =  0.6165527714502658
 auc= 0.5033702385016827
 acc = 0.5899772209567198
 f1= 0.7294589178356713
 tn, fp, fn, tp = [0.03720577 0.34624146 0.06378132 0.55277145]
 -------
 Target is  median_dose_vaso
+GT pos rate =  0.46095238095238095
 auc= 0.626284934147125
 acc = 0.5452380952380952
 f1= 0.21399176954732507
 tn, fp, fn, tp = [0.48333333 0.05571429 0.39904762 0.06190476]
 -------
 Target is  max_dose_vaso
+GT pos rate =  0.454711802378774
 auc= 0.7238025468245716
 acc = 0.5599268069533394
 f1= 0.1486725663716814
 tn, fp, fn, tp = [0.52150046 0.02378774 0.41628545 0.03842635]
 -------
+=== End Mimic ===
+
+
+=== Begin Credit === 
+-------
+target is ['8']
+acc= 0.9269911504424779
+test finished, result saved.
+Target is  8
+GT pos rate =  0.3672566371681416
+auc= 0.9558724408121998
+acc = 0.8827433628318584
+f1= 0.822742474916388
+tn, fp, fn, tp = [0.61061947 0.02212389 0.09513274 0.27212389]
+-------
+8  <--  ['1', '5', '6', '7']
+i.e. fraud  <--  ['historic_zero_amount', 'time_gap', 'multi_zip', 'history_fraud']
+=== End Credit ===
