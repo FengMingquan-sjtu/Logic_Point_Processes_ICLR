@@ -272,7 +272,7 @@ class Logic_Learning_Model(nn.Module):
         log_likelihood = self.log_likelihood_cp(dataset, sample_ID_batch, T_max)
         objective = cp.Maximize(log_likelihood)
         prob = cp.Problem(objective)
-        opt_log_likelihood = prob.solve(verbose=True)
+        opt_log_likelihood = prob.solve(verbose=False)
         return opt_log_likelihood / len(sample_ID_batch)
 
 
@@ -421,12 +421,12 @@ class Logic_Learning_Model(nn.Module):
                             print("log-likelihood is ", gain)
                             print("weight =", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'].item())
                             print("base =", self.model_parameter[head_predicate_idx]['base'].item())
-                            #print("----",flush=1)
+                            print("----",flush=1)
 
-                            #gain_cp = self.optimize_log_likelihood_cp(dataset, T_max)
-                            #print("log-likelihood-CP is ", gain_cp)
-                            #print("weight=", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value)
-                            #print("base=", self.model_parameter[head_predicate_idx]['base_cp'].value)
+                            gain_cp = self.optimize_log_likelihood_cp(dataset, T_max)
+                            print("log-likelihood-CP is ", gain_cp)
+                            print("weight=", self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value)
+                            print("base=", self.model_parameter[head_predicate_idx]['base_cp'].value)
                             print("-------------",flush=1)
                             new_rule_table[head_predicate_idx]['performance_gain'].append(feature_sum)
                             new_rule_table[head_predicate_idx]['body_predicate_idx'].append([body_predicate_idx])
@@ -442,15 +442,15 @@ class Logic_Learning_Model(nn.Module):
                         self.logic_template[head_predicate_idx][self.num_formula] = {}
                         self.model_parameter[head_predicate_idx][self.num_formula] = {}
 
-                        if feature_sum !=0:
-                            flag = 1
-                            break
-                    if flag:
-                        break
-                if flag:
-                    break
-            if flag:
-                break
+            #             if feature_sum !=0:
+            #                 flag = 1
+            #                 break
+            #         if flag:
+            #             break
+            #     if flag:
+            #         break
+            # if flag:
+            #     break
 
         idx = np.argmax(new_rule_table[head_predicate_idx]['performance_gain'])
         best_gain = new_rule_table[head_predicate_idx]['performance_gain'][idx]
@@ -472,14 +472,15 @@ class Logic_Learning_Model(nn.Module):
         self.num_formula += 1
 
         #update params
-        #l = self.optimize_log_likelihood(dataset, T_max) #update base.
-        #print("Update Log-likelihood (torch) = ", l)
+        l = self.optimize_log_likelihood(dataset, T_max) #update base.
+        print("Update Log-likelihood (torch) = ", l)
         l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
         print("Update Log-likelihood (cvxpy) = ", l_cp)
-        w = self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value[0]
-        self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
-        
-        self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
+
+        #Copy CVXPY to weight
+        #w = self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value[0]
+        #self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
+        #self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
 
         return
 
@@ -585,14 +586,16 @@ class Logic_Learning_Model(nn.Module):
             self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
             self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1)
             # update model parameter
-            #l = self.optimize_log_likelihood(dataset, T_max)
-            #print("Update Log-likelihood (torch)= ", l)
+            l = self.optimize_log_likelihood(dataset, T_max)
+            print("Update Log-likelihood (torch)= ", l)
             l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
             print("Update Log-likelihood (cvxpy)= ", l_cp)
-            for f_idx in range(0, self.num_formula+1):
-                w = self.model_parameter[head_predicate_idx][f_idx]['weight_cp'].value[0]
-                self.model_parameter[head_predicate_idx][f_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
-            self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
+
+            #Copy cvxpy to weight
+            #for f_idx in range(0, self.num_formula+1):
+            #    w = self.model_parameter[head_predicate_idx][f_idx]['weight_cp'].value[0]
+            #    self.model_parameter[head_predicate_idx][f_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
+            #self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
             self.num_formula += 1
             
             return True
@@ -690,14 +693,15 @@ class Logic_Learning_Model(nn.Module):
             self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
             self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1)
             # update model parameter
-            #l = self.optimize_log_likelihood(dataset, T_max)
-            #print("Update Log-likelihood = ", l, flush=1)
+            l = self.optimize_log_likelihood(dataset, T_max)
+            print("Update Log-likelihood = ", l, flush=1)
             l_cp = self.optimize_log_likelihood_cp(dataset, T_max)
             print("Update Log-likelihood (cvxpy)= ", l_cp)
-            for f_idx in range(0, self.num_formula+1):
-                w = self.model_parameter[head_predicate_idx][f_idx]['weight_cp'].value[0]
-                self.model_parameter[head_predicate_idx][f_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
-            self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
+
+            #for f_idx in range(0, self.num_formula+1):
+            #    w = self.model_parameter[head_predicate_idx][f_idx]['weight_cp'].value[0]
+            #    self.model_parameter[head_predicate_idx][f_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * w).double(), requires_grad=True)
+            #self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * self.model_parameter[head_predicate_idx]['base_cp'].value[0]).double(), requires_grad=True)
             self.num_formula += 1
             return True
         else:
@@ -705,7 +709,7 @@ class Logic_Learning_Model(nn.Module):
 
 
     def prune_rules_with_small_weights(self):
-        # if num_formula -=1, then hwo to move existing formulas?
+        # if num_formula -=1, then how to move existing formulas?
         # maybe only prune when learning finishes.
         # TODO
         pass
@@ -816,15 +820,13 @@ if __name__ == "__main__":
  
     T_max = 10
     dataset = np.load('data.npy', allow_pickle='TRUE').item()
+    num_sample = 1000 #dataset size
 
-    small_dataset = {i:dataset[i] for i in range(1000)}
-    model.batch_size_cp = 1000
+    small_dataset = {i:dataset[i] for i in range(num_sample)}
+    model.batch_size_cp = num_sample
+
     model.search_algorithm(head_predicate_idx[0], small_dataset, T_max)
-    #model.model_parameter = {4: {'base': torch.tensor([-0.2000], dtype=torch.float64, requires_grad=True), 0: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 1: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 2: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 3: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}, 4: {'weight': torch.tensor([0.0100], dtype=torch.float64, requires_grad=True)}}}
-    #model.logic_template = {4: {0: {'body_predicate_idx': [0], 'body_predicate_sign': [-1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(0, 4)], 'temporal_relation_type': ['EQUAL']}, 1: {'body_predicate_idx': [2], 'body_predicate_sign': [1], 'head_predicate_sign': [1], 'temporal_relation_idx': [(2, 4)], 'temporal_relation_type': ['BEFORE']}, 2: {'body_predicate_idx': [3], 'body_predicate_sign': [1], 'head_predicate_sign': [1], 'temporal_relation_idx': [(3, 4)], 'temporal_relation_type': ['EQUAL']}, 3: {'body_predicate_idx': [2], 'body_predicate_sign': [1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(2, 4)], 'temporal_relation_type': ['BEFORE']}, 4: {'body_predicate_idx': [3], 'body_predicate_sign': [1], 'head_predicate_sign': [-1], 'temporal_relation_idx': [(3, 4)], 'temporal_relation_type': ['EQUAL']}}}
-    #print(model.logic_template)
-    #print(model.model_parameter)
-    #model.print_rule()
+
     with open("model.pkl",'wb') as f:
         pickle.dump(model, f)
 
