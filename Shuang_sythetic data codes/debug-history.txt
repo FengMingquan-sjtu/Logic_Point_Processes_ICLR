@@ -113,5 +113,48 @@ in initialize, some filtered rules are wrongly added to table.  They take idx of
 19. Mixture searching? BFS+DFS
 
 20. mimicdata, batch-size-cp=1000, killed by system. Out of Mem?
+    cvxpy.error.SolverError: Solver 'ECOS' failed. Try another solver, or solve with verbose=True for more information.
+    100  +2.005e+03  +2.005e+03  +6e+00  3e-05  2e-03  1e-04  1e-04  0.5013  9e-01   1  0  0 | 18  3
+    Maximum number of iterations reached, stopping.
+    RAN OUT OF ITERATIONS (reached feastol=1.8e-03, reltol=3.1e-03, abstol=6.1e+00).
+    [FIXED]change solver from 'ECOS' to 'SCS'.
+
 
 21. Complex rules, reuslt is not accurate, more data may help?
+    1000 samples --> 5000 samples?
+
+22. [FIXED]Calculating likelihood of all heads at same time is redundant.
+
+23. Too slow.. Run 24h only get 4 simple rules.
+
+24. Extending selection method wrong?
+
+25. dataset?
+    online shopping -->  tell story.
+    mimic dataset more desease.
+
+26. decrease SGD variance, running time.
+    avg weight ?
+    focus on SGD.
+
+27. 5 rules, 2w samples. focus on synthetic.
+
+28. add regularizer softmax.
+    How to deal with [0.3, 0.3, 0.3]?
+    the first rule weight must be [1.0, ]
+
+29. hyberid a lstm (Vote vs Base)(only in experiment).
+    additional black-box. 
+    report percentage from logic. (larger than 50% is promising)
+
+30. release master. keep simple.
+
+31. base 0->1 1->0 are different.
+
+32. mimic: learned rules  --> filtered by expert --> re-fit to get final result.
+
+33. cache!!!
+
+34. extending bug.
+
+35. Feb.21, 0:30. Add avg weight, multi-processing, L1 penalty, Reduce lr to 0.01, Increase batch size to 36

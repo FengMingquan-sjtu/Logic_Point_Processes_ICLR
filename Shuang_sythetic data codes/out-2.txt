@@ -1,7 +1,7 @@
 dataset size is 20000
 -----key model information----
 batch size = 32
-learning rate = 0.01
+learning rate = 0.005
 best_N = 2
 ----
 ----- start initialize_rule_set -----

@@ -1,2 +1,2 @@
-setsid python3 logic_learning_2.py 1>out.txt 2>err.txt
+setsid python3 logic_learning_2.py 1>out-2.txt 2>err-2.txt
 setsid python3 test_mimic.py 1>out-mimic.txt 2>err-mimic.txt

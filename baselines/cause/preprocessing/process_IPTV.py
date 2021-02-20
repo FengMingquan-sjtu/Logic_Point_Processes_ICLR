@@ -79,6 +79,7 @@ with ds.open(osp.join(args.input_path, "IPTVdata.zip"), "rb") as f:
     path = zipf.extract("IPTVdata/Data_IPTV_subset.mat")
     data = loadmat(path)
     rmtree(osp.dirname(path))
+#data = loadmat("/home/fengmingquan/data/Data_IPTV_subset.mat")
 
 event_seqs_2 = data["seq"].flatten()
 event_type_names = convert(data["PID"])

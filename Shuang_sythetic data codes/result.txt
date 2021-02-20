@@ -191,3 +191,25 @@ Rule8: Not C ^ B --> D , Not C BEFORE D ^ B EQUAL D, weight=0.4184
 [GT]Rule9: B ^ C --> D , B BEFORE C ^ C EQUAL D, weight=0.5924
 Rule10: Not C ^ Not A --> Not D , Not C BEFORE Not A ^ Not A BEFORE Not D, weight=0.3234
 Rule11: A ^ C --> D , A BEFORE C ^ C BEFORE D, weight=0.1792
+
+
+=== Test:Head = E, base = -0.0000
+Rule0: A --> E , A BEFORE E, weight=0.2000
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.2000
+Rule2: A ^ B ^ Not C --> E , A BEFORE E ^ B EQUAL E ^ Not C BEFORE E, weight=0.2000
+Rule3: D --> E , D AFTER E, weight=0.2000
+Rule4: C ^ D --> E , C BEFORE E ^ C EQUAL D, weight=0.2000
+Intensity A is 0.5
+Intensity B is 1.0
+Intensity C is 0.7
+Intensity D is 0.3
+Generate 20000 samples===
+Head = E, base(torch) = 0.1574,
+[GT]Rule0: A --> E , A BEFORE E, weight(torch)=0.3114.
+Rule1: A --> Not E , A BEFORE Not E, weight(torch)=-0.0632.
+Rule2: B --> E , B BEFORE E, weight(torch)=0.0163.
+Rule3: Not B --> E , Not B BEFORE E, weight(torch)=-0.0351.
+Rule4: C --> E , C BEFORE E, weight(torch)=-0.0036.
+Rule5: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.1252.
+Rule6: B --> Not E , B BEFORE Not E, weight(torch)=0.0796.
+Rule7: Not C --> E , Not C BEFORE E, weight(torch)=-0.0521.
