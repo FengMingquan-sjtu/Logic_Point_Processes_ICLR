@@ -1,1053 +1,302 @@
+dataset size is 200
+-----key model information----
+batch size = 32
+learning rate = 0.005
+best_N = 2
+----
 ----- start initialize_rule_set -----
 start enumerating candicate rules
 ---- start optimize_log_likelihood ----
 Rule set is:
 Head = E, base = -0.2000
 Rule0: A --> E , A BEFORE E, weight=1.0000
-Finish optimize_log_likelihood, the log likelihood is -10.150724796317414
-Params  [tensor([0.0811], dtype=torch.float64, requires_grad=True), tensor([0.1635], dtype=torch.float64, requires_grad=True)]
+Finish optimize_log_likelihood, the log likelihood is -10.562405133882194
+Params  [tensor([-0.0647], dtype=torch.float64, requires_grad=True), tensor([0.8528], dtype=torch.float64, requires_grad=True)]
 --------
 Current rule is: A --> E , A BEFORE E
-feature sum is tensor(-1.7038, dtype=torch.float64)
-log-likelihood is  -10.150724796317414
-weight = 0.1635116135971987
-base = 0.081054085941428
+log-likelihood is  -10.562405133882194
+weight = 0.8988162279129028
+base = -0.10473764687776566
 ----
 ------Select best rule-------
 Best initial rule is: A --> E , A BEFORE E
-Best log-likelihood = tensor(-1.7038, dtype=torch.float64)
+Best log-likelihood = -10.562405133882194
 ---- start optimize_log_likelihood ----
 Rule set is:
-Head = E, base = 0.0811
-Rule0: A --> E , A BEFORE E, weight=0.1635
-Finish optimize_log_likelihood, the log likelihood is -10.125574186292496
-Params  [tensor([0.0355], dtype=torch.float64, requires_grad=True), tensor([0.2382], dtype=torch.float64, requires_grad=True)]
+Head = E, base = -0.1047
+Rule0: A --> E , A BEFORE E, weight=0.8988
+Finish optimize_log_likelihood, the log likelihood is -10.37947319250425
+Params  [tensor([0.0126], dtype=torch.float64, requires_grad=True), tensor([0.7563], dtype=torch.float64, requires_grad=True)]
 --------
-Update Log-likelihood (torch) =  -10.125574186292496
+Update Log-likelihood (torch) =  -10.37947319250425
 ----- exit initialize_rule_set -----
 Initialize with this rule:
-Head = E, base(torch) = 0.0355,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.2382.
+Head = E, base(torch) = -0.0188,
+Rule0: A --> E , A BEFORE E, weight(torch)=0.8010.
 ----- start generate_rule_via_column_generation -----
 start calculate intensity log and integral.
+[calculate intensity log and integral] Elapsed: 1.3588 sec.
 start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
 -------start multiprocess------
 cpu num = 48, use 8 workers, process 31 candidate rules.
-log-likelihood-grad = 0.00475, Rule = A --> E , A EQUAL E
+[multiprocess log-grad] Elapsed: 9.7953 sec.
+log-likelihood-grad = -0.01227, Rule = A --> E , A EQUAL E
 -------------
-log-likelihood-grad = -0.02503, Rule = B --> E , B BEFORE E
+log-likelihood-grad = -0.57731, Rule = B --> E , B BEFORE E
 -------------
-log-likelihood-grad = 0.02369, Rule = B --> E , B EQUAL E
+log-likelihood-grad = -0.06816, Rule = B --> E , B EQUAL E
 -------------
-log-likelihood-grad = -0.01763, Rule = C --> E , C BEFORE E
+log-likelihood-grad = -0.29380, Rule = C --> E , C BEFORE E
 -------------
-log-likelihood-grad = -0.00010, Rule = C --> E , C EQUAL E
+log-likelihood-grad = 0.05496, Rule = C --> E , C EQUAL E
 -------------
-log-likelihood-grad = -0.00979, Rule = D --> E , D BEFORE E
+log-likelihood-grad = -0.22327, Rule = D --> E , D BEFORE E
 -------------
-log-likelihood-grad = 0.00057, Rule = D --> E , D EQUAL E
+log-likelihood-grad = -0.02132, Rule = D --> E , D EQUAL E
 -------------
-log-likelihood-grad = -0.03710, Rule = Not A --> E , Not A BEFORE E
+log-likelihood-grad = -0.51441, Rule = Not A --> E , Not A BEFORE E
 -------------
-log-likelihood-grad = 0.00107, Rule = Not A --> E , Not A EQUAL E
+log-likelihood-grad = -0.05422, Rule = Not A --> E , Not A EQUAL E
 -------------
-log-likelihood-grad = -0.03400, Rule = Not B --> E , Not B BEFORE E
+log-likelihood-grad = -0.42461, Rule = Not B --> E , Not B BEFORE E
 -------------
-log-likelihood-grad = 0.00318, Rule = Not B --> E , Not B EQUAL E
+log-likelihood-grad = -0.03828, Rule = Not B --> E , Not B EQUAL E
 -------------
-log-likelihood-grad = -0.01842, Rule = Not C --> E , Not C BEFORE E
+log-likelihood-grad = -0.26237, Rule = Not C --> E , Not C BEFORE E
 -------------
-log-likelihood-grad = 0.00237, Rule = Not C --> E , Not C EQUAL E
+log-likelihood-grad = -0.10363, Rule = Not C --> E , Not C EQUAL E
 -------------
-log-likelihood-grad = -0.01054, Rule = Not D --> E , Not D BEFORE E
+log-likelihood-grad = -0.04101, Rule = Not D --> E , Not D BEFORE E
 -------------
-log-likelihood-grad = -0.00145, Rule = Not D --> E , Not D EQUAL E
+log-likelihood-grad = 0.01869, Rule = Not D --> E , Not D EQUAL E
 -------------
-log-likelihood-grad = 0.04486, Rule = A --> Not E , A BEFORE Not E
+log-likelihood-grad = 0.74450, Rule = A --> Not E , A BEFORE Not E
 -------------
-log-likelihood-grad = -0.00475, Rule = A --> Not E , A EQUAL Not E
+log-likelihood-grad = 0.01227, Rule = A --> Not E , A EQUAL Not E
 -------------
-log-likelihood-grad = 0.02503, Rule = B --> Not E , B BEFORE Not E
+log-likelihood-grad = 0.57731, Rule = B --> Not E , B BEFORE Not E
 -------------
-log-likelihood-grad = -0.02369, Rule = B --> Not E , B EQUAL Not E
+log-likelihood-grad = 0.06816, Rule = B --> Not E , B EQUAL Not E
 -------------
-log-likelihood-grad = 0.01763, Rule = C --> Not E , C BEFORE Not E
+log-likelihood-grad = 0.29380, Rule = C --> Not E , C BEFORE Not E
 -------------
-log-likelihood-grad = 0.00010, Rule = C --> Not E , C EQUAL Not E
+log-likelihood-grad = -0.05496, Rule = C --> Not E , C EQUAL Not E
 -------------
-log-likelihood-grad = 0.00979, Rule = D --> Not E , D BEFORE Not E
+log-likelihood-grad = 0.22327, Rule = D --> Not E , D BEFORE Not E
 -------------
-log-likelihood-grad = -0.00057, Rule = D --> Not E , D EQUAL Not E
+log-likelihood-grad = 0.02132, Rule = D --> Not E , D EQUAL Not E
 -------------
-log-likelihood-grad = 0.03710, Rule = Not A --> Not E , Not A BEFORE Not E
+log-likelihood-grad = 0.51441, Rule = Not A --> Not E , Not A BEFORE Not E
 -------------
-log-likelihood-grad = -0.00107, Rule = Not A --> Not E , Not A EQUAL Not E
+log-likelihood-grad = 0.05422, Rule = Not A --> Not E , Not A EQUAL Not E
 -------------
-log-likelihood-grad = 0.03400, Rule = Not B --> Not E , Not B BEFORE Not E
+log-likelihood-grad = 0.42461, Rule = Not B --> Not E , Not B BEFORE Not E
 -------------
-log-likelihood-grad = -0.00318, Rule = Not B --> Not E , Not B EQUAL Not E
+log-likelihood-grad = 0.03828, Rule = Not B --> Not E , Not B EQUAL Not E
 -------------
-log-likelihood-grad = 0.01842, Rule = Not C --> Not E , Not C BEFORE Not E
+log-likelihood-grad = 0.26237, Rule = Not C --> Not E , Not C BEFORE Not E
 -------------
-log-likelihood-grad = -0.00237, Rule = Not C --> Not E , Not C EQUAL Not E
+log-likelihood-grad = 0.10363, Rule = Not C --> Not E , Not C EQUAL Not E
 -------------
-log-likelihood-grad = 0.01054, Rule = Not D --> Not E , Not D BEFORE Not E
+log-likelihood-grad = 0.04101, Rule = Not D --> Not E , Not D BEFORE Not E
 -------------
-log-likelihood-grad = 0.00145, Rule = Not D --> Not E , Not D EQUAL Not E
+log-likelihood-grad = -0.01869, Rule = Not D --> Not E , Not D EQUAL Not E
 -------------
-------Select best rule-------
+------Select N best rule-------
 Best rule is: A --> Not E , A BEFORE Not E
-Best log-likelihood-grad = 0.04486229071043502
+Best log-likelihood-grad = 0.7444983141132439
+new rule added.
+Best rule is: B --> Not E , B BEFORE Not E
+Best log-likelihood-grad = 0.5773124646054307
+new rule added.
 ---- start optimize_log_likelihood ----
 Rule set is:
-Head = E, base = 0.0355
-Rule0: A --> E , A BEFORE E, weight=0.2382
+Head = E, base = -0.0188
+Rule0: A --> E , A BEFORE E, weight=0.8010
 Rule1: A --> Not E , A BEFORE Not E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.15475423925567
-Params  [tensor([0.0652], dtype=torch.float64, requires_grad=True), tensor([0.1701], dtype=torch.float64, requires_grad=True), tensor([0.0781], dtype=torch.float64, requires_grad=True)]
+Rule2: B --> Not E , B BEFORE Not E, weight=0.0100
+Finish optimize_log_likelihood, the log likelihood is -10.209597116106533
+Params  [tensor([0.0539], dtype=torch.float64, requires_grad=True), tensor([0.6690], dtype=torch.float64, requires_grad=True), tensor([0.1390], dtype=torch.float64, requires_grad=True), tensor([0.1077], dtype=torch.float64, requires_grad=True)]
 --------
-Update Log-likelihood (torch)=  -10.15475423925567
-new rule added.
+[optimize log-likelihood] Elapsed: 22.2964 sec.
+Update Log-likelihood (torch)=  -10.209597116106533
 ----- exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.0652,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.1701.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.0781.
+feature cache size = 0
+Added simple rules. Current rule set is:
+Head = E, base(torch) = 0.0398,
+Rule0: A --> E , A BEFORE E, weight(torch)=0.7078.
+Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.1015.
+Rule2: B --> Not E , B BEFORE Not E, weight(torch)=0.0860.
 ----- start generate_rule_via_column_generation -----
 start calculate intensity log and integral.
+[calculate intensity log and integral] Elapsed: 2.8472 sec.
 start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
--------start multiprocess------
-cpu num = 48, use 8 workers, process 30 candidate rules.
-log-likelihood-grad = 0.00845, Rule = A --> E , A EQUAL E
--------------
-log-likelihood-grad = 0.12586, Rule = B --> E , B BEFORE E
--------------
-log-likelihood-grad = 0.04001, Rule = B --> E , B EQUAL E
--------------
-log-likelihood-grad = 0.08975, Rule = C --> E , C BEFORE E
--------------
-log-likelihood-grad = 0.01138, Rule = C --> E , C EQUAL E
--------------
-log-likelihood-grad = 0.04094, Rule = D --> E , D BEFORE E
--------------
-log-likelihood-grad = 0.00588, Rule = D --> E , D EQUAL E
--------------
-log-likelihood-grad = 0.06338, Rule = Not A --> E , Not A BEFORE E
--------------
-log-likelihood-grad = 0.01331, Rule = Not A --> E , Not A EQUAL E
--------------
-log-likelihood-grad = 0.10321, Rule = Not B --> E , Not B BEFORE E
--------------
-log-likelihood-grad = 0.01934, Rule = Not B --> E , Not B EQUAL E
--------------
-log-likelihood-grad = 0.07433, Rule = Not C --> E , Not C BEFORE E
--------------
-log-likelihood-grad = 0.01321, Rule = Not C --> E , Not C EQUAL E
--------------
-log-likelihood-grad = 0.02456, Rule = Not D --> E , Not D BEFORE E
--------------
-log-likelihood-grad = 0.00268, Rule = Not D --> E , Not D EQUAL E
--------------
-log-likelihood-grad = -0.00845, Rule = A --> Not E , A EQUAL Not E
--------------
-log-likelihood-grad = -0.12586, Rule = B --> Not E , B BEFORE Not E
--------------
-log-likelihood-grad = -0.04001, Rule = B --> Not E , B EQUAL Not E
--------------
-log-likelihood-grad = -0.08975, Rule = C --> Not E , C BEFORE Not E
--------------
-log-likelihood-grad = -0.01138, Rule = C --> Not E , C EQUAL Not E
--------------
-log-likelihood-grad = -0.04094, Rule = D --> Not E , D BEFORE Not E
--------------
-log-likelihood-grad = -0.00588, Rule = D --> Not E , D EQUAL Not E
--------------
-log-likelihood-grad = -0.06338, Rule = Not A --> Not E , Not A BEFORE Not E
--------------
-log-likelihood-grad = -0.01331, Rule = Not A --> Not E , Not A EQUAL Not E
--------------
-log-likelihood-grad = -0.10321, Rule = Not B --> Not E , Not B BEFORE Not E
--------------
-log-likelihood-grad = -0.01934, Rule = Not B --> Not E , Not B EQUAL Not E
--------------
-log-likelihood-grad = -0.07433, Rule = Not C --> Not E , Not C BEFORE Not E
--------------
-log-likelihood-grad = -0.01321, Rule = Not C --> Not E , Not C EQUAL Not E
--------------
-log-likelihood-grad = -0.02456, Rule = Not D --> Not E , Not D BEFORE Not E
--------------
-log-likelihood-grad = -0.00268, Rule = Not D --> Not E , Not D EQUAL Not E
--------------
-------Select best rule-------
-Best rule is: B --> E , B BEFORE E
-Best log-likelihood-grad = 0.1258598049438691
----- start optimize_log_likelihood ----
-Rule set is:
-Head = E, base = 0.0652
-Rule0: A --> E , A BEFORE E, weight=0.1701
-Rule1: A --> Not E , A BEFORE Not E, weight=0.0781
-Rule2: B --> E , B BEFORE E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.133383885883493
-Params  [tensor([0.0887], dtype=torch.float64, requires_grad=True), tensor([0.2226], dtype=torch.float64, requires_grad=True), tensor([0.0256], dtype=torch.float64, requires_grad=True), tensor([-0.0565], dtype=torch.float64, requires_grad=True)]
---------
-Update Log-likelihood (torch)=  -10.133383885883493
-new rule added.
------ exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.0887,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.2226.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.0256.
-Rule2: B --> E , B BEFORE E, weight(torch)=-0.0565.
------ start generate_rule_via_column_generation -----
-start calculate intensity log and integral.
-start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
 -------start multiprocess------
 cpu num = 48, use 8 workers, process 29 candidate rules.
-log-likelihood-grad = 0.01177, Rule = A --> E , A EQUAL E
+[multiprocess log-grad] Elapsed: 8.3342 sec.
+log-likelihood-grad = -0.00061, Rule = A --> E , A EQUAL E
 -------------
-log-likelihood-grad = 0.03559, Rule = B --> E , B EQUAL E
+log-likelihood-grad = -0.14256, Rule = B --> E , B BEFORE E
 -------------
-log-likelihood-grad = 0.09218, Rule = C --> E , C BEFORE E
+log-likelihood-grad = -0.03953, Rule = B --> E , B EQUAL E
 -------------
-log-likelihood-grad = 0.01130, Rule = C --> E , C EQUAL E
+log-likelihood-grad = -0.05871, Rule = C --> E , C BEFORE E
 -------------
-log-likelihood-grad = 0.04189, Rule = D --> E , D BEFORE E
+log-likelihood-grad = 0.07947, Rule = C --> E , C EQUAL E
 -------------
-log-likelihood-grad = 0.00580, Rule = D --> E , D EQUAL E
+log-likelihood-grad = -0.11159, Rule = D --> E , D BEFORE E
 -------------
-log-likelihood-grad = 0.03948, Rule = Not A --> E , Not A BEFORE E
+log-likelihood-grad = -0.01043, Rule = D --> E , D EQUAL E
 -------------
-log-likelihood-grad = 0.01020, Rule = Not A --> E , Not A EQUAL E
+log-likelihood-grad = -0.33014, Rule = Not A --> E , Not A BEFORE E
 -------------
-log-likelihood-grad = 0.14823, Rule = Not B --> E , Not B BEFORE E
+log-likelihood-grad = -0.03446, Rule = Not A --> E , Not A EQUAL E
 -------------
-log-likelihood-grad = 0.02387, Rule = Not B --> E , Not B EQUAL E
+log-likelihood-grad = -0.07954, Rule = Not B --> E , Not B BEFORE E
 -------------
-log-likelihood-grad = 0.07854, Rule = Not C --> E , Not C BEFORE E
+log-likelihood-grad = -0.00015, Rule = Not B --> E , Not B EQUAL E
 -------------
-log-likelihood-grad = 0.01347, Rule = Not C --> E , Not C EQUAL E
+log-likelihood-grad = -0.05578, Rule = Not C --> E , Not C BEFORE E
 -------------
-log-likelihood-grad = 0.02639, Rule = Not D --> E , Not D BEFORE E
+log-likelihood-grad = -0.08222, Rule = Not C --> E , Not C EQUAL E
 -------------
-log-likelihood-grad = 0.00295, Rule = Not D --> E , Not D EQUAL E
+log-likelihood-grad = 0.04182, Rule = Not D --> E , Not D BEFORE E
 -------------
-log-likelihood-grad = -0.01177, Rule = A --> Not E , A EQUAL Not E
+log-likelihood-grad = 0.02915, Rule = Not D --> E , Not D EQUAL E
 -------------
-log-likelihood-grad = -0.21178, Rule = B --> Not E , B BEFORE Not E
+log-likelihood-grad = 0.00061, Rule = A --> Not E , A EQUAL Not E
 -------------
-log-likelihood-grad = -0.03559, Rule = B --> Not E , B EQUAL Not E
+log-likelihood-grad = 0.03953, Rule = B --> Not E , B EQUAL Not E
 -------------
-log-likelihood-grad = -0.09218, Rule = C --> Not E , C BEFORE Not E
+log-likelihood-grad = 0.05871, Rule = C --> Not E , C BEFORE Not E
 -------------
-log-likelihood-grad = -0.01130, Rule = C --> Not E , C EQUAL Not E
+log-likelihood-grad = -0.07947, Rule = C --> Not E , C EQUAL Not E
 -------------
-log-likelihood-grad = -0.04189, Rule = D --> Not E , D BEFORE Not E
+log-likelihood-grad = 0.11159, Rule = D --> Not E , D BEFORE Not E
 -------------
-log-likelihood-grad = -0.00580, Rule = D --> Not E , D EQUAL Not E
+log-likelihood-grad = 0.01043, Rule = D --> Not E , D EQUAL Not E
 -------------
-log-likelihood-grad = -0.03948, Rule = Not A --> Not E , Not A BEFORE Not E
+log-likelihood-grad = 0.33014, Rule = Not A --> Not E , Not A BEFORE Not E
 -------------
-log-likelihood-grad = -0.01020, Rule = Not A --> Not E , Not A EQUAL Not E
+log-likelihood-grad = 0.03446, Rule = Not A --> Not E , Not A EQUAL Not E
 -------------
-log-likelihood-grad = -0.14823, Rule = Not B --> Not E , Not B BEFORE Not E
+log-likelihood-grad = 0.07954, Rule = Not B --> Not E , Not B BEFORE Not E
 -------------
-log-likelihood-grad = -0.02387, Rule = Not B --> Not E , Not B EQUAL Not E
+log-likelihood-grad = 0.00015, Rule = Not B --> Not E , Not B EQUAL Not E
 -------------
-log-likelihood-grad = -0.07854, Rule = Not C --> Not E , Not C BEFORE Not E
+log-likelihood-grad = 0.05578, Rule = Not C --> Not E , Not C BEFORE Not E
 -------------
-log-likelihood-grad = -0.01347, Rule = Not C --> Not E , Not C EQUAL Not E
+log-likelihood-grad = 0.08222, Rule = Not C --> Not E , Not C EQUAL Not E
 -------------
-log-likelihood-grad = -0.02639, Rule = Not D --> Not E , Not D BEFORE Not E
+log-likelihood-grad = -0.04182, Rule = Not D --> Not E , Not D BEFORE Not E
 -------------
-log-likelihood-grad = -0.00295, Rule = Not D --> Not E , Not D EQUAL Not E
+log-likelihood-grad = -0.02915, Rule = Not D --> Not E , Not D EQUAL Not E
 -------------
-------Select best rule-------
+------Select N best rule-------
+Best rule is: Not A --> Not E , Not A BEFORE Not E
+Best log-likelihood-grad = 0.3301366938550004
+new rule added.
+Best rule is: D --> Not E , D BEFORE Not E
+Best log-likelihood-grad = 0.11159369665362023
+new rule added.
+---- start optimize_log_likelihood ----
+Rule set is:
+Head = E, base = 0.0398
+Rule0: A --> E , A BEFORE E, weight=0.7078
+Rule1: A --> Not E , A BEFORE Not E, weight=0.1015
+Rule2: B --> Not E , B BEFORE Not E, weight=0.0860
+Rule3: Not A --> Not E , Not A BEFORE Not E, weight=0.0100
+Rule4: D --> Not E , D BEFORE Not E, weight=0.0100
+Finish optimize_log_likelihood, the log likelihood is -10.137639048706223
+Params  [tensor([0.0616], dtype=torch.float64, requires_grad=True), tensor([0.6019], dtype=torch.float64, requires_grad=True), tensor([0.1950], dtype=torch.float64, requires_grad=True), tensor([0.0702], dtype=torch.float64, requires_grad=True), tensor([0.1021], dtype=torch.float64, requires_grad=True), tensor([0.0257], dtype=torch.float64, requires_grad=True)]
+--------
+[optimize log-likelihood] Elapsed: 31.5575 sec.
+Update Log-likelihood (torch)=  -10.137639048706223
+----- exit generate_rule_via_column_generation -----
+feature cache size = 0
+Added simple rules. Current rule set is:
+Head = E, base(torch) = 0.0523,
+Rule0: A --> E , A BEFORE E, weight(torch)=0.6287.
+Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.1742.
+Rule2: B --> Not E , B BEFORE Not E, weight(torch)=0.0874.
+Rule3: Not A --> Not E , Not A BEFORE Not E, weight(torch)=0.0816.
+Rule4: D --> Not E , D BEFORE Not E, weight(torch)=0.0292.
+----- start generate_rule_via_column_generation -----
+start calculate intensity log and integral.
+[calculate intensity log and integral] Elapsed: 4.1775 sec.
+start enumerating candidate rules.
+-------start multiprocess------
+cpu num = 48, use 8 workers, process 27 candidate rules.
+[multiprocess log-grad] Elapsed: 8.0683 sec.
+log-likelihood-grad = 0.00967, Rule = A --> E , A EQUAL E
+-------------
+log-likelihood-grad = 0.09666, Rule = B --> E , B BEFORE E
+-------------
+log-likelihood-grad = -0.01348, Rule = B --> E , B EQUAL E
+-------------
+log-likelihood-grad = 0.11788, Rule = C --> E , C BEFORE E
+-------------
+log-likelihood-grad = 0.09730, Rule = C --> E , C EQUAL E
+-------------
+log-likelihood-grad = -0.01101, Rule = D --> E , D BEFORE E
+-------------
+log-likelihood-grad = -0.00229, Rule = D --> E , D EQUAL E
+-------------
+log-likelihood-grad = -0.12522, Rule = Not A --> E , Not A BEFORE E
+-------------
+log-likelihood-grad = -0.02089, Rule = Not A --> E , Not A EQUAL E
+-------------
+log-likelihood-grad = 0.13635, Rule = Not B --> E , Not B BEFORE E
+-------------
+log-likelihood-grad = 0.02393, Rule = Not B --> E , Not B EQUAL E
+-------------
+log-likelihood-grad = 0.09625, Rule = Not C --> E , Not C BEFORE E
+-------------
+log-likelihood-grad = -0.06497, Rule = Not C --> E , Not C EQUAL E
+-------------
+log-likelihood-grad = 0.10685, Rule = Not D --> E , Not D BEFORE E
+-------------
+log-likelihood-grad = 0.03615, Rule = Not D --> E , Not D EQUAL E
+-------------
+log-likelihood-grad = -0.00967, Rule = A --> Not E , A EQUAL Not E
+-------------
+log-likelihood-grad = 0.01348, Rule = B --> Not E , B EQUAL Not E
+-------------
+log-likelihood-grad = -0.11788, Rule = C --> Not E , C BEFORE Not E
+-------------
+log-likelihood-grad = -0.09730, Rule = C --> Not E , C EQUAL Not E
+-------------
+log-likelihood-grad = 0.00229, Rule = D --> Not E , D EQUAL Not E
+-------------
+log-likelihood-grad = 0.02089, Rule = Not A --> Not E , Not A EQUAL Not E
+-------------
+log-likelihood-grad = -0.13635, Rule = Not B --> Not E , Not B BEFORE Not E
+-------------
+log-likelihood-grad = -0.02393, Rule = Not B --> Not E , Not B EQUAL Not E
+-------------
+log-likelihood-grad = -0.09625, Rule = Not C --> Not E , Not C BEFORE Not E
+-------------
+log-likelihood-grad = 0.06497, Rule = Not C --> Not E , Not C EQUAL Not E
+-------------
+log-likelihood-grad = -0.10685, Rule = Not D --> Not E , Not D BEFORE Not E
+-------------
+log-likelihood-grad = -0.03615, Rule = Not D --> Not E , Not D EQUAL Not E
+-------------
+------Select N best rule-------
 Best rule is: Not B --> E , Not B BEFORE E
-Best log-likelihood-grad = 0.14822943866891966
----- start optimize_log_likelihood ----
-Rule set is:
-Head = E, base = 0.0887
-Rule0: A --> E , A BEFORE E, weight=0.2226
-Rule1: A --> Not E , A BEFORE Not E, weight=0.0256
-Rule2: B --> E , B BEFORE E, weight=-0.0565
-Rule3: Not B --> E , Not B BEFORE E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.232623703906837
-Params  [tensor([0.0524], dtype=torch.float64, requires_grad=True), tensor([0.1732], dtype=torch.float64, requires_grad=True), tensor([0.0750], dtype=torch.float64, requires_grad=True), tensor([0.0370], dtype=torch.float64, requires_grad=True), tensor([-0.0711], dtype=torch.float64, requires_grad=True)]
---------
-Update Log-likelihood (torch)=  -10.232623703906837
+Best log-likelihood-grad = 0.13634720665992137
 new rule added.
------ exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.0524,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.1732.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.0750.
-Rule2: B --> E , B BEFORE E, weight(torch)=0.0370.
-Rule3: Not B --> E , Not B BEFORE E, weight(torch)=-0.0711.
------ start generate_rule_via_column_generation -----
-start calculate intensity log and integral.
-start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A EQUAL E
--------------
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D EQUAL E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
--------start multiprocess------
-cpu num = 48, use 8 workers, process 26 candidate rules.
-log-likelihood-grad = 0.05222, Rule = B --> E , B EQUAL E
--------------
-log-likelihood-grad = 0.12373, Rule = C --> E , C BEFORE E
--------------
-log-likelihood-grad = 0.01496, Rule = C --> E , C EQUAL E
--------------
-log-likelihood-grad = 0.05679, Rule = D --> E , D BEFORE E
--------------
-log-likelihood-grad = 0.00754, Rule = D --> E , D EQUAL E
--------------
-log-likelihood-grad = 0.08448, Rule = Not A --> E , Not A BEFORE E
--------------
-log-likelihood-grad = 0.01568, Rule = Not A --> E , Not A EQUAL E
--------------
-log-likelihood-grad = 0.01730, Rule = Not B --> E , Not B EQUAL E
--------------
-log-likelihood-grad = 0.10701, Rule = Not C --> E , Not C BEFORE E
--------------
-log-likelihood-grad = 0.01670, Rule = Not C --> E , Not C EQUAL E
--------------
-log-likelihood-grad = 0.03746, Rule = Not D --> E , Not D BEFORE E
--------------
-log-likelihood-grad = -0.01119, Rule = A --> Not E , A EQUAL Not E
--------------
-log-likelihood-grad = -0.17017, Rule = B --> Not E , B BEFORE Not E
--------------
-log-likelihood-grad = -0.05222, Rule = B --> Not E , B EQUAL Not E
--------------
-log-likelihood-grad = -0.12373, Rule = C --> Not E , C BEFORE Not E
--------------
-log-likelihood-grad = -0.01496, Rule = C --> Not E , C EQUAL Not E
--------------
-log-likelihood-grad = -0.05679, Rule = D --> Not E , D BEFORE Not E
--------------
-log-likelihood-grad = -0.00754, Rule = D --> Not E , D EQUAL Not E
--------------
-log-likelihood-grad = -0.08448, Rule = Not A --> Not E , Not A BEFORE Not E
--------------
-log-likelihood-grad = -0.01568, Rule = Not A --> Not E , Not A EQUAL Not E
--------------
-log-likelihood-grad = -0.22005, Rule = Not B --> Not E , Not B BEFORE Not E
--------------
-log-likelihood-grad = -0.01730, Rule = Not B --> Not E , Not B EQUAL Not E
--------------
-log-likelihood-grad = -0.10701, Rule = Not C --> Not E , Not C BEFORE Not E
--------------
-log-likelihood-grad = -0.01670, Rule = Not C --> Not E , Not C EQUAL Not E
--------------
-log-likelihood-grad = -0.03746, Rule = Not D --> Not E , Not D BEFORE Not E
--------------
-log-likelihood-grad = -0.00409, Rule = Not D --> Not E , Not D EQUAL Not E
--------------
-------Select best rule-------
 Best rule is: C --> E , C BEFORE E
-Best log-likelihood-grad = 0.12372579714550064
+Best log-likelihood-grad = 0.11788273440001162
+new rule added.
 ---- start optimize_log_likelihood ----
 Rule set is:
-Head = E, base = 0.0524
-Rule0: A --> E , A BEFORE E, weight=0.1732
-Rule1: A --> Not E , A BEFORE Not E, weight=0.0750
-Rule2: B --> E , B BEFORE E, weight=0.0370
-Rule3: Not B --> E , Not B BEFORE E, weight=-0.0711
-Rule4: C --> E , C BEFORE E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.157206380779936
-Params  [tensor([0.0213], dtype=torch.float64, requires_grad=True), tensor([0.2754], dtype=torch.float64, requires_grad=True), tensor([-0.0272], dtype=torch.float64, requires_grad=True), tensor([-0.0375], dtype=torch.float64, requires_grad=True), tensor([0.0801], dtype=torch.float64, requires_grad=True), tensor([-0.0088], dtype=torch.float64, requires_grad=True)]
---------
-Update Log-likelihood (torch)=  -10.157206380779936
-new rule added.
------ exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.0213,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.2754.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=-0.0272.
-Rule2: B --> E , B BEFORE E, weight(torch)=-0.0375.
-Rule3: Not B --> E , Not B BEFORE E, weight(torch)=0.0801.
-Rule4: C --> E , C BEFORE E, weight(torch)=-0.0088.
------ start generate_rule_via_column_generation -----
-start calculate intensity log and integral.
-start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D EQUAL E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
--------start multiprocess------
-cpu num = 48, use 8 workers, process 26 candidate rules.
-log-likelihood-grad = 0.00041, Rule = A --> E , A EQUAL E
--------------
-log-likelihood-grad = 0.00359, Rule = B --> E , B EQUAL E
--------------
-log-likelihood-grad = -0.00934, Rule = C --> E , C EQUAL E
--------------
-log-likelihood-grad = -0.04965, Rule = D --> E , D BEFORE E
--------------
-log-likelihood-grad = -0.00350, Rule = D --> E , D EQUAL E
--------------
-log-likelihood-grad = -0.10660, Rule = Not A --> E , Not A BEFORE E
--------------
-log-likelihood-grad = -0.00716, Rule = Not A --> E , Not A EQUAL E
--------------
-log-likelihood-grad = -0.00211, Rule = Not B --> E , Not B EQUAL E
--------------
-log-likelihood-grad = -0.09244, Rule = Not C --> E , Not C BEFORE E
--------------
-log-likelihood-grad = -0.00585, Rule = Not C --> E , Not C EQUAL E
--------------
-log-likelihood-grad = -0.04052, Rule = Not D --> E , Not D BEFORE E
--------------
-log-likelihood-grad = -0.00041, Rule = A --> Not E , A EQUAL Not E
--------------
-log-likelihood-grad = 0.14636, Rule = B --> Not E , B BEFORE Not E
--------------
-log-likelihood-grad = -0.00359, Rule = B --> Not E , B EQUAL Not E
--------------
-log-likelihood-grad = 0.09347, Rule = C --> Not E , C BEFORE Not E
--------------
-log-likelihood-grad = 0.00934, Rule = C --> Not E , C EQUAL Not E
--------------
-log-likelihood-grad = 0.04965, Rule = D --> Not E , D BEFORE Not E
--------------
-log-likelihood-grad = 0.00350, Rule = D --> Not E , D EQUAL Not E
--------------
-log-likelihood-grad = 0.10660, Rule = Not A --> Not E , Not A BEFORE Not E
--------------
-log-likelihood-grad = 0.00716, Rule = Not A --> Not E , Not A EQUAL Not E
--------------
-log-likelihood-grad = 0.22632, Rule = Not B --> Not E , Not B BEFORE Not E
--------------
-log-likelihood-grad = 0.00211, Rule = Not B --> Not E , Not B EQUAL Not E
--------------
-log-likelihood-grad = 0.09244, Rule = Not C --> Not E , Not C BEFORE Not E
--------------
-log-likelihood-grad = 0.00585, Rule = Not C --> Not E , Not C EQUAL Not E
--------------
-log-likelihood-grad = 0.04052, Rule = Not D --> Not E , Not D BEFORE Not E
--------------
-log-likelihood-grad = 0.00486, Rule = Not D --> Not E , Not D EQUAL Not E
--------------
-------Select best rule-------
-Best rule is: Not B --> Not E , Not B BEFORE Not E
-Best log-likelihood-grad = 0.2263168402703905
----- start optimize_log_likelihood ----
-Rule set is:
-Head = E, base = 0.0213
-Rule0: A --> E , A BEFORE E, weight=0.2754
-Rule1: A --> Not E , A BEFORE Not E, weight=-0.0272
-Rule2: B --> E , B BEFORE E, weight=-0.0375
-Rule3: Not B --> E , Not B BEFORE E, weight=0.0801
-Rule4: C --> E , C BEFORE E, weight=-0.0088
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.19292075615752
-Params  [tensor([0.1075], dtype=torch.float64, requires_grad=True), tensor([0.2256], dtype=torch.float64, requires_grad=True), tensor([0.0226], dtype=torch.float64, requires_grad=True), tensor([0.0859], dtype=torch.float64, requires_grad=True), tensor([4.8089e-05], dtype=torch.float64, requires_grad=True), tensor([0.0786], dtype=torch.float64, requires_grad=True), tensor([0.0901], dtype=torch.float64, requires_grad=True)]
---------
-Update Log-likelihood (torch)=  -10.19292075615752
-new rule added.
------ exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.1075,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.2256.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.0226.
-Rule2: B --> E , B BEFORE E, weight(torch)=0.0859.
-Rule3: Not B --> E , Not B BEFORE E, weight(torch)=0.0000.
-Rule4: C --> E , C BEFORE E, weight(torch)=0.0786.
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.0901.
------ start generate_rule_via_column_generation -----
-start calculate intensity log and integral.
-start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
--------start multiprocess------
-cpu num = 48, use 8 workers, process 26 candidate rules.
-log-likelihood-grad = -0.00292, Rule = A --> E , A EQUAL E
--------------
-log-likelihood-grad = 0.02372, Rule = B --> E , B EQUAL E
--------------
-log-likelihood-grad = -0.00524, Rule = C --> E , C EQUAL E
--------------
-log-likelihood-grad = -0.04324, Rule = D --> E , D BEFORE E
--------------
-log-likelihood-grad = -0.00370, Rule = D --> E , D EQUAL E
--------------
-log-likelihood-grad = -0.06427, Rule = Not A --> E , Not A BEFORE E
--------------
-log-likelihood-grad = -0.00245, Rule = Not A --> E , Not A EQUAL E
--------------
-log-likelihood-grad = -0.01938, Rule = Not B --> E , Not B EQUAL E
--------------
-log-likelihood-grad = -0.10586, Rule = Not C --> E , Not C BEFORE E
--------------
-log-likelihood-grad = -0.00887, Rule = Not C --> E , Not C EQUAL E
--------------
-log-likelihood-grad = -0.02982, Rule = Not D --> E , Not D BEFORE E
--------------
-log-likelihood-grad = -0.00383, Rule = Not D --> E , Not D EQUAL E
--------------
-log-likelihood-grad = 0.00292, Rule = A --> Not E , A EQUAL Not E
--------------
-log-likelihood-grad = 0.18486, Rule = B --> Not E , B BEFORE Not E
--------------
-log-likelihood-grad = -0.02372, Rule = B --> Not E , B EQUAL Not E
--------------
-log-likelihood-grad = 0.17638, Rule = C --> Not E , C BEFORE Not E
--------------
-log-likelihood-grad = 0.00524, Rule = C --> Not E , C EQUAL Not E
--------------
-log-likelihood-grad = 0.04324, Rule = D --> Not E , D BEFORE Not E
--------------
-log-likelihood-grad = 0.00370, Rule = D --> Not E , D EQUAL Not E
--------------
-log-likelihood-grad = 0.06427, Rule = Not A --> Not E , Not A BEFORE Not E
--------------
-log-likelihood-grad = 0.00245, Rule = Not A --> Not E , Not A EQUAL Not E
--------------
-log-likelihood-grad = 0.01938, Rule = Not B --> Not E , Not B EQUAL Not E
--------------
-log-likelihood-grad = 0.10586, Rule = Not C --> Not E , Not C BEFORE Not E
--------------
-log-likelihood-grad = 0.00887, Rule = Not C --> Not E , Not C EQUAL Not E
--------------
-log-likelihood-grad = 0.02982, Rule = Not D --> Not E , Not D BEFORE Not E
--------------
-log-likelihood-grad = 0.00383, Rule = Not D --> Not E , Not D EQUAL Not E
--------------
-------Select best rule-------
-Best rule is: B --> Not E , B BEFORE Not E
-Best log-likelihood-grad = 0.1848631883027455
----- start optimize_log_likelihood ----
-Rule set is:
-Head = E, base = 0.1075
-Rule0: A --> E , A BEFORE E, weight=0.2256
-Rule1: A --> Not E , A BEFORE Not E, weight=0.0226
-Rule2: B --> E , B BEFORE E, weight=0.0859
-Rule3: Not B --> E , Not B BEFORE E, weight=0.0000
-Rule4: C --> E , C BEFORE E, weight=0.0786
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight=0.0901
-Rule6: B --> Not E , B BEFORE Not E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.185179779793591
-Params  [tensor([0.1347], dtype=torch.float64, requires_grad=True), tensor([0.1759], dtype=torch.float64, requires_grad=True), tensor([0.0723], dtype=torch.float64, requires_grad=True), tensor([0.0647], dtype=torch.float64, requires_grad=True), tensor([0.0327], dtype=torch.float64, requires_grad=True), tensor([-0.0445], dtype=torch.float64, requires_grad=True), tensor([0.0574], dtype=torch.float64, requires_grad=True), tensor([0.0312], dtype=torch.float64, requires_grad=True)]
---------
-Update Log-likelihood (torch)=  -10.185179779793591
-new rule added.
------ exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.1347,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.1759.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.0723.
-Rule2: B --> E , B BEFORE E, weight(torch)=0.0647.
-Rule3: Not B --> E , Not B BEFORE E, weight(torch)=0.0327.
-Rule4: C --> E , C BEFORE E, weight(torch)=-0.0445.
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.0574.
-Rule6: B --> Not E , B BEFORE Not E, weight(torch)=0.0312.
------ start generate_rule_via_column_generation -----
-start calculate intensity log and integral.
-start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
--------start multiprocess------
-cpu num = 48, use 8 workers, process 25 candidate rules.
-log-likelihood-grad = 0.00983, Rule = A --> E , A EQUAL E
--------------
-log-likelihood-grad = 0.04675, Rule = B --> E , B EQUAL E
--------------
-log-likelihood-grad = 0.01043, Rule = C --> E , C EQUAL E
--------------
-log-likelihood-grad = 0.05155, Rule = D --> E , D BEFORE E
--------------
-log-likelihood-grad = 0.00652, Rule = D --> E , D EQUAL E
--------------
-log-likelihood-grad = 0.07822, Rule = Not A --> E , Not A BEFORE E
--------------
-log-likelihood-grad = 0.01491, Rule = Not A --> E , Not A EQUAL E
--------------
-log-likelihood-grad = 0.01861, Rule = Not B --> E , Not B EQUAL E
--------------
-log-likelihood-grad = 0.11875, Rule = Not C --> E , Not C BEFORE E
--------------
-log-likelihood-grad = 0.01799, Rule = Not C --> E , Not C EQUAL E
--------------
-log-likelihood-grad = 0.03405, Rule = Not D --> E , Not D BEFORE E
--------------
-log-likelihood-grad = 0.00382, Rule = Not D --> E , Not D EQUAL E
--------------
-log-likelihood-grad = -0.00983, Rule = A --> Not E , A EQUAL Not E
--------------
-log-likelihood-grad = -0.04675, Rule = B --> Not E , B EQUAL Not E
--------------
-log-likelihood-grad = -0.16412, Rule = C --> Not E , C BEFORE Not E
--------------
-log-likelihood-grad = -0.01043, Rule = C --> Not E , C EQUAL Not E
--------------
-log-likelihood-grad = -0.05155, Rule = D --> Not E , D BEFORE Not E
--------------
-log-likelihood-grad = -0.00652, Rule = D --> Not E , D EQUAL Not E
--------------
-log-likelihood-grad = -0.07822, Rule = Not A --> Not E , Not A BEFORE Not E
--------------
-log-likelihood-grad = -0.01491, Rule = Not A --> Not E , Not A EQUAL Not E
--------------
-log-likelihood-grad = -0.01861, Rule = Not B --> Not E , Not B EQUAL Not E
--------------
-log-likelihood-grad = -0.11875, Rule = Not C --> Not E , Not C BEFORE Not E
--------------
-log-likelihood-grad = -0.01799, Rule = Not C --> Not E , Not C EQUAL Not E
--------------
-log-likelihood-grad = -0.03405, Rule = Not D --> Not E , Not D BEFORE Not E
--------------
-log-likelihood-grad = -0.00382, Rule = Not D --> Not E , Not D EQUAL Not E
--------------
-------Select best rule-------
-Best rule is: Not C --> E , Not C BEFORE E
-Best log-likelihood-grad = 0.11875129966003872
----- start optimize_log_likelihood ----
-Rule set is:
-Head = E, base = 0.1347
-Rule0: A --> E , A BEFORE E, weight=0.1759
-Rule1: A --> Not E , A BEFORE Not E, weight=0.0723
-Rule2: B --> E , B BEFORE E, weight=0.0647
-Rule3: Not B --> E , Not B BEFORE E, weight=0.0327
-Rule4: C --> E , C BEFORE E, weight=-0.0445
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight=0.0574
-Rule6: B --> Not E , B BEFORE Not E, weight=0.0312
-Rule7: Not C --> E , Not C BEFORE E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.131368440501227
-Params  [tensor([0.1574], dtype=torch.float64, requires_grad=True), tensor([0.3114], dtype=torch.float64, requires_grad=True), tensor([-0.0632], dtype=torch.float64, requires_grad=True), tensor([0.0163], dtype=torch.float64, requires_grad=True), tensor([-0.0351], dtype=torch.float64, requires_grad=True), tensor([-0.0036], dtype=torch.float64, requires_grad=True), tensor([0.1252], dtype=torch.float64, requires_grad=True), tensor([0.0796], dtype=torch.float64, requires_grad=True), tensor([-0.0521], dtype=torch.float64, requires_grad=True)]
---------
-Update Log-likelihood (torch)=  -10.131368440501227
-new rule added.
------ exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.1574,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.3114.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=-0.0632.
-Rule2: B --> E , B BEFORE E, weight(torch)=0.0163.
-Rule3: Not B --> E , Not B BEFORE E, weight(torch)=-0.0351.
-Rule4: C --> E , C BEFORE E, weight(torch)=-0.0036.
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.1252.
-Rule6: B --> Not E , B BEFORE Not E, weight(torch)=0.0796.
-Rule7: Not C --> E , Not C BEFORE E, weight(torch)=-0.0521.
------ start generate_rule_via_column_generation -----
-start calculate intensity log and integral.
-start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
--------start multiprocess------
-cpu num = 48, use 8 workers, process 24 candidate rules.
-log-likelihood-grad = 0.02832, Rule = A --> E , A EQUAL E
--------------
-log-likelihood-grad = 0.06635, Rule = B --> E , B EQUAL E
--------------
-log-likelihood-grad = 0.02748, Rule = C --> E , C EQUAL E
--------------
-log-likelihood-grad = 0.11085, Rule = D --> E , D BEFORE E
--------------
-log-likelihood-grad = 0.01225, Rule = D --> E , D EQUAL E
--------------
-log-likelihood-grad = 0.09053, Rule = Not A --> E , Not A BEFORE E
--------------
-log-likelihood-grad = 0.01523, Rule = Not A --> E , Not A EQUAL E
--------------
-log-likelihood-grad = 0.03583, Rule = Not B --> E , Not B EQUAL E
--------------
-log-likelihood-grad = 0.02687, Rule = Not C --> E , Not C EQUAL E
--------------
-log-likelihood-grad = 0.08387, Rule = Not D --> E , Not D BEFORE E
--------------
-log-likelihood-grad = 0.00953, Rule = Not D --> E , Not D EQUAL E
--------------
-log-likelihood-grad = -0.02832, Rule = A --> Not E , A EQUAL Not E
--------------
-log-likelihood-grad = -0.06635, Rule = B --> Not E , B EQUAL Not E
--------------
-log-likelihood-grad = -0.26950, Rule = C --> Not E , C BEFORE Not E
--------------
-log-likelihood-grad = -0.02748, Rule = C --> Not E , C EQUAL Not E
--------------
-log-likelihood-grad = -0.11085, Rule = D --> Not E , D BEFORE Not E
--------------
-log-likelihood-grad = -0.01225, Rule = D --> Not E , D EQUAL Not E
--------------
-log-likelihood-grad = -0.09053, Rule = Not A --> Not E , Not A BEFORE Not E
--------------
-log-likelihood-grad = -0.01523, Rule = Not A --> Not E , Not A EQUAL Not E
--------------
-log-likelihood-grad = -0.03583, Rule = Not B --> Not E , Not B EQUAL Not E
--------------
-log-likelihood-grad = -0.28271, Rule = Not C --> Not E , Not C BEFORE Not E
--------------
-log-likelihood-grad = -0.02687, Rule = Not C --> Not E , Not C EQUAL Not E
--------------
-log-likelihood-grad = -0.08387, Rule = Not D --> Not E , Not D BEFORE Not E
--------------
-log-likelihood-grad = -0.00953, Rule = Not D --> Not E , Not D EQUAL Not E
--------------
-------Select best rule-------
-Best rule is: D --> E , D BEFORE E
-Best log-likelihood-grad = 0.1108523224857491
----- start optimize_log_likelihood ----
-Rule set is:
-Head = E, base = 0.1574
-Rule0: A --> E , A BEFORE E, weight=0.3114
-Rule1: A --> Not E , A BEFORE Not E, weight=-0.0632
-Rule2: B --> E , B BEFORE E, weight=0.0163
-Rule3: Not B --> E , Not B BEFORE E, weight=-0.0351
-Rule4: C --> E , C BEFORE E, weight=-0.0036
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight=0.1252
-Rule6: B --> Not E , B BEFORE Not E, weight=0.0796
-Rule7: Not C --> E , Not C BEFORE E, weight=-0.0521
-Rule8: D --> E , D BEFORE E, weight=0.0100
-Finish optimize_log_likelihood, the log likelihood is -10.16532449578918
-Params  [tensor([0.0437], dtype=torch.float64, requires_grad=True), tensor([0.2248], dtype=torch.float64, requires_grad=True), tensor([0.0234], dtype=torch.float64, requires_grad=True), tensor([0.0489], dtype=torch.float64, requires_grad=True), tensor([0.0203], dtype=torch.float64, requires_grad=True), tensor([-0.0095], dtype=torch.float64, requires_grad=True), tensor([0.0698], dtype=torch.float64, requires_grad=True), tensor([0.0469], dtype=torch.float64, requires_grad=True), tensor([-0.0211], dtype=torch.float64, requires_grad=True), tensor([-0.0575], dtype=torch.float64, requires_grad=True)]
---------
-Update Log-likelihood (torch)=  -10.16532449578918
-new rule added.
------ exit generate_rule_via_column_generation -----
-Add a simple rule. Current rule set is:
-Head = E, base(torch) = 0.0437,
-Rule0: A --> E , A BEFORE E, weight(torch)=0.2248.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.0234.
-Rule2: B --> E , B BEFORE E, weight(torch)=0.0489.
-Rule3: Not B --> E , Not B BEFORE E, weight(torch)=0.0203.
-Rule4: C --> E , C BEFORE E, weight(torch)=-0.0095.
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.0698.
-Rule6: B --> Not E , B BEFORE Not E, weight(torch)=0.0469.
-Rule7: Not C --> E , Not C BEFORE E, weight(torch)=-0.0211.
-Rule8: D --> E , D BEFORE E, weight(torch)=-0.0575.
------ start generate_rule_via_column_generation -----
-start calculate intensity log and integral.
-start enumerating candidate rules.
-This rule is filtered, feature_sum=0.0,  A --> E , A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  B --> E , B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  C --> E , C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  D --> E , D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> E , Not A AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> E , Not B AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> E , Not C AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> E , Not D AFTER E
--------------
-This rule is filtered, feature_sum=0.0,  A --> Not E , A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  B --> Not E , B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  C --> Not E , C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  D --> Not E , D AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not A --> Not E , Not A AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not B --> Not E , Not B AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not C --> Not E , Not C AFTER Not E
--------------
-This rule is filtered, feature_sum=0.0,  Not D --> Not E , Not D AFTER Not E
--------------
--------start multiprocess------
-cpu num = 48, use 8 workers, process 23 candidate rules.
-log-likelihood-grad = 0.01456, Rule = A --> E , A EQUAL E
--------------
-log-likelihood-grad = 0.04837, Rule = B --> E , B EQUAL E
--------------
-log-likelihood-grad = 0.01540, Rule = C --> E , C EQUAL E
--------------
-log-likelihood-grad = 0.00664, Rule = D --> E , D EQUAL E
--------------
-log-likelihood-grad = 0.05868, Rule = Not A --> E , Not A BEFORE E
--------------
-log-likelihood-grad = 0.01235, Rule = Not A --> E , Not A EQUAL E
--------------
-log-likelihood-grad = 0.02104, Rule = Not B --> E , Not B EQUAL E
--------------
-log-likelihood-grad = 0.01643, Rule = Not C --> E , Not C EQUAL E
--------------
-log-likelihood-grad = 0.04422, Rule = Not D --> E , Not D BEFORE E
--------------
-log-likelihood-grad = 0.00509, Rule = Not D --> E , Not D EQUAL E
--------------
-log-likelihood-grad = -0.01456, Rule = A --> Not E , A EQUAL Not E
--------------
-log-likelihood-grad = -0.04837, Rule = B --> Not E , B EQUAL Not E
--------------
-log-likelihood-grad = -0.14247, Rule = C --> Not E , C BEFORE Not E
--------------
-log-likelihood-grad = -0.01540, Rule = C --> Not E , C EQUAL Not E
--------------
-log-likelihood-grad = -0.08879, Rule = D --> Not E , D BEFORE Not E
--------------
-log-likelihood-grad = -0.00664, Rule = D --> Not E , D EQUAL Not E
--------------
-log-likelihood-grad = -0.05868, Rule = Not A --> Not E , Not A BEFORE Not E
--------------
-log-likelihood-grad = -0.01235, Rule = Not A --> Not E , Not A EQUAL Not E
--------------
-log-likelihood-grad = -0.02104, Rule = Not B --> Not E , Not B EQUAL Not E
--------------
-log-likelihood-grad = -0.13140, Rule = Not C --> Not E , Not C BEFORE Not E
--------------
-log-likelihood-grad = -0.01643, Rule = Not C --> Not E , Not C EQUAL Not E
--------------
-log-likelihood-grad = -0.04422, Rule = Not D --> Not E , Not D BEFORE Not E
--------------
-log-likelihood-grad = -0.00509, Rule = Not D --> Not E , Not D EQUAL Not E
--------------
-------Select best rule-------
-Best rule is: Not A --> E , Not A BEFORE E
-Best log-likelihood-grad = 0.05867811668402032
----- start optimize_log_likelihood ----
+Head = E, base = 0.0523
+Rule0: A --> E , A BEFORE E, weight=0.6287
+Rule1: A --> Not E , A BEFORE Not E, weight=0.1742
+Rule2: B --> Not E , B BEFORE Not E, weight=0.0874
+Rule3: Not A --> Not E , Not A BEFORE Not E, weight=0.0816
+Rule4: D --> Not E , D BEFORE Not E, weight=0.0292
+Rule5: Not B --> E , Not B BEFORE E, weight=0.0100
+Rule6: C --> E , C BEFORE E, weight=0.0100
+[optimize log-likelihood] Elapsed: 14.1532 sec.

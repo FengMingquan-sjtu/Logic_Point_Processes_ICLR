@@ -204,12 +204,59 @@ Intensity B is 1.0
 Intensity C is 0.7
 Intensity D is 0.3
 Generate 20000 samples===
-Head = E, base(torch) = 0.1574,
-[GT]Rule0: A --> E , A BEFORE E, weight(torch)=0.3114.
-Rule1: A --> Not E , A BEFORE Not E, weight(torch)=-0.0632.
-Rule2: B --> E , B BEFORE E, weight(torch)=0.0163.
-Rule3: Not B --> E , Not B BEFORE E, weight(torch)=-0.0351.
-Rule4: C --> E , C BEFORE E, weight(torch)=-0.0036.
-Rule5: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.1252.
-Rule6: B --> Not E , B BEFORE Not E, weight(torch)=0.0796.
-Rule7: Not C --> E , Not C BEFORE E, weight(torch)=-0.0521.
+--- lr=0.05,batchsize=16, N_best=1, no avg weight, no l1 penalty ---
+--- learned for 24 hours, still not finished ---
+Head = E, base(torch) = 0.0997,
+[GT]Rule0: A --> E , A BEFORE E, weight(torch)=0.1997.
+Rule1: A --> Not E , A BEFORE Not E, weight(torch)=0.0484.
+Rule2: B --> E , B BEFORE E, weight(torch)=0.0039.
+Rule3: Not B --> E , Not B BEFORE E, weight(torch)=0.0613.
+[GT-]Rule4: C --> E , C BEFORE E, weight(torch)=0.0242.
+Rule5: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.0288.
+Rule6: B --> Not E , B BEFORE Not E, weight(torch)=0.0920.
+[GT-]Rule7: Not C --> E , Not C BEFORE E, weight(torch)=0.0836.
+[GT-]Rule8: D --> E , D BEFORE E, weight(torch)=0.0656.
+Rule9: Not A --> E , Not A BEFORE E, weight(torch)=0.0256.
+Rule10: C --> Not E , C BEFORE Not E, weight(torch)=0.0394.
+Rule11: Not C --> Not E , Not C BEFORE Not E, weight(torch)=0.0268.
+Rule12: D --> Not E , D BEFORE Not E, weight(torch)=0.0222.
+Rule13: B --> E , B EQUAL E, weight(torch)=0.1633.
+Rule14: Not A --> Not E , Not A BEFORE Not E, weight(torch)=0.0347.
+
+--- lr=0.01 ,batchsize=32, N_best=2, with avg weight, with l1 penalty ---
+--- learned for 14 hours, still not finished ---
+Head = E, base(torch) = 0.0696,
+[GT]Rule0: A --> E , A BEFORE E, weight(torch)=0.1650.
+Rule1: B --> E , B BEFORE E, weight(torch)=0.0067.
+Rule2: Not B --> E , Not B BEFORE E, weight(torch)=0.0127.
+[GT-]Rule3: B --> E , B EQUAL E, weight(torch)=0.0323.
+[GT-]Rule4: C --> E , C BEFORE E, weight(torch)=0.0014.
+[GT-]Rule5: Not C --> E , Not C BEFORE E, weight(torch)=0.0231.
+Rule6: Not A --> E , Not A BEFORE E, weight(torch)=-0.0051.
+Rule7: B --> Not E , B BEFORE Not E, weight(torch)=-0.0079.
+Rule8: Not B --> Not E , Not B BEFORE Not E, weight(torch)=-0.0122.
+[GT-]Rule9: D --> E , D BEFORE E, weight(torch)=-0.0080.
+Rule10: Not D --> E , Not D BEFORE E, weight(torch)=0.0018.
+Rule11: C --> Not E , C BEFORE Not E, weight(torch)=-0.0023.
+Rule12: Not C --> Not E , Not C BEFORE Not E, weight(torch)=-0.0213.
+Rule13: Not B --> E , Not B EQUAL E, weight(torch)=-0.0011.
+[GT-]Rule14: B ^ A --> E , B BEFORE E ^ A BEFORE E, weight(torch)=0.0039.
+
+--- lr=0.01 ,batchsize=32, N_best=2, with avg weight, with l1 penalty ---
+--- learned for 14 hours, still not finished ---
+Head = E, base(torch) = 0.0847,
+[GT]Rule0: A --> E , A BEFORE E, weight(torch)=0.1853.
+Rule1: B --> E , B BEFORE E, weight(torch)=-0.0067.
+Rule2: Not B --> E , Not B BEFORE E, weight(torch)=-0.0006.
+[GT-]Rule3: B --> E , B EQUAL E, weight(torch)=0.0328.
+Rule4: Not B --> Not E , Not B BEFORE Not E, weight(torch)=0.0003.
+[GT-]Rule5: C --> E , C BEFORE E, weight(torch)=-0.0011.
+[GT-]Rule6: Not C --> E , Not C BEFORE E, weight(torch)=0.0051.
+Rule7: Not A --> E , Not A BEFORE E, weight(torch)=0.0010.
+[GT-]Rule8: D --> E , D BEFORE E, weight(torch)=0.0215.
+Rule9: Not C --> Not E , Not C BEFORE Not E, weight(torch)=-0.0033.
+Rule10: Not A --> Not E , Not A BEFORE Not E, weight(torch)=-0.0012.
+Rule11: C --> Not E , C BEFORE Not E, weight(torch)=0.0016.
+[GT-]Rule12: B ^ A --> E , B BEFORE E ^ A BEFORE E, weight(torch)=-0.0030.
+Rule13: C ^ B --> E , C BEFORE E ^ B BEFORE E, weight(torch)=-0.0058.
+=== end test case ===

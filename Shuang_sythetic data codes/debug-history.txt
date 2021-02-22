@@ -153,8 +153,46 @@ in initialize, some filtered rules are wrongly added to table.  They take idx of
 
 32. mimic: learned rules  --> filtered by expert --> re-fit to get final result.
 
-33. cache!!!
+33. [Added]feature cache
+    both intensity-log-sum and intensity-integral will benefit from featrue cache.
 
-34. extending bug.
+34. [Fixed] extending bug.
 
-35. Feb.21, 0:30. Add avg weight, multi-processing, L1 penalty, Reduce lr to 0.01, Increase batch size to 36
+35. [Update] Feb.21, 0:30. Add avg weight, multi-processing, L1 penalty, Reduce lr to 0.01, Increase batch size to 36
+
+36. AFTER is always zero-feature.
+mask = (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
+[Temporal fix] remove AFTER in enumeration.
+
+37. [Implemented] add a function: delete negative-weight rules.
+
+38. 20000 samples, N-best=1, 24h, get 14 rules. N-best=2, 14h, get 15 rules.
+    it runs slower when rule set grows larger.
+    maybe start from simple rules.
+
+39. featrue-cache + multiprocessing is very slow! race condition.
+    time of log-like-grad:
+    200 samples
+    8 workers, no cache: 9s,8s,8s.
+    8 workers, with cache: 2min,5min,8min.
+    1 worker(with pool), with cache: 47s
+    1 worker(no pool), with cache 33s, 12s,13s,11s.
+    1 worker(no pool), no cache 30s,28s,26s.
+
+    maybe first run an arg (write), then multiprocessing(read-only)?
+    [Fixed]feature dict key too long?  fix: split dict key into 2 parts.
+    [Fixed] temporally remove feature cache from class attr before  multiprocessing.
+            since coping feature-cache into sub-processes is slow.
+            in multiprocessing, do not use feature-cache, since the common part has already been covered by intensity log and integral, feature-cache is unnecessary.
+            after multiprocessing, recover feature-cache.
+
+
+40. 1 worker(with pool)feature cache size = 78894.
+    segmentation fault.
+    8 workers(with pool)feature cache size = 280512
+    segmentation fault.
+    --> multiprocessing pool can not handle large feature cache.
+
+
+41. [Implemented] log-grad can be redundant. most of rules are useless, but most of time is spent on those rules.
+    

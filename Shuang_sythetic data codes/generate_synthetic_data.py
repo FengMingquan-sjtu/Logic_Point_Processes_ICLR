@@ -51,10 +51,7 @@ class Logic_Model_Generator:
         self.body_intensity= {0:0.5, 1:1.0, 2:0.7, 3:0.3}
 
         self.logic_template = self.logic_rule()
-        print("generate following rules:")
-        self.print_rule()
-        for body_idx in self.body_predicate_set:
-            print("Intensity {} is {}".format(self.predicate_notation[body_idx], self.body_intensity[body_idx]))
+        
 
     def logic_rule(self):
         # encode rule information
@@ -91,14 +88,14 @@ class Logic_Model_Generator:
         logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [1,4],[2,4]]
         logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE, self.EQUAL, self.BEFORE]
 
-        # D --> E,  D After E.
+        # D --> E,  D BEFORE E.
         formula_idx = 3
         logic_template[head_predicate_idx][formula_idx] = {}
         logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [3]
         logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
         logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
         logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[3, 4]]
-        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.AFTER]
+        logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [self.BEFORE]
 
         # C ^ D --> E,  C Before E, C Equal D.
         formula_idx = 4
@@ -223,6 +220,10 @@ class Logic_Model_Generator:
 
     def generate_data(self, num_sample, time_horizon):
         print("Generate {} samples".format(num_sample))
+        print("with following rules:")
+        self.print_rule()
+        for body_idx in self.body_predicate_set:
+            print("Intensity {} is {}".format(self.predicate_notation[body_idx], self.body_intensity[body_idx]))
         
         data={}
 
@@ -277,6 +278,10 @@ class Logic_Model_Generator:
                 
 
         return data
+
+
+def get_logic_model_0():
+    pass
 
 
 if __name__ == "__main__":
