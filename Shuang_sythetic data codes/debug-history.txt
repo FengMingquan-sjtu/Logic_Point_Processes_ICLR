@@ -166,7 +166,9 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
 37. [Implemented] add a function: delete negative-weight rules.
 
-38. 20000 samples, N-best=1, 24h, get 14 rules. N-best=2, 14h, get 15 rules.
+38. 20000 samples, 
+    N-best=1, 24h, get 14 rules.
+    N-best=2, 14h, get 15 rules.
     it runs slower when rule set grows larger.
     maybe start from simple rules.
 
@@ -195,4 +197,16 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
 
 41. [Implemented] log-grad can be redundant. most of rules are useless, but most of time is spent on those rules.
-    
+
+42. with cache and prune: 20000 samples
+    3 rules [optimize log-likelihood] Elapsed: 37.1026 min.
+    2 rules(delete 1) [optimize log-likelihood] Elapsed: 6.9391 min.
+    4 rules(add 2) [optimize log-likelihood] Elapsed: 33.1500 min.
+    6 rules(add 2) [optimize log-likelihood] Elapsed: 50.5172 min.
+    4 rules(delete 2) [optimize log-likelihood] Elapsed: 33.9437 min.
+    6 rules(add 2) [optimize log-likelihood] Elapsed: 41.5354 min.
+
+    8 workers, without cache [multiprocess log-grad] Elapsed: 15min/14min/15min/12min
+
+43. [Fixed]generator intensity is with SoftMax!
+    be careful, generator is anther version of intensity function.

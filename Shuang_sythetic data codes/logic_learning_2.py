@@ -135,12 +135,15 @@ class Logic_Learning_Model(nn.Module):
         tmp_model_parameter = dict()
         tmp_model_parameter['base'] = self.model_parameter[head_predicate_idx]['base']
         tmp_model_parameter['base_cp'] = self.model_parameter[head_predicate_idx]['base_cp']
-        for i in range(self.num_formula):
-            if not i in formula_idx_list:
-                tmp_logic_template[i] = self.logic_template[head_predicate_idx][i]
-                tmp_model_parameter[i] = dict()
-                tmp_model_parameter[i]["weight"] = self.model_parameter[head_predicate_idx][i]['weight']
-                tmp_model_parameter[i]["weight_cp"] = self.model_parameter[head_predicate_idx][i]['weight_cp']
+        
+        new_formula_idx = 0
+        for formula_idx in range(self.num_formula):
+            if not formula_idx in formula_idx_list:
+                tmp_logic_template[new_formula_idx] = self.logic_template[head_predicate_idx][formula_idx]
+                tmp_model_parameter[new_formula_idx] = dict()
+                tmp_model_parameter[new_formula_idx]["weight"] = self.model_parameter[head_predicate_idx][formula_idx]['weight']
+                tmp_model_parameter[new_formula_idx]["weight_cp"] = self.model_parameter[head_predicate_idx][formula_idx]['weight_cp']
+                new_formula_idx += 1
 
         self.logic_template[head_predicate_idx] = tmp_logic_template
         self.model_parameter[head_predicate_idx] = tmp_model_parameter
@@ -361,7 +364,10 @@ class Logic_Learning_Model(nn.Module):
                     break
             if len(gradient_batch) >= self.num_batch_check_for_gradient and gradient_norm <= epsilon:
                 break
-
+        if len(gradient_batch) >= self.num_batch_check_for_gradient and gradient_norm <= epsilon:
+            print("grad norm smaller than epsilon.")
+        else:
+            print("reach max iter num.")
         #use the avg of last several batches log_likelihood
         log_likelihood = np.mean(log_likelihood_batch)/self.batch_size
         print('Finish optimize_log_likelihood, the log likelihood is', log_likelihood)
@@ -524,7 +530,7 @@ class Logic_Learning_Model(nn.Module):
                         self.logic_template[head_predicate_idx][self.num_formula]['temporal_relation_type'] = [temporal_relation_type]
 
                         self.model_parameter[head_predicate_idx][self.num_formula] = {}
-                        self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) ).double(), requires_grad=True)
+                        self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1)*0.01).double(), requires_grad=True)
                         self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1) 
                         self.num_formula +=1
 
@@ -536,7 +542,8 @@ class Logic_Learning_Model(nn.Module):
                         #     print("-------------",flush=1)
                         
                         #record the log-likelihood_gradient in performance gain
-                        gain  = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max)
+                        with Timer("optimize log-likelihood") as t:
+                            gain  = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max)
                         print("Current rule is:", self.get_rule_str(self.logic_template[head_predicate_idx][self.num_formula-1], head_predicate_idx))
                         #print("feature sum is", feature_sum)
                         print("log-likelihood is ", gain)
@@ -560,7 +567,7 @@ class Logic_Learning_Model(nn.Module):
                         self.logic_template[head_predicate_idx][self.num_formula] = {}
                         self.model_parameter[head_predicate_idx][self.num_formula] = {}
                         
-                        #Fast result for mimic.
+                        #Fast result for large dataset like mimic.
                         flag = 1
                         break
                     if flag:
@@ -591,7 +598,8 @@ class Logic_Learning_Model(nn.Module):
         self.num_formula += 1
 
         #update params
-        l = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max) #update base.
+        with Timer("optimize log-likelihood") as t:
+            l = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max) #update base.
         print("Update Log-likelihood (torch) = ", l)
 
         if self.use_cp:
@@ -769,7 +777,7 @@ class Logic_Learning_Model(nn.Module):
             print("Update Log-likelihood (torch)= ", l, flush=1)
             
             #print("!!!test delete rules!!!")
-            #self.model_parameter[head_predicate_idx][self.num_formula-1]['weight'] = torch.autograd.Variable((torch.ones(1) * -0.01).double(), requires_grad=True)
+            #self.model_parameter[head_predicate_idx][self.num_formula-2]['weight'] = torch.autograd.Variable((torch.ones(1) * -0.01).double(), requires_grad=True)
 
             if self.use_cp:
                 l_cp = self.optimize_log_likelihood_cp(head_predicate_idx, dataset, T_max)
@@ -932,7 +940,8 @@ class Logic_Learning_Model(nn.Module):
 
         if is_update_weight:
             # update model parameter
-            l = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max)
+            with Timer("optimize log-likelihood") as t:
+                l = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max)
             print("Update Log-likelihood (torch)= ", l, flush=1)
 
             if self.use_cp:
@@ -1089,17 +1098,17 @@ if __name__ == "__main__":
     model.predicate_set= [0, 1, 2, 3, 4] # the set of all meaningful predicates
     model.predicate_notation = ['A', 'B', 'C', 'D', 'E']
     T_max = 10
-    dataset = np.load('data.npy', allow_pickle='TRUE').item()
-    num_sample = 20000 #dataset size
+    dataset = np.load('data-0.npy', allow_pickle='TRUE').item()
+    num_sample = 1000 #dataset size
     print("dataset size is {}".format(num_sample) )
     
 
     small_dataset = {i:dataset[i] for i in range(num_sample)}
     model.batch_size_cp = num_sample  # sample used by cp
-    model.batch_size_grad = 2000
+    model.batch_size_grad = 1000
     
-
-    model.search_algorithm(head_predicate_idx[0], small_dataset, T_max)
+    with Timer("search_algorithm") as t:
+        model.search_algorithm(head_predicate_idx[0], small_dataset, T_max)
 
     with open("model.pkl",'wb') as f:
         pickle.dump(model, f)

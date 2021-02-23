@@ -260,3 +260,38 @@ Rule11: C --> Not E , C BEFORE Not E, weight(torch)=0.0016.
 [GT-]Rule12: B ^ A --> E , B BEFORE E ^ A BEFORE E, weight(torch)=-0.0030.
 Rule13: C ^ B --> E , C BEFORE E ^ B BEFORE E, weight(torch)=-0.0058.
 === end test case ===
+
+
+===Test:Generate 1000 samples
+with following rules:
+Head = E, base = 0.0000
+Rule0: A --> E , A BEFORE E, weight=0.3000
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4000
+Rule2: B --> E , B EQUAL E, weight=0.5000
+Rule3: D --> E , D BEFORE E, weight=0.6000
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7000
+Intensity A is 0.5
+Intensity B is 1.0
+Intensity C is 0.7
+Intensity D is 0.3
+===
+[GT=0.0]Head = E, base = 0.0807
+[GT=0.3]Rule0: A --> E , A BEFORE E, weight=0.2270
+[GT=0.7]Rule1: Not C --> E , Not C BEFORE E, weight=0.7113
+Rule2: Not B --> E , Not B BEFORE E, weight=0.0255
+[GT=0.6]Rule3: D --> E , D BEFORE E, weight=0.5146
+[GT=0.5]Rule4: B --> E , B EQUAL E, weight=0.5617
+Rule5: Not A --> E , Not A BEFORE E, weight=0.0296
+Rule6: Not D --> E , Not D EQUAL E, weight=0.0044
+Rule7: A --> E , A EQUAL E, weight=0.0368
+Rule8: D --> E , D EQUAL E, weight=0.0037
+Rule9: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.0587
+Rule10: A ^ Not C --> E , A BEFORE E ^ Not C BEFORE E, weight=0.0044
+Rule11: A ^ Not B --> E , A BEFORE E ^ Not B BEFORE E, weight=0.0102
+Rule12: A ^ D --> E , A BEFORE E ^ D BEFORE E, weight=0.0061
+[GT=0.4]Rule13: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.0009
+Rule14: Not C ^ Not A --> E , Not C BEFORE E ^ Not A BEFORE E, weight=0.0149
+Rule15: Not B ^ Not D --> E , Not B BEFORE Not D ^ Not D EQUAL E, weight=0.0007
+Rule16: Not B ^ C ^ A --> E , Not B BEFORE E ^ C BEFORE E ^ A BEFORE E, weight=0.0045
+Rule17: C ^ A ^ Not B --> E , C BEFORE A ^ A BEFORE E ^ Not B BEFORE E, weight=0.0016
+Rule18: C ^ A ^ D --> E , C BEFORE E ^ A BEFORE E ^ D BEFORE E, weight=0.0025
