@@ -125,21 +125,22 @@ in initialize, some filtered rules are wrongly added to table.  They take idx of
 
 22. [FIXED]Calculating likelihood of all heads at same time is redundant.
 
-23. Too slow.. Run 24h only get 4 simple rules.
+23. [FIXED]Too slow.. Run 24h only get 4 simple rules.
 
-24. Extending selection method wrong?
+24. [FIXED]Extending selection method wrong?
 
 25. dataset?
     online shopping -->  tell story.
+    stockings
     mimic dataset more desease.
 
 26. decrease SGD variance, running time.
     avg weight ?
     focus on SGD.
 
-27. 5 rules, 2w samples. focus on synthetic.
+27. [Closed]5 rules, 2w samples. focus on synthetic.
 
-28. add regularizer softmax.
+28. [Closed]add regularizer softmax.
     How to deal with [0.3, 0.3, 0.3]?
     the first rule weight must be [1.0, ]
 
@@ -210,3 +211,70 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
 43. [Fixed]generator intensity is with SoftMax!
     be careful, generator is anther version of intensity function.
+
+44. [Fixed]grad-norm increase with weight num increase.
+    avg #weights.
+
+45. Obervation: 
+    longer rule is less accurate, requires larger dataset.
+    EQUAL is less accurate than BEFORE.
+    batch_size 64 is 2-times faster than batch_size 32.
+    lr 0.01 is slightly faster than lr 0.005
+
+46. selection of params:
+    self.epsilon = 0.01 --> modify to 0.001
+    self.gain_threshold = 0.01 --> modify to 0.1
+    self.low_grad_threshold = 1e-5 --> modify to 0.01
+    self.weight_threshold = 1e-5 --> modify to 0.01
+    seems too heavily prune. 
+    esp for long rules, single composition may have low weight or log-grad.
+    e.g. B^C^D-->E, composition log-grad is B^C(0.07,0.058,0.049), D^C(0.01), D^B(0.09,0.08) 
+    
+    [Update]self.gain_threshold = 0.1 --> modify to 0.05
+    B^C^D (0.029,0.028)
+    [Update]self.gain_threshold = 0.05 --> modify to 0.02
+    self.epsilon = 0.001 --> 0.005
+    self.num_batch_check_for_update = 20 --> 300
+    change stop criteria from AND to OR.
+    self.epsilon = 0.005 --> 0.003
+
+47. Auto-stop of SGD
+    [Implemented] (20 batches no update best likelihood) OR (grad-norm < epsilon)
+    [Fixed] seems AND is better. add iter_num? --> iter_num=30 for 2000samples, iter_num=60 for 1000samples.
+
+48. Auto-stop of sub-problem.
+    multi-arm-bandit
+    UBC
+
+49. [Implemented]Fit generated data with GT rules, to check data variance.
+    seems len-3 rule is under-estimated. 2000 samples, 45 iter converge. 
+
+50. [Implemented]add redundant variables, test wether model can ignore it.
+
+51. Association rule learning(With Temporal) is anther baseline?
+
+52. [Implemented]sort weight descendingly, first extend the largest-weight rule in 2nd phase.
+
+53. [Implemented]When training finishes, heavily prune weight<0.1 and re-fit.
+    the noise rules may disturb correct rules weight.
+    and also set a large iter_num(e.g. 20) for better acc
+
+54. Again duplicate bug !!!
+    modify generate_rule_via_column_generation() but forget to modify its copy in add_one_predicate_to_existing_rule()
+    [FIXED] make the duplicate part as a function.
+
+55. [Observation]
+    Addition of correct new rule, and increase of its weights, 
+    leads to decrease of incorrect and composite rule weights (due to l1 penalty and data coverage),
+    which further leads to improvements on other correct rule weights.
+
+56. generate 1000 samples, 5 formulas, 6 preds, cost 10 hours.
+    [Update] disable cache in generator to save time.
+
+57. [updated]max_rule_num=20 is not enough. --> modify to 30
+    also, if num_formula >= max_num_rule, strictly prune.
+
+
+run (fit data-2) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Feb26, 16:14
+
+run (fit data-1) setsid python3 logic_learning_2.py 1>out-1.txt 2>err-1.txt at Feb26, 16:15

@@ -295,3 +295,474 @@ Rule15: Not B ^ Not D --> E , Not B BEFORE Not D ^ Not D EQUAL E, weight=0.0007
 Rule16: Not B ^ C ^ A --> E , Not B BEFORE E ^ C BEFORE E ^ A BEFORE E, weight=0.0045
 Rule17: C ^ A ^ Not B --> E , C BEFORE A ^ A BEFORE E ^ Not B BEFORE E, weight=0.0016
 Rule18: C ^ A ^ D --> E , C BEFORE E ^ A BEFORE E ^ D BEFORE E, weight=0.0025
+
+
+===
+Test: generate 2000 samples
+with following rules:
+Head = E, base = 0.0000
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3000
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4000
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.5000
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.6000
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7000
+Intensity A is 2
+Intensity B is 2
+Intensity C is 2
+Intensity D is 2===
+====
+Result: batch size = 32
+learning rate = 0.005
+====
+Head = E, base = 0.1137
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight=0.6563
+Rule1: C --> E , C EQUAL E, weight=0.0827
+Rule2: D --> E , D BEFORE E, weight=0.0064
+[GT=0.3]Rule3: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2547
+Rule4: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight=0.0312
+Rule5: Not A ^ C --> E , Not A BEFORE E ^ C BEFORE E, weight=0.0357
+[GT=0.4]Rule6: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.2744
+[GT=0.6]Rule7: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.3834
+Rule8: D ^ B --> Not E , D EQUAL Not E ^ B BEFORE Not E, weight=0.0298
+Rule9: B ^ D --> E , B EQUAL E ^ D BEFORE E, weight=0.1708
+Rule10: C ^ D --> Not E , C BEFORE D ^ D EQUAL Not E, weight=0.0222
+Rule11: D ^ Not A --> E , D BEFORE E ^ Not A BEFORE E, weight=0.0136
+Rule12: B ^ Not C --> E , B BEFORE E ^ Not C EQUAL E, weight=0.0088
+Rule13: B ^ C ^ A --> E , B EQUAL E ^ C BEFORE E ^ A BEFORE E, weight=0.1686
+Rule14: B ^ Not A ^ C --> E , B EQUAL E ^ Not A BEFORE E ^ C BEFORE E, weight=0.0574
+Rule15: D ^ A ^ B --> E , D BEFORE E ^ A BEFORE E ^ B EQUAL E, weight=0.0504
+Rule16: A ^ D ^ C --> E , A BEFORE E ^ D BEFORE E ^ C EQUAL E, weight=0.0628
+Rule17: C ^ D ^ B --> Not E , C BEFORE D ^ D EQUAL Not E ^ B BEFORE Not E, weight=0.0261
+[GT=0.5]Rule18: C ^ B ^ D --> E , C BEFORE E ^ B EQUAL E ^ D BEFORE E, weight=0.0562
+Rule19: A ^ C ^ D --> Not E , A BEFORE Not E ^ C BEFORE D ^ D EQUAL Not E, weight=0.0081
+
+
+====
+batch size = 32
+learning rate = 0.005
+====
+Head = E, base = 0.1096
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight=0.6337
+Rule1: C --> E , C BEFORE E, weight=0.0256
+Rule2: B --> E , B EQUAL E, weight=0.1389
+Rule3: C --> E , C EQUAL E, weight=0.1356
+Rule4: D --> E , D BEFORE E, weight=0.0047
+Rule5: Not A --> E , Not A BEFORE E, weight=0.0045
+[GT=0.3]Rule6: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2488
+Rule7: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight=0.0434
+Rule8: Not A ^ C --> E , Not A BEFORE E ^ C BEFORE E, weight=0.0325
+[GT=0.4]Rule9: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4142
+[GT=0.6]Rule10: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.4198
+Rule11: Not A ^ D --> E , Not A BEFORE E ^ D BEFORE E, weight=0.0094
+Rule12: B ^ Not A --> E , B EQUAL E ^ Not A BEFORE E, weight=0.0723
+Rule13: A ^ Not D --> E , A BEFORE E ^ Not D BEFORE E, weight=0.0113
+Rule14: B ^ D --> Not E , B BEFORE D ^ D EQUAL Not E, weight=0.0287
+Rule15: C ^ Not B --> E , C BEFORE E ^ Not B EQUAL E, weight=0.0154
+Rule16: Not D ^ A --> Not E , Not D BEFORE A ^ A EQUAL Not E, weight=0.0024
+Rule17: D ^ C ^ A --> E , D BEFORE E ^ C BEFORE E ^ A BEFORE E, weight=0.0126
+Rule18: B ^ D ^ Not C --> E , B EQUAL E ^ D BEFORE E ^ Not C BEFORE E, weight=0.0289
+Rule19: D ^ Not A ^ C --> E , D BEFORE E ^ Not A BEFORE E ^ C BEFORE E, weight=0.0075
+[search_algorithm] Elapsed: 2.5931 hour.
+
+
+====
+batch size = 64
+learning rate = 0.005
+====
+Head = E, base = 0.0940
+Rule0: A --> E , A BEFORE E, weight=0.0496
+[GT=0.7]Rule1: Not C --> E , Not C BEFORE E, weight=0.6033
+Rule2: C --> E , C BEFORE E, weight=0.0519
+Rule3: C --> E , C EQUAL E, weight=0.3088
+Rule4: B --> E , B EQUAL E, weight=0.3018
+Rule5: B --> Not E , B BEFORE Not E, weight=0.0203
+Rule6: Not A --> E , Not A BEFORE E, weight=0.0168
+Rule7: D --> Not E , D EQUAL Not E, weight=0.0148
+Rule8: A --> Not E , A BEFORE Not E, weight=0.0106
+Rule9: Not A --> Not E , Not A EQUAL Not E, weight=0.0360
+[GT=0.3]Rule10: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2044
+Rule11: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight=0.0871
+Rule12: B ^ C --> E , B EQUAL E ^ C BEFORE E, weight=0.0762
+[GT=0.6]Rule13: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.2488
+[GT=0.4]Rule14: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.2083
+Rule15: Not A ^ D --> E , Not A BEFORE E ^ D BEFORE E, weight=0.0225
+Rule16: C ^ Not A --> E , C BEFORE E ^ Not A BEFORE E, weight=0.0327
+Rule17: C ^ D --> Not E , C BEFORE D ^ D EQUAL Not E, weight=0.0001
+Rule18: D ^ A --> Not E , D EQUAL A ^ A BEFORE Not E, weight=0.0236
+Rule19: Not D ^ Not A --> Not E , Not D EQUAL Not A ^ Not A EQUAL Not E, weight=0.0044
+[search_algorithm] Elapsed: 1.7541 hour.
+
+
+====
+batch size = 32
+learning rate = 0.01
+====
+Head = E, base = 0.0971
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight=0.6613
+Rule1: C --> E , C EQUAL E, weight=0.0938
+Rule2: Not A --> E , Not A BEFORE E, weight=0.0271
+[GT=0.3]Rule3: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2212
+Rule4: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight=0.0184
+Rule5: B ^ C --> E , B EQUAL E ^ C BEFORE E, weight=0.0546
+[GT=0.4]Rule6: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.3352
+[GT=0.6]Rule7: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.3743
+Rule8: Not A ^ D --> E , Not A BEFORE E ^ D BEFORE E, weight=0.0069
+Rule9: C ^ Not A --> E , C BEFORE E ^ Not A BEFORE E, weight=0.0642
+Rule10: B ^ D --> Not E , B BEFORE D ^ D EQUAL Not E, weight=0.0517
+Rule11: A ^ Not D --> E , A BEFORE E ^ Not D BEFORE E, weight=0.0129
+Rule12: C ^ Not B --> E , C BEFORE E ^ Not B EQUAL E, weight=0.0909
+Rule13: A ^ Not D --> E , A BEFORE Not D ^ Not D EQUAL E, weight=0.0216
+Rule14: B ^ D ^ Not C --> E , B EQUAL E ^ D BEFORE E ^ Not C BEFORE E, weight=0.0757
+[GT=0.5]Rule15: D ^ B ^ C --> E , D BEFORE E ^ B EQUAL E ^ C BEFORE E, weight=0.1281
+Rule16: D ^ A ^ B --> E , D BEFORE E ^ A BEFORE E ^ B EQUAL E, weight=0.1403
+Rule17: A ^ D ^ C --> E , A BEFORE E ^ D BEFORE E ^ C EQUAL E, weight=0.0103
+Rule18: Not C ^ Not A ^ D --> E , Not C EQUAL D ^ Not A BEFORE E ^ D BEFORE E, weight=0.0127
+Rule19: D ^ C ^ Not A --> E , D BEFORE E ^ C BEFORE E ^ Not A BEFORE E, weight=0.0074
+[search_algorithm] Elapsed: 3.0485 hour.
+
+===
+batch size = 64
+learning rate = 0.01
+===
+Head = E, base = 0.0981
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight=0.6804
+Rule1: B --> E , B EQUAL E, weight=0.0948
+Rule2: C --> E , C EQUAL E, weight=0.1943
+Rule3: B --> Not E , B BEFORE Not E, weight=0.0112
+Rule4: D --> E , D BEFORE E, weight=0.0135
+Rule5: Not D --> E , Not D BEFORE E, weight=0.0007
+Rule6: Not A --> E , Not A BEFORE E, weight=0.0497
+Rule7: A --> Not E , A BEFORE Not E, weight=0.0330
+Rule8: Not B --> E , Not B EQUAL E, weight=0.0086
+[GT=0.3]Rule9: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2442
+Rule10: B ^ Not C --> E , B EQUAL E ^ Not C BEFORE E, weight=0.1832
+Rule11: Not A ^ C --> E , Not A BEFORE C ^ C BEFORE E, weight=0.0455
+[GT=0.4]Rule12: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.3499
+[GT=0.6]Rule13: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.3548
+Rule14: D ^ B --> Not E , D EQUAL Not E ^ B BEFORE Not E, weight=0.0418
+Rule15: A ^ D --> E , A BEFORE E ^ D BEFORE E, weight=0.0310
+Rule16: B ^ Not D --> E , B EQUAL E ^ Not D BEFORE E, weight=0.0805
+Rule17: Not D ^ Not A --> E , Not D EQUAL E ^ Not A BEFORE E, weight=0.0045
+Rule18: Not B ^ A --> Not E , Not B BEFORE Not E ^ A BEFORE Not E, weight=0.0034
+Rule19: C ^ Not B --> E , C BEFORE E ^ Not B EQUAL E, weight=0.0116
+[search_algorithm] Elapsed: 1.8353 hour.
+
+===
+batch_size=64
+num_iter=5
+epsilon=0.001
+gain_threshold=0.1
+low_grad_threshold=0.01
+weight_threshold=0.01
+learning_rate=0.005
+stop criteria is grad-norm < epsilon
+===
+Head = E, base = 0.1090
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight=0.6194
+Rule1: C --> E , C EQUAL E, weight=0.1326
+Rule2: B --> E , B EQUAL E, weight=0.1904
+Rule3: Not A --> E , Not A BEFORE E, weight=0.0389
+[GT=0.3]Rule4: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2836
+Rule5: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight=0.0725
+[GT=0.6]Rule6: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.4140
+[GT=0.4]Rule7: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.2514
+Rule8: D ^ A ^ B --> E , D BEFORE E ^ A BEFORE E ^ B EQUAL E, weight=0.2292
+[search_algorithm] Elapsed: 2.0945 hour.
+
+===
+batch_size=64
+num_iter=5
+epsilon=0.001
+gain_threshold=0.1
+low_grad_threshold=0.01
+weight_threshold=0.01
+learning_rate=0.005
+stop criteria is grad-norm < epsilon AND num_batch_no_update > 20 
+===
+Head = E, base = 0.1092
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight=0.6272
+Rule1: C --> E , C EQUAL E, weight=0.1327
+Rule2: B --> E , B EQUAL E, weight=0.1924
+[GT=0.3]Rule3: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2399
+Rule4: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight=0.0662
+Rule5: Not A ^ C --> E , Not A BEFORE E ^ C BEFORE E, weight=0.0751
+[GT=0.6]Rule6: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.4206
+[GT=0.4]Rule7: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4469
+Rule8: A ^ D --> E , A BEFORE E ^ D BEFORE E, weight=0.0329
+[search_algorithm] Elapsed: 2.4424 hour.
+
+===
+Fit GT rules
+===
+batch_size=64
+num_iter=5
+epsilon=0.001
+Run 155 batches
+reach max iter num.
+grad norm=0.11938703111891756. num_batch_no_update =3
+stop criteria is grad-norm < epsilon AND num_batch_no_update > 20 
+Head = E, base = 0.1094
+[GT=0.3]Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.4411
+[GT=0.4]Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4227
+[GT=0.5]Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.4160
+[GT=0.6]Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5052
+[GT=0.7]Rule4: Not C --> E , Not C BEFORE E, weight=0.4931
+[Fit data] Elapsed: 5.1260 min.
+===
+batch_size=64
+num_iter=5
+epsilon=0.001
+stop criteria is grad-norm < epsilon OR num_batch_no_update > 20 
+Run 128 batches
+grad norm 0.1673999683948907 not smaller than epsilon 0.001. num_batch_no_update =20
+rule set is:
+Head = E, base = 0.1144
+[GT=0.3]Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.4202
+[GT=0.4]Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4141
+[GT=0.5]Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.4100
+[GT=0.6]Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.4568
+[GT=0.7]Rule4: Not C --> E , Not C BEFORE E, weight=0.4521
+[Fit data] Elapsed: 7.8041 min.
+===
+batch_size=64
+num_iter=10
+epsilon=0.001
+Run 310 batches
+reach max iter num.
+grad norm=0.04025288951648742. num_batch_no_update =61
+rule set is:
+Head = E, base = 0.1117
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.4026
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4217
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3995
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5839
+Rule4: Not C --> E , Not C BEFORE E, weight=0.5927
+[Fit data] Elapsed: 8.6963 min.
+===
+batch_size=64
+num_iter=15
+epsilon=0.001
+Run 465 batches
+reach max iter num.
+grad norm=0.0352664723563211. num_batch_no_update =105
+Head = E, base = 0.1161
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3522
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4354
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3766
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5765
+Rule4: Not C --> E , Not C BEFORE E, weight=0.6444
+[Fit data] Elapsed: 22.9312 min.
+===
+batch_size=64
+num_iter=20
+epsilon=0.001
+stop criteria is grad-norm < epsilon AND num_batch_no_update > 20 
+Run 620 batches
+reach max iter num.
+grad norm=0.023800972612493927. num_batch_no_update =230
+Head = E, base = 0.1151
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3208
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4313
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3590
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5669
+Rule4: Not C --> E , Not C BEFORE E, weight=0.6776
+[Fit data] Elapsed: 16.0286 min.
+====
+Head = E, base = 0.1121
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.4475
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4280
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.4246
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5177
+Rule4: Not C --> E , Not C BEFORE E, weight=0.5072
+10 th iter
+Head = E, base = 0.1106
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3994
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4154
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3923
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5921
+Rule4: Not C --> E , Not C BEFORE E, weight=0.5969
+15 th iter
+Head = E, base = 0.1202
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3514
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4244
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3778
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5799
+Rule4: Not C --> E , Not C BEFORE E, weight=0.6507
+20 th iter
+Head = E, base = 0.1104
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3225
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4473
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3517
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5682
+Rule4: Not C --> E , Not C BEFORE E, weight=0.6803
+25 th iter
+Head = E, base = 0.1114
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3054
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4465
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3557
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5585
+Rule4: Not C --> E , Not C BEFORE E, weight=0.6932
+30 th iter
+Head = E, base = 0.1106
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3026
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4463
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3439
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5473
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7002
+35 th iter
+Head = E, base = 0.1097
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.2972
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4579
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3431
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5569
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7009
+
+45 th iter
+Head = E, base = 0.1139
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.3017
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4595
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3334
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5531
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7032
+
+55 th iter
+Head = E, base = 0.1059
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.2988
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4561
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3475
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5561
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7029
+
+65 th iter
+Head = E, base = 0.1026
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.2993
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4583
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3398
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5567
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7034
+
+75 th iter
+Head = E, base = 0.1078
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.2958
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4524
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3389
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5594
+Rule4: Not C --> E , Not C BEFORE E, weight=0.7006
+
+95 th iter
+Head = E, base = 0.1075
+Rule0: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight=0.2937
+Rule1: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight=0.4479
+Rule2: B ^ C ^ D --> E , B EQUAL E ^ C BEFORE E ^ D BEFORE E, weight=0.3325
+Rule3: C ^ D --> E , C EQUAL E ^ D BEFORE E, weight=0.5560
+Rule4: Not C --> E , Not C BEFORE E, weight=0.6984
+===
+
+===Obervation: Deleting redundant rules improve correct weight accuracy===
+[*]Rule0: A --> E , A BEFORE E, weight=0.0203
+[GT=0.7]Rule1: Not C --> E , Not C BEFORE E, weight=0.6179
+[*]Rule2: C --> E , C BEFORE E, weight=0.0202
+Rule3: C --> E , C EQUAL E, weight=0.4463
+Rule4: B --> E , B EQUAL E, weight=0.4768
+[*]Rule5: B --> Not E , B BEFORE Not E, weight=0.0245
+[*]Rule6: D --> E , D BEFORE E, weight=0.0286
+Rule7: Not A --> E , Not A BEFORE E, weight=0.0321
+[GT=0.3]Rule8: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight=0.2580
+Rule9: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight=0.0857
+[GT=0.6]Rule10: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight=0.0100
+---(Add rule10)-->
+[*]Rule0: A --> E , A BEFORE E, weight(torch)=0.0035.
+[GT=0.7]Rule1: Not C --> E , Not C BEFORE E, weight(torch)=0.5947.
+[*]Rule2: C --> E , C BEFORE E, weight(torch)=0.0013.
+Rule3: C --> E , C EQUAL E, weight(torch)=0.3017.
+Rule4: B --> E , B EQUAL E, weight(torch)=0.4905.
+[*]Rule5: B --> Not E , B BEFORE Not E, weight(torch)=0.0080.
+[*]Rule6: D --> E , D BEFORE E, weight(torch)=0.0076.
+Rule7: Not A --> E , Not A BEFORE E, weight(torch)=0.0493.
+[GT=0.3]Rule8: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight(torch)=0.2957.
+Rule9: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight(torch)=0.0825.
+[GT=0.6]Rule10: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight(torch)=0.2387.
+delete these rules: [0, 2, 5, 6]
+--(re-fitted, increase of R10 leads to increase of R8, and decrease of R0,R2,R5,R6 )-->
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight(torch)=0.5920.
+Rule1: C --> E , C EQUAL E, weight(torch)=0.2025.
+Rule2: B --> E , B EQUAL E, weight(torch)=0.5108.
+Rule3: Not A --> E , Not A BEFORE E, weight(torch)=0.0442.
+[GT=0.3]Rule4: C ^ A --> E , C BEFORE E ^ A BEFORE E, weight(torch)=0.3001.
+Rule5: D ^ Not C --> E , D BEFORE E ^ Not C BEFORE E, weight(torch)=0.0918.
+[GT=0.6]Rule6: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight(torch)=0.3490.
+--(re-fitted, R6 is more accurate.)
+
+===data-2:
+Generate 1000 samples
+with following rules:
+Head = F, base = 0.0000
+Rule0: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.8000
+Rule1: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.9000
+Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.5000
+Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.6000
+Rule4: Not C --> F , Not C BEFORE F, weight=0.7000
+Intensity A is 2, Intensity B is 2, Intensity C is 2, Intensity D is 2, Intensity E is 2
+===
+fit GT rules:
+final result: Run 1500 batches
+Head = F, base = 0.1068
+[GT=0.8]Rule0: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.7927
+[GT=0.9]Rule1: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.7344
+[GT=0.5]Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.5463
+[GT=0.6]Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.4614
+[GT=0.7]Rule4: Not C --> F , Not C BEFORE F, weight=0.7035
+mid result :45 th iter
+grad norm=0.008096818617000406. num_batch_no_update =144
+Head = F, base = 0.1038
+[GT=0.8]Rule0: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.7818
+[GT=0.9]Rule1: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.7342
+[GT=0.5]Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.5675
+[GT=0.6]Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.4588
+[GT=0.7]Rule4: Not C --> F , Not C BEFORE F, weight=0.7109
+
+===data-2,
+num_iter=30
+epsilon=0.005
+gain_threshold=0.02
+low_grad_threshold=0.01
+low_grad_tolerance=2
+weight_threshold=0.01
+final_weight_threshold=0.1
+learning_rate=0.005
+max_num_rule=20
+----
+Head = F, base(torch) = 0.1071,
+[GT=0.7]Rule0: Not C --> F , Not C BEFORE F, weight(torch)=0.3169.
+Rule1: C --> F , C BEFORE F, weight(torch)=0.1841.
+Rule2: B --> F , B EQUAL F, weight(torch)=0.0770.
+Rule3: C --> F , C EQUAL F, weight(torch)=0.3780.
+Rule4: A ^ Not C --> F , A BEFORE F ^ Not C BEFORE F, weight(torch)=0.2728.
+Rule5: E ^ Not C --> F , E BEFORE F ^ Not C BEFORE F, weight(torch)=0.1139.
+Rule6: B ^ Not C --> F , B EQUAL F ^ Not C BEFORE F, weight(torch)=0.3198.
+Rule7: Not D ^ Not C --> F , Not D EQUAL Not C ^ Not C BEFORE F, weight(torch)=0.1626.
+[GT=0.8]Rule8: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight(torch)=0.6204.
+Rule9: B ^ C --> F , B EQUAL F ^ C BEFORE F, weight(torch)=0.5354.
+[search_algorithm] Elapsed: 2.4803 hour.
+
+===data-1,
+num_iter=30
+epsilon=0.005
+gain_threshold=0.02
+low_grad_threshold=0.01
+low_grad_tolerance=2
+weight_threshold=0.01
+final_weight_threshold=0.1
+learning_rate=0.005
+max_num_rule=20
+----
+Head = E, base(torch) = 0.1134,
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight(torch)=0.4763.
+Rule1: C --> E , C BEFORE E, weight(torch)=0.2570.
+Rule2: A ^ Not C --> E , A BEFORE E ^ Not C BEFORE E, weight(torch)=0.2775.
+Rule3: B ^ Not C --> E , B EQUAL E ^ Not C BEFORE E, weight(torch)=0.0934.
+[GT=0.6]Rule4: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight(torch)=0.5512.
+[GT=0.4]Rule5: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight(torch)=0.2719.
+[GT=0.4]Rule6: A ^ B --> E , A BEFORE B ^ B EQUAL E, weight(torch)=0.1641.
+Rule7: D ^ B --> E , D BEFORE E ^ B EQUAL E, weight(torch)=0.2140.
+[search_algorithm] Elapsed: 3.8331 hour.
