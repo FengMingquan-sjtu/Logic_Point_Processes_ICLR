@@ -238,13 +238,20 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     change stop criteria from AND to OR.
     self.epsilon = 0.005 --> 0.003
 
+    self.integral_resolution =0.3 --> 0.1
+
 47. Auto-stop of SGD
     [Implemented] (20 batches no update best likelihood) OR (grad-norm < epsilon)
     [Fixed] seems AND is better. add iter_num? --> iter_num=30 for 2000samples, iter_num=60 for 1000samples.
 
-48. Auto-stop of sub-problem.
+48. [implemented] Auto-stop of sub-problem.
     multi-arm-bandit
     UBC
+    can save time, from 1min to 20sec.
+    when grad is small e.g. 0.01, variance is still large, e.g. 1. then result is not accurate enough.
+    in a typical run, opt time is 10min, log-grad time is 2 min.
+    fast but inaccurate UBC saves log-grad time, but wastes opt time.
+    
 
 49. [Implemented]Fit generated data with GT rules, to check data variance.
     seems len-3 rule is under-estimated. 2000 samples, 45 iter converge. 
@@ -274,7 +281,19 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 57. [updated]max_rule_num=20 is not enough. --> modify to 30
     also, if num_formula >= max_num_rule, strictly prune.
 
+58. iterrative update calculation of intensity?
 
-run (fit data-2) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Feb26, 16:14
+59. in paper, report a single sample analysis?
 
-run (fit data-1) setsid python3 logic_learning_2.py 1>out-1.txt 2>err-1.txt at Feb26, 16:15
+60. print grad in likelihood-opt, to check which variable is not converged.
+
+
+
+
+run (iter-num=5, test ubc) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt at Feb28, 17:40
+
+run (iter-num=1, test ubc) setsid python3 logic_learning_2.py 1>out-4.txt 2>err-4.txt at Feb28, 21:43
+
+run (fit data-2, worker_num=16) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Feb28, 23:30
+
+run (fit data-1, worker_num=16) setsid python3 logic_learning_2.py 1>out-1.txt 2>err-1.txt at Feb28, 23:30

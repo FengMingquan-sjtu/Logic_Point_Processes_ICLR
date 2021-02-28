@@ -766,3 +766,64 @@ Rule3: B ^ Not C --> E , B EQUAL E ^ Not C BEFORE E, weight(torch)=0.0934.
 [GT=0.4]Rule6: A ^ B --> E , A BEFORE B ^ B EQUAL E, weight(torch)=0.1641.
 Rule7: D ^ B --> E , D BEFORE E ^ B EQUAL E, weight(torch)=0.2140.
 [search_algorithm] Elapsed: 3.8331 hour.
+
+===data-1,
+integral_resolution=0.3
+decay_rate=1
+batch_size=64
+num_iter=30
+epsilon=0.003
+gain_threshold=0.02
+low_grad_threshold=0.01
+weight_threshold=0.01
+strict_weight_threshold=0.1
+learning_rate=0.005
+max_num_rule=30
+----
+Head = E, base(torch) = 0.1105,
+[GT=0.7]Rule0: Not C --> E , Not C BEFORE E, weight(torch)=0.7154.
+Rule1: C --> E , C EQUAL E, weight(torch)=0.0941.
+[GT=0.6]Rule2: D ^ C --> E , D BEFORE E ^ C EQUAL E, weight(torch)=0.3395.
+[GT=0.4]Rule3: A ^ B --> E , A BEFORE E ^ B EQUAL E, weight(torch)=0.1187.
+[GT=0.3]Rule4: A ^ C --> E , A BEFORE E ^ C BEFORE E, weight(torch)=0.2878.
+Rule5: A ^ D ^ C --> E , A BEFORE E ^ D BEFORE E ^ C EQUAL E, weight(torch)=0.1561.
+Rule6: Not C ^ A ^ B --> E , Not C BEFORE E ^ A BEFORE E ^ B EQUAL E, weight(torch)=0.1504.
+Rule7: D ^ A ^ B --> E , D BEFORE E ^ A BEFORE E ^ B EQUAL E, weight(torch)=0.3371.
+Rule8: C ^ A ^ B --> E , C BEFORE E ^ A BEFORE E ^ B EQUAL E, weight(torch)=0.2036.
+[search_algorithm] Elapsed: 14.7993 hour.
+
+==data-2
+integral_resolution=0.3
+decay_rate=1
+batch_size=64
+num_batch_check_for_update=300
+num_iter=60
+epsilon=0.003
+gain_threshold=0.02
+low_grad_threshold=0.01
+low_grad_tolerance=2
+weight_threshold=0.01
+strict_weight_threshold=0.1
+learning_rate=0.005
+max_rule_body_length=3
+max_num_rule=30
+----
+Head = F, base(torch) = 0.1006,
+Rule0: C --> F , C BEFORE F, weight(torch)=0.3247.
+Rule1: A ^ Not C --> F , A BEFORE F ^ Not C BEFORE F, weight(torch)=0.3980.
+Rule2: E ^ Not C --> F , E BEFORE F ^ Not C BEFORE F, weight(torch)=0.2508.
+Rule3: Not D ^ Not C --> F , Not D EQUAL Not C ^ Not C BEFORE F, weight(torch)=0.1968.
+[GT=0.8]Rule4: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight(torch)=0.5047.
+Rule5: E ^ C --> F , E EQUAL F ^ C BEFORE F, weight(torch)=0.1748.
+[GT=0.6]Rule6: D ^ C --> F , D BEFORE F ^ C EQUAL F, weight(torch)=0.2812.
+Rule7: B ^ C --> F , B BEFORE F ^ C EQUAL F, weight(torch)=0.2323.
+Rule8: Not D ^ C --> F , Not D BEFORE F ^ C EQUAL F, weight(torch)=0.1585.
+Rule9: Not D ^ C --> F , Not D EQUAL C ^ C EQUAL F, weight(torch)=0.1003.
+Rule10: C ^ E --> Not F , C EQUAL Not F ^ E BEFORE Not F, weight(torch)=0.1302.
+[GT=0.9]Rule11: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.3982.
+[GT=0.9]Rule12: A ^ B ^ C --> F , A BEFORE B ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.2094.
+[GT=0.5]Rule13: D ^ B ^ C --> F , D BEFORE B ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.3601.
+[GT=0.5]Rule14: D ^ B ^ C --> F , D BEFORE F ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.1471.
+Rule15: Not A ^ B ^ C --> F , Not A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.1872.
+Rule16: Not A ^ B ^ C --> F , Not A BEFORE C ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.2843.
+[search_algorithm] Elapsed: 11.1382 hour.

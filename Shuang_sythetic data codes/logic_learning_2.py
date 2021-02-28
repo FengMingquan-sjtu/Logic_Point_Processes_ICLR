@@ -8,6 +8,7 @@ import os
 import datetime
 
 import numpy as np
+import scipy
 import torch.nn as nn
 from torch.autograd import Variable
 import torch
@@ -39,7 +40,7 @@ class Timer(object):
 
 ##################################################################
 
-class Logic_Learning_Model(nn.Module):
+class Logic_Learning_Model():
     # Given one index of the head predicates
     # Return all the logic rules that will explain the occurrence rate of this head predicate
     # For example, the data set is generated from the following rules
@@ -66,12 +67,13 @@ class Logic_Learning_Model(nn.Module):
 
         # tunable params
         self.Time_tolerance = 0.1
-        self.integral_resolution = 0.3
+        self.integral_resolution = 0.1
         self.decay_rate = 1
         self.batch_size = 64
         self.num_batch_check_for_feature = 1
         self.num_batch_check_for_gradient = 20
-        self.num_batch_check_for_update = 300
+        self.num_batch_no_update_limit_opt = 300
+        self.num_batch_no_update_limit_ucb = 4
         self.num_iter  = 30
         self.epsilon = 0.003
         self.gain_threshold = 0.02
@@ -84,8 +86,11 @@ class Logic_Learning_Model(nn.Module):
         self.max_num_rule = 30
         self.batch_size_cp = 500 # batch size used in cp. If too large, may out of memory.
         self.batch_size_grad = 500 #batch_size used in optimize_log_grad.
+        self.batch_size_init_ucb = 5
+        self.explore_rule_num_ucb = 8
+        self.explore_batch_size_ucb = 100
         self.use_cp = False
-        self.worker_num = 8
+        self.worker_num = 16
         self.best_N = 2
         
         #claim parameters and rule set
@@ -349,48 +354,48 @@ class Logic_Learning_Model(nn.Module):
                     print("{} th iter".format(i), flush=1)
                     print("grad norm={}. num_batch_no_update ={}".format(gradient_norm, num_batch_no_update))
                     self.print_rule()
-            #
-            sample_ID_list = list(dataset.keys())
-            random.shuffle(sample_ID_list) #SGD
-            #print("len(sample_ID_list)=",len(sample_ID_list))
-            #print("num batches:", len(sample_ID_list)//self.batch_size)
-            for batch_idx in range(len(sample_ID_list)//self.batch_size):
-                num_batch_run += 1
-                sample_ID_batch = sample_ID_list[batch_idx*self.batch_size : (batch_idx+1)*self.batch_size]
-                optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
-                log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch, T_max)
-                l_1 = torch.sum(torch.abs(torch.stack(params)))
-                loss = - log_likelihood + l_1
-                loss.backward(retain_graph=True)
-                optimizer.step()
+            with Timer("{} th iter".format(i)) as t:
+                sample_ID_list = list(dataset.keys())
+                random.shuffle(sample_ID_list) #SGD
+                #print("len(sample_ID_list)=",len(sample_ID_list))
+                #print("num batches:", len(sample_ID_list)//self.batch_size)
+                for batch_idx in range(len(sample_ID_list)//self.batch_size):
+                    num_batch_run += 1
+                    sample_ID_batch = sample_ID_list[batch_idx*self.batch_size : (batch_idx+1)*self.batch_size]
+                    optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
+                    log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch, T_max)
+                    l_1 = torch.sum(torch.abs(torch.stack(params)))
+                    loss = - log_likelihood + l_1
+                    loss.backward(retain_graph=True)
+                    optimizer.step()
 
-                log_likelihood_batch.append(log_likelihood.data[0])
-                avg_log_likelihood = np.mean(log_likelihood_batch)
-                if avg_log_likelihood > best_log_likelihood:
-                    best_log_likelihood = avg_log_likelihood
-                    num_batch_no_update = 0
-                else:
-                    num_batch_no_update +=1
+                    log_likelihood_batch.append(log_likelihood.data[0])
+                    avg_log_likelihood = np.mean(log_likelihood_batch)
+                    if avg_log_likelihood > best_log_likelihood:
+                        best_log_likelihood = avg_log_likelihood
+                        num_batch_no_update = 0
+                    else:
+                        num_batch_no_update +=1
 
-                batch_gradient = torch.autograd.grad(loss, params) # compute the batch gradient
-                batch_gradient = torch.stack(batch_gradient).detach().numpy()
-                #batch_gradient = np.min(np.abs(batch_gradient))
-                gradient_batch.append(batch_gradient)
-                gradient = np.mean(gradient_batch, axis=0)/self.batch_size # check the last N number of batch's gradient
-                gradient /= len(gradient) #bug#44, average gradient for multiple rules.
-                gradient_norm = np.linalg.norm(gradient)
-                #gradient_norm = gradient
-                params_detached = self.get_model_parameters(head_predicate_idx)
-                params_detached = torch.stack(params_detached).detach().numpy()
-                params_batch.append(params_detached)
-                #print('Screening now, the moving avg batch gradient norm is', gradient_norm, flush=True)
-                if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_check_for_update):
-                    break
-            if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_check_for_update):
+                    batch_gradient = torch.autograd.grad(loss, params) # compute the batch gradient
+                    batch_gradient = torch.stack(batch_gradient).detach().numpy()
+                    #batch_gradient = np.min(np.abs(batch_gradient))
+                    gradient_batch.append(batch_gradient)
+                    gradient = np.mean(gradient_batch, axis=0)/self.batch_size # check the last N number of batch's gradient
+                    gradient /= len(gradient) #bug#44, average gradient for multiple rules.
+                    gradient_norm = np.linalg.norm(gradient)
+                    #gradient_norm = gradient
+                    params_detached = self.get_model_parameters(head_predicate_idx)
+                    params_detached = torch.stack(params_detached).detach().numpy()
+                    params_batch.append(params_detached)
+                    #print('Screening now, the moving avg batch gradient norm is', gradient_norm, flush=True)
+                    if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_no_update_limit_opt):
+                        break
+            if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_no_update_limit_opt):
                 break
         print("Run {} batches".format(num_batch_run))
-        if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_check_for_update):
-            print("grad norm {} <= epsilon {}. OR, num_batch_no_update {} >= num_batch_check_for_update {}".format(gradient_norm, epsilon, num_batch_no_update, self.num_batch_check_for_update))
+        if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_no_update_limit_opt):
+            print("grad norm {} <= epsilon {}. OR, num_batch_no_update {} >= num_batch_no_update_limit_opt {}".format(gradient_norm, epsilon, num_batch_no_update, self.num_batch_no_update_limit_opt))
         else:
             print("reach max iter num.")
             print("grad norm={}. num_batch_no_update ={}".format(gradient_norm, num_batch_no_update))
@@ -444,12 +449,14 @@ class Logic_Learning_Model(nn.Module):
         return integral_gradient_grid
 
 
-    def log_likelihood_gradient(self, head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template):
-        log_likelihood_gradient = torch.tensor([0], dtype=torch.float64)
+    def log_likelihood_gradient(self, head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
+        log_likelihood_grad_list = list()
         # iterate over samples
         sample_ID_batch = list(dataset.keys())
-        if len(sample_ID_batch) < self.batch_size_grad:
-            sample_ID_batch = random.sample(sample_ID_batch, self.batch_size_grad)
+        if batch_size == 0:
+            batch_size = sample_ID_batch
+        elif len(sample_ID_batch) > batch_size:
+            sample_ID_batch = random.sample(sample_ID_batch, batch_size)
         for sample_ID in sample_ID_batch:
             # iterate over head predicates; each predicate corresponds to one intensity
             data_sample = dataset[sample_ID]
@@ -484,15 +491,17 @@ class Logic_Learning_Model(nn.Module):
             else:
                 new_feature_grid_times = torch.zeros(1, dtype=torch.float64)
 
-            log_likelihood_gradient += torch.sum(intensity_log_gradient[sample_ID] * new_feature_transition_times) - \
+            log_likelihood_grad = torch.sum(intensity_log_gradient[sample_ID] * new_feature_transition_times) - \
                                        torch.sum(intensity_integral_gradient_grid[sample_ID] * new_feature_grid_times, dim=0)
-        return log_likelihood_gradient/ len(sample_ID_batch) # returns avg log-grad
+            log_likelihood_grad_list.append(log_likelihood_grad)
+        mean_grad = np.mean(log_likelihood_grad_list) 
+        return mean_grad, log_likelihood_grad_list # returns avg log-grad adn list.
 
 
-    def optimize_log_likelihood_gradient(self, head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template):
+    def optimize_log_likelihood_gradient(self, head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
         # in old codes, this function optimizes time relation params,
         # now there is no time relation params, so no optimization.
-        gain = self.log_likelihood_gradient(head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template)
+        gain = self.log_likelihood_gradient(head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size)
         return gain
 
 
@@ -594,6 +603,7 @@ class Logic_Learning_Model(nn.Module):
                         self.model_parameter[head_predicate_idx][self.num_formula] = {}
                         
                         #Fast result for large dataset like mimic.
+                        print("NOTE: Random initialization for fast result.")
                         flag = 1
                         break
                     if flag:
@@ -624,13 +634,14 @@ class Logic_Learning_Model(nn.Module):
         self.num_formula += 1
 
         #update params
-        with Timer("optimize log-likelihood") as t:
-            l = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max) #update base.
-        print("Update Log-likelihood (torch) = ", l)
+        print("NOTE: Random initialization for fast result.")
+        #with Timer("optimize log-likelihood") as t:
+        #    l = self.optimize_log_likelihood(head_predicate_idx, dataset, T_max) #update base.
+        #print("Update Log-likelihood (torch) = ", l)
 
-        if self.use_cp:
-            l_cp = self.optimize_log_likelihood_cp(head_predicate_idx, dataset, T_max)
-            print("Update Log-likelihood (cvxpy) = ", l_cp)
+        #if self.use_cp:
+        #    l_cp = self.optimize_log_likelihood_cp(head_predicate_idx, dataset, T_max)
+        #    print("Update Log-likelihood (cvxpy) = ", l_cp)
 
         #Copy CVXPY to weight
         #w = self.model_parameter[head_predicate_idx][self.num_formula-1]['weight_cp'].value[0]
@@ -783,7 +794,17 @@ class Logic_Learning_Model(nn.Module):
         print("----- exit add_one_predicate_to_existing_rule -----",flush=1)
         return is_update_weight, is_continue
 
+    def _update_ucb_dict(self, gain_ucb_dict, idx, gain_list):
+        gain_ucb_dict["gain_list"][idx].extend(gain_list)
+        std_gain = np.std(gain_ucb_dict["gain_list"][idx], ddof=1) #ddof=1 provides an unbiased estimator of the variance
+        mean_gain = np.mean(gain_ucb_dict["gain_list"][idx])
+        bound_gain = std_gain + mean_gain
+        gain_ucb_dict["std"][idx] = std_gain
+        gain_ucb_dict["mean"][idx] = mean_gain
+        gain_ucb_dict["bound"][idx] = bound_gain
+
     def select_and_add_new_rule(self, head_predicate_idx, arg_list, new_rule_table, dataset, T_max):
+        
         print("----- start select_and_add_new_rule -----",flush=1)
         if len(arg_list) == 0: # No candidate rule generated.
             print("No candidate rule generated.")
@@ -792,7 +813,93 @@ class Logic_Learning_Model(nn.Module):
             print("----- exit select_and_add_new_rule -----",flush=1)
             return is_update_weight, is_continue
 
+        
+
+        print("-------start ucb ------",flush=1)
+        cpu = cpu_count()
+        worker_num = min(self.worker_num, cpu)
+        with Timer("UCB") as t:
+            
+            #initialization
+            gain_ucb_dict = dict()
+            gain_ucb_dict["gain_list"] = [list() for i in range(len(arg_list))]
+            gain_ucb_dict["mean"] = [0] * len(arg_list)
+            gain_ucb_dict["std"] = [0] * len(arg_list)
+            gain_ucb_dict["bound"] = [0] * len(arg_list)
+            
+            for i in range(len(arg_list)): #initialize all candicate with a batch.
+                _, gain_list = self.optimize_log_likelihood_gradient(*arg_list[i],batch_size = self.batch_size_init_ucb)
+                self._update_ucb_dict(gain_ucb_dict, i, gain_list)
+
+            sorted_idx = sorted(list(range(len(arg_list))), key=lambda x:gain_ucb_dict["bound"][x], reverse=True) # sort by bound, descending
+            print("UCB: initialize")
+            for idx in sorted_idx:
+                rule_str = self.get_rule_str(arg_list[idx][-1], head_predicate_idx)
+                mean, std, bound = gain_ucb_dict["mean"][idx], gain_ucb_dict["std"][idx], gain_ucb_dict["bound"][idx]
+                print("log-likelihood-grad(ucb): mean= {:.5f}, std= {:.5f}, bound= {:.5f}, Rule = {}".format(mean, std, bound, rule_str))
+                print("-------------", flush=True)
+            
+            #ucb main loop
+            num_batch_no_update = 0
+            cur_batch = 0
+            best_N = min(self.best_N, len(arg_list))
+            best_idx_set = set(range(best_N))
+            for batch_idx in range(len(dataset.keys())//self.explore_batch_size_ucb):
+                sorted_idx = sorted(list(range(len(arg_list))), key=lambda x:gain_ucb_dict["mean"][x], reverse=True) # sort by mean, descending
+                cur_best_idx_set = set(sorted_idx[:best_N])
+                if best_idx_set != cur_best_idx_set:
+                    best_idx_set = cur_best_idx_set
+                    num_batch_no_update = 0
+                else:
+                    num_batch_no_update +=1
+                    if num_batch_no_update >= self.num_batch_no_update_limit_ucb:
+                        break
+
+                #print("UCB: {}th batch".format(cur_batch))
+                explore_weights = nn.functional.softmax(torch.tensor(gain_ucb_dict["bound"]),dim=0).numpy()
+                explore_rule_num = min(self.explore_rule_num_ucb, len(arg_list))
+                #randomly choose candicate rules to explore, with prob=Softmax(bound)
+                explore_idx_list = np.random.choice(len(arg_list),replace=False, size=explore_rule_num ,p=explore_weights) 
+                explore_arg_list = list()
+                # each time, only explore a batch of whole data.
+                sample_ID_list = list(dataset.keys())[batch_idx*self.explore_batch_size_ucb : (batch_idx+1)*self.explore_batch_size_ucb]
+                batch_dataset = {i:dataset[sample_ID] for i,sample_ID in enumerate(sample_ID_list)}
+                for idx in explore_idx_list:
+                    # replace the whole dataset with batch_dataset
+                    head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template = arg_list[idx]
+                    arg = (head_predicate_idx, batch_dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template)
+                    explore_arg_list.append(arg)
+                
+                #use multi-processing to calculate grad (TODO:maybe slow)
+                tmp = self.feature_cache
+                self.feature_cache = dict() #to fix bug#39, clear feature cache, avoid copying cache in multiprocessing (extremely slow)
+                with Pool(worker_num) as pool:
+                    gain_explore = pool.starmap(self.optimize_log_likelihood_gradient, explore_arg_list)
+                self.feature_cache = tmp #recover cache
+                
+                for i, explore_idx in enumerate(explore_idx_list):
+                    gain_list = gain_explore[i][1]
+                    self._update_ucb_dict(gain_ucb_dict, explore_idx, gain_list)
+
+                for explore_idx in explore_idx_list:
+                    rule_str = self.get_rule_str(arg_list[explore_idx][-1], head_predicate_idx)
+                    mean, std, bound = gain_ucb_dict["mean"][explore_idx], gain_ucb_dict["std"][explore_idx], gain_ucb_dict["bound"][explore_idx]
+                    print("Explore update:  log-likelihood-grad(ucb): mean= {:.5f}, std= {:.5f}, bound= {:.5f}, Rule = {}".format(mean, std, bound, rule_str))
+                cur_batch +=1
+        
+        
+        print("UCB ends after {} batches".format(cur_batch) )
+
+        for best_idx in best_idx_set:
+            rule_str = self.get_rule_str(arg_list[best_idx][-1], head_predicate_idx)
+            mean, std, bound = gain_ucb_dict["mean"][best_idx], gain_ucb_dict["std"][best_idx], gain_ucb_dict["bound"][best_idx]
+            print("Exploit final decision:  log-likelihood-grad(ucb): mean= {:.5f}, std= {:.5f}, bound= {:.5f}, Rule = {}".format(mean, std, bound, rule_str))
+
+        print("-------end ucb ------",flush=1)
+
+        # all-data gradient
         print("-------start multiprocess------",flush=1)
+        self.batch_size_grad = len(dataset.keys()) # run all samples for grad.
         cpu = cpu_count()
         worker_num = min(self.worker_num, cpu)
         print("cpu num = {}, use {} workers, process {} candidate rules.".format(cpu, worker_num, len(arg_list)))
@@ -802,20 +909,16 @@ class Logic_Learning_Model(nn.Module):
                 tmp = self.feature_cache
                 self.feature_cache = dict() #to fix bug#39, clear feature cache, avoid copying cache in multiprocessing (extremely slow)
                 with Pool(worker_num) as pool:
-                    gain = pool.starmap(self.optimize_log_likelihood_gradient, arg_list)
-                self.feature_cache = tmp
+                    gain_all_data = pool.starmap(self.optimize_log_likelihood_gradient, arg_list)
+                self.feature_cache = tmp #recover cache
             else: #single process, not use pool.
-                gain = [self.optimize_log_likelihood_gradient(*arg) for arg in arg_list]
-
-        gain = np.array(gain)
-        for i in range(len(gain)):
-            rule_str = self.get_rule_str(arg_list[i][-1], head_predicate_idx)
-            rule_gain = gain[i]
-            print("log-likelihood-grad = {:.5f}, Rule = {}".format(rule_gain, rule_str))
-            print("-------------")
+                gain_all_data = [self.optimize_log_likelihood_gradient(*arg) for arg in arg_list]
+        mean_gain_all_data, gain_list_all_data  = list(zip(*gain_all_data))
+        print("-------end multiprocess------",flush=1)
+        
 
         #delete low gain candidate rules
-        for idx, gain_ in enumerate(gain):
+        for idx, gain_ in enumerate(mean_gain_all_data):
             if gain_ < self.low_grad_threshold:
                 rule_str = self.get_rule_str(arg_list[i][-1], head_predicate_idx)
                 if rule_str in self.low_grad_rules:
@@ -828,13 +931,18 @@ class Logic_Learning_Model(nn.Module):
 
         print("------Select N best rule-------")
         # choose the N-best rules that lead to the optimal log-likelihood
-        idx_gain = sorted(list(enumerate(gain)), key=lambda x:x[1], reverse=True) # sort by gain, descending
+        sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:x[1], reverse=True) # sort by gain, descending
+        for idx, gain in sorted_idx_gain_all_data:
+            rule_str = self.get_rule_str(arg_list[idx][-1], head_predicate_idx)
+            std = np.std(gain_list_all_data[idx],ddof=1) #ddof=1 for unbiased estimation
+            print("log-likelihood-grad(all-data) mean= {:.5f}, std={:.5f}, Rule = {}".format(gain, std, rule_str))
+            print("-------------", flush=True)
         is_update_weight = False
         is_continue = False
         for i in range(self.best_N):
-            if i >= len(idx_gain):
+            if i >= len(sorted_idx_gain_all_data):
                 break
-            idx, best_gain = idx_gain[i]
+            idx, best_gain = sorted_idx_gain_all_data[i]
         
             if  best_gain > self.gain_threshold:
                 # add new rule
@@ -846,7 +954,7 @@ class Logic_Learning_Model(nn.Module):
                 self.logic_template[head_predicate_idx][self.num_formula]['temporal_relation_type'] = new_rule_table[head_predicate_idx]['temporal_relation_type'][idx]
 
                 print("Best rule is:", self.get_rule_str(self.logic_template[head_predicate_idx][self.num_formula], head_predicate_idx))
-                print("Best log-likelihood-grad =", best_gain)
+                print("Best log-likelihood-grad(all-data) =", best_gain)
                 # add model parameter
                 self.model_parameter[head_predicate_idx][self.num_formula] = {}
                 self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
@@ -1069,7 +1177,7 @@ def fit_2():
     small_dataset = {i:dataset[i] for i in range(num_sample)}
     model.batch_size_cp = num_sample  # sample used by cp
     model.batch_size_grad = num_sample
-    model.num_iter = 60
+
     
     with Timer("search_algorithm") as t:
         model.search_algorithm(head_predicate_idx[0], small_dataset, T_max)
@@ -1082,7 +1190,7 @@ def fit_2():
 
 
 if __name__ == "__main__":
-    fit_2()
+    fit_1()
 
 
 
