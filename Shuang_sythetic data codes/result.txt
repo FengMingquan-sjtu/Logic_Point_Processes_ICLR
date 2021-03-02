@@ -827,3 +827,113 @@ Rule10: C ^ E --> Not F , C EQUAL Not F ^ E BEFORE Not F, weight(torch)=0.1302.
 Rule15: Not A ^ B ^ C --> F , Not A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.1872.
 Rule16: Not A ^ B ^ C --> F , Not A BEFORE C ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.2843.
 [search_algorithm] Elapsed: 11.1382 hour.
+
+== data-2,
+integral_resolution=0.1
+batch_size=64
+num_batch_check_for_gradient=20
+num_batch_no_update_limit_opt=300
+num_iter=5
+epsilon=0.003
+gain_threshold=0.02
+low_grad_threshold=0.01
+weight_threshold=0.01
+strict_weight_threshold=0.1
+learning_rate=0.005
+max_num_rule=30
+===
+Head = F, base(torch) = 0.1253,
+[GT=0.7]Rule0: Not C --> F , Not C BEFORE F, weight(torch)=0.7193.
+[GT=0.8]Rule1: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight(torch)=0.7593.
+[GT=0.6]Rule2: D ^ C --> F , D BEFORE F ^ C EQUAL F, weight(torch)=0.4779.
+[GT=0.9]Rule3: B ^ A ^ C --> F , B EQUAL F ^ A BEFORE F ^ C BEFORE F, weight(torch)=0.6060.
+Rule4: Not D ^ B ^ C --> F , Not D BEFORE B ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.2171.
+[GT=0.5]Rule5: D ^ B ^ C --> F , D BEFORE B ^ B EQUAL F ^ C BEFORE F, weight(torch)=0.1859.
+[GT=0.5]Rule6: C ^ D ^ B --> F , C BEFORE B ^ D BEFORE B ^ B EQUAL F, weight(torch)=0.1942.
+----- exit search_algorithm -----
+[search_algorithm] Elapsed: 15.2801 hour.
+
+== data-2,
+integral_resolution=0.1
+batch_size=64
+num_batch_check_for_gradient=20
+num_batch_no_update_limit_opt=300
+num_iter=1
+epsilon=0.003
+gain_threshold=0.02
+low_grad_threshold=0.01
+weight_threshold=0.01
+strict_weight_threshold=0.1
+learning_rate=0.005
+max_num_rule=30
+===
+Head = F, base(torch) = 0.1376,
+Rule0: C --> F , C BEFORE F, weight(torch)=0.1905.
+[GT=0.7]Rule1: Not C --> F , Not C BEFORE F, weight(torch)=0.5135.
+Rule2: A ^ Not C --> F , A BEFORE F ^ Not C BEFORE F, weight(torch)=0.2341.
+Rule3: B ^ Not C --> F , B EQUAL F ^ Not C BEFORE F, weight(torch)=0.1298.
+[GT=0.8]Rule4: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight(torch)=0.4158.
+Rule5: B ^ C --> F , B EQUAL F ^ C BEFORE F, weight(torch)=0.1732.
+[GT=0.6]Rule6: D ^ C --> F , D BEFORE F ^ C EQUAL F, weight(torch)=0.2905.
+[GT=0.6]Rule7: D ^ C --> F , D BEFORE C ^ C EQUAL F, weight(torch)=0.2138.
+Rule8: B ^ A --> F , B EQUAL F ^ A BEFORE F, weight(torch)=0.1197.
+Rule9: Not E ^ A ^ C --> F , Not E BEFORE F ^ A BEFORE F ^ C BEFORE F, weight(torch)=0.1321.
+[GT=0.9]Rule10: B ^ A ^ C --> F , B EQUAL F ^ A BEFORE F ^ C BEFORE F, weight(torch)=0.4409.
+Rule11: Not B ^ A ^ C --> F , Not B EQUAL C ^ A BEFORE F ^ C BEFORE F, weight(torch)=0.1453.
+Rule12: Not D ^ A ^ Not C --> F , Not D EQUAL Not C ^ A BEFORE F ^ Not C BEFORE F, weight(torch)=0.1300.
+----- exit search_algorithm -----
+[search_algorithm] Elapsed: 11.9368 hour.
+
+===data-3:
+Generate 1000 samples
+with following rules:
+Head = G, base = 0.0000
+Rule0: A ^ C --> G , A BEFORE G ^ C BEFORE G, weight=0.9000
+Rule1: A ^ B ^ C --> G , A BEFORE G ^ B EQUAL G ^ C BEFORE G, weight=0.6000
+Rule2: B ^ C ^ D --> G , B EQUAL G ^ C BEFORE G ^ D BEFORE G, weight=1.0000
+Rule3: C ^ D --> G , C EQUAL G ^ D BEFORE G, weight=0.8000
+Rule4: Not C --> G , Not C BEFORE G, weight=0.5000
+cpu num = 48, use 16 workers. 
+[Generate data] Elapsed: 16.8692 min.
+=== fit GT rules:
+[57 th iter] Elapsed: 5.9250 sec.
+Run 857 batches
+grad norm 0.00277548875967491 <= epsilon 0.003. OR, num_batch_no_update 68 >= num_batch_no_update_limit_opt 300
+Finish optimize_log_likelihood, the log likelihood is -5.519892988426468
+Params  [tensor([0.1922], dtype=torch.float64, requires_grad=True), tensor([0.8120], dtype=torch.float64, requires_grad=True), tensor([0.3869], dtype=torch.float64, requires_grad=True), tensor([0.9005], dtype=torch.float64, requires_grad=True), tensor([0.5637], dtype=torch.float64, requires_grad=True), tensor([0.5428], dtype=torch.float64, requires_grad=True)]
+--------
+Log-likelihood (torch)=  -5.519892988426468
+rule set is:
+Head = G, base = 0.1937
+[GT=0.9]Rule0: A ^ C --> G , A BEFORE G ^ C BEFORE G, weight=0.8113
+[GT=0.6]Rule1: A ^ B ^ C --> G , A BEFORE G ^ B EQUAL G ^ C BEFORE G, weight=0.3905
+[GT=1.0]Rule2: B ^ C ^ D --> G , B EQUAL G ^ C BEFORE G ^ D BEFORE G, weight=0.9004
+[GT=0.8]Rule3: C ^ D --> G , C EQUAL G ^ D BEFORE G, weight=0.5619
+[GT=0.5]Rule4: Not C --> G , Not C BEFORE G, weight=0.5432
+[Fit data] Elapsed: 46.1727 min.
+
+===data-2
+integral_resolution=0.1
+batch_size=64
+num_batch_no_update_limit_opt=300
+num_iter=5
+epsilon=0.003
+gain_threshold=0.02
+low_grad_threshold=0.01
+weight_threshold=0.01
+strict_weight_threshold=0.1
+learning_rate=0.005
+max_num_rule=30
+===
+Head = F, base = 0.1219
+[GT=0.7]Rule0: Not C --> F , Not C BEFORE F, weight=0.7153
+[GT=0.8]Rule1: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.7321
+[GT=0.6]Rule2: D ^ C --> F , D BEFORE F ^ C EQUAL F, weight=0.2837
+[GT=0.6]Rule3: D ^ C --> F , D BEFORE C ^ C EQUAL F, weight=0.1365
+[GT=0.9]Rule4: B ^ A ^ C --> F , B EQUAL F ^ A BEFORE F ^ C BEFORE F, weight=0.7149
+Rule5: Not B ^ A ^ C --> F , Not B EQUAL C ^ A BEFORE F ^ C BEFORE F, weight=0.2141
+[GT=0.5]Rule6: B ^ D ^ C --> F , B BEFORE F ^ D BEFORE F ^ C EQUAL F, weight=0.1157
+[GT=0.5]Rule7: D ^ B ^ C --> F , D BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.2242
+Rule8: Not D ^ B ^ C --> F , Not D BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.2386
+Rule9: Not A ^ Not D ^ Not C --> F , Not A BEFORE F ^ Not D EQUAL Not C ^ Not C BEFORE F, weight=0.2531
+[search_algorithm] Elapsed: 9.7872 hour.

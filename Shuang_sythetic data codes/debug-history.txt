@@ -246,11 +246,13 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
 48. [implemented] Auto-stop of sub-problem.
     multi-arm-bandit
-    UBC
+    UCB
     can save time, from 1min to 20sec.
     when grad is small e.g. 0.01, variance is still large, e.g. 1. then result is not accurate enough.
     in a typical run, opt time is 10min, log-grad time is 2 min.
-    fast but inaccurate UBC saves log-grad time, but wastes opt time.
+    fast but inaccurate UCB saves log-grad time, but wastes opt time.
+    [disabled at synthetic data] with parallel calculation, UCB is slower than calculate all data.
+    UCB needs at least 2 rounds(init+other) of parallel. benefit of UCB is offset by delay of rounds.
     
 
 49. [Implemented]Fit generated data with GT rules, to check data variance.
@@ -286,14 +288,20 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 59. in paper, report a single sample analysis?
 
 60. print grad in likelihood-opt, to check which variable is not converged.
+    use tensorboard 
+
+61. good and cheap initialization
+
+62. parallel generator[Implemented] and optimize_log_likelihood[Implemented].
+
+63. systemetic synthetic
+
+Exploit final decision:  log-likelihood-grad(ucb): mean= 5.58166, std= 1.89299, bound= 7.47465, Rule = C --> F , C BEFORE F
+Exploit final decision:  log-likelihood-grad(ucb): mean= 5.44200, std= 1.84390, bound= 7.28590, Rule = Not C --> F , Not C BEFORE F
 
 
 
+run (fit data-2, worker_num=16, iter_num=5) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Mar1, 16:37
 
-run (iter-num=5, test ubc) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt at Feb28, 17:40
-
-run (iter-num=1, test ubc) setsid python3 logic_learning_2.py 1>out-4.txt 2>err-4.txt at Feb28, 21:43
-
-run (fit data-2, worker_num=16) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Feb28, 23:30
-
-run (fit data-1, worker_num=16) setsid python3 logic_learning_2.py 1>out-1.txt 2>err-1.txt at Feb28, 23:30
+run (fit data-2 multiprocess likelihood) setsid python3 logic_learning_2.py 1>out-4.txt 2>err-4.txt at Mar1, 22:37
+run (fit data-2 multiprocess likelihood) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt at Mar2, 9:08
