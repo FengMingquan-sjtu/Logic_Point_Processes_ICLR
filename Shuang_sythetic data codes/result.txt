@@ -937,3 +937,4 @@ Rule5: Not B ^ A ^ C --> F , Not B EQUAL C ^ A BEFORE F ^ C BEFORE F, weight=0.2
 Rule8: Not D ^ B ^ C --> F , Not D BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.2386
 Rule9: Not A ^ Not D ^ Not C --> F , Not A BEFORE F ^ Not D EQUAL Not C ^ Not C BEFORE F, weight=0.2531
 [search_algorithm] Elapsed: 9.7872 hour.
+

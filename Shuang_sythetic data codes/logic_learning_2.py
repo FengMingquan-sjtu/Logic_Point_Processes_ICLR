@@ -18,6 +18,7 @@ import pickle
 import cvxpy as cp
 
 
+#random.seed(1)
 
 class Timer(object):
     def __init__(self, name=None):
@@ -67,6 +68,7 @@ class Logic_Learning_Model():
         self.low_grad_rules = dict()
 
         # tunable params
+        self.time_window = 4
         self.Time_tolerance = 0.1
         self.integral_resolution = 0.1
         self.decay_rate = 1
@@ -91,7 +93,7 @@ class Logic_Learning_Model():
         self.explore_rule_num_ucb = 8
         self.explore_batch_size_ucb = 500
         self.use_cp = False
-        self.worker_num = 16
+        self.worker_num = 8
         self.best_N = 2
         
         #claim parameters and rule set
@@ -234,7 +236,7 @@ class Logic_Learning_Model():
             transition_time = np.array(history[body_predicate_idx]['time'])
             transition_state = np.array(history[body_predicate_idx]['state'])
             #TODO: AFTER is always zero-feature.
-            mask = (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
+            mask = (transition_time >= cur_time-self.time_window) * (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
             transition_time_dic[body_predicate_idx] = transition_time[mask]
         transition_time_dic[head_predicate_idx] = [cur_time]
         ### get weights
@@ -251,9 +253,9 @@ class Logic_Learning_Model():
                 time_difference = time_combination_dic[temporal_relation_idx[0]] - time_combination_dic[temporal_relation_idx[1]]
                 if template['temporal_relation_type'][idx] == 'BEFORE':
                     temporal_kernel *= (time_difference < - self.Time_tolerance) * np.exp(-self.decay_rate *(cur_time - time_combination_dic[temporal_relation_idx[0]]))
-                if template['temporal_relation_type'][idx] == 'EQUAL':
+                elif template['temporal_relation_type'][idx] == 'EQUAL':
                     temporal_kernel *= (abs(time_difference) <= self.Time_tolerance) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
-                if template['temporal_relation_type'][idx] == 'AFTER':
+                elif template['temporal_relation_type'][idx] == 'AFTER':
                     temporal_kernel *= (time_difference > self.Time_tolerance) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[1]]))
             feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
         return feature
@@ -337,7 +339,7 @@ class Logic_Learning_Model():
 
     def optimize_log_likelihood(self, head_predicate_idx, dataset, T_max, verbose=True):
         print("---- start optimize_log_likelihood ----", flush=1)
-        print("Rule set is:")
+        print("Rule weights are:")
         self.print_rule()
         params = self.get_model_parameters(head_predicate_idx)
         optimizer = optim.Adam(params, lr=self.learning_rate)
@@ -409,7 +411,12 @@ class Logic_Learning_Model():
         param_array = np.mean(params_batch, axis=0).reshape(-1)
         
         self.set_model_parameters(head_predicate_idx, param_array)
-        print("Params ", params)
+        
+        #raise ValueError
+        
+        print("optimized rule weights are:")
+        self.print_rule()
+        print("---- exit optimize_log_likelihood ----", flush=1)
         print("--------",flush=1)
         
         return log_likelihood
@@ -421,16 +428,21 @@ class Logic_Learning_Model():
         params = self.get_model_parameters(head_predicate_idx)
         l_1 = torch.sum(torch.abs(torch.stack(params)))
         loss = - log_likelihood + l_1
-        loss.backward(retain_graph=True)
+        loss.backward()
         optimizer.step()
 
-        #return some values
-        log_likelihood = log_likelihood.data[0]/len(sample_ID_batch)
-        batch_gradient = torch.autograd.grad(loss, params) # compute the batch gradient
-        batch_gradient = torch.stack(batch_gradient).detach().numpy()/len(sample_ID_batch)
         params = torch.stack(params).detach().numpy()
+        log_likelihood = log_likelihood.detach().numpy()
 
-        return log_likelihood, batch_gradient, params
+        return log_likelihood, params
+
+        #return some values
+        #log_likelihood = log_likelihood.data[0]/len(sample_ID_batch)
+        #batch_gradient = torch.autograd.grad(loss, params) # compute the batch gradient
+        #batch_gradient = torch.stack(batch_gradient).detach().numpy()/len(sample_ID_batch)
+        #params = torch.stack(params).detach().numpy()
+
+        #return log_likelihood, batch_gradient, params
 
 
     def optimize_log_likelihood_mp(self, head_predicate_idx, dataset, T_max, verbose=True):
@@ -439,80 +451,30 @@ class Logic_Learning_Model():
         self.print_rule()
         worker_num = min(self.worker_num, cpu_count())
         params = self.get_model_parameters(head_predicate_idx)
-        optimizer = optim.Adam(params, lr=self.learning_rate/worker_num)
-        log_likelihood_batch = deque(list(), maxlen=self.num_batch_check_for_gradient)
-        gradient_batch = deque(list(), maxlen=self.num_batch_check_for_gradient)
-        params_batch = deque(list(), maxlen=self.num_batch_check_for_gradient)
-        
-        best_log_likelihood = - 1e10
-        num_batch_no_update = 0
-        gradient_norm = 1e10
-        epsilon = self.epsilon
-        num_batch_run = 0
-
+        optimizer = optim.Adam(params, lr=self.learning_rate)
+        batch_num = len(dataset.keys())// self.batch_size
+        arg_list = list()
         for i in range(self.num_iter):
-            if verbose:
-                if i>0 and i%3==0:
-                    print("{} th iter".format(i), flush=1)
-                    print("grad norm={}. num_batch_no_update ={}".format(gradient_norm, num_batch_no_update))
-                    self.print_rule()
-            with Timer("{} th iter".format(i)) as t:
-                sample_ID_list = list(dataset.keys())
-                random.shuffle(sample_ID_list) #random dataset order
-                arg_list = list()
-                real_batch_num = len(sample_ID_list)//self.batch_size
-                
-                mp_batch_size = self.batch_size//worker_num
-                mp_batch_num = real_batch_num * (self.batch_size//mp_batch_size)
-                for batch_idx in range(mp_batch_num):
-                    sample_ID_batch = sample_ID_list[batch_idx*mp_batch_size : (batch_idx+1)*mp_batch_size]
-                    args = (optimizer, head_predicate_idx, dataset, sample_ID_batch, T_max)
-                    arg_list.append(args)
+            sample_ID_list = list(dataset.keys())
+            random.shuffle(sample_ID_list) #random dataset order
+            
+            for batch_idx in range(batch_num):
+                sample_ID_batch = sample_ID_list[batch_idx*self.batch_size : (batch_idx+1)*self.batch_size]
+                args = (optimizer, head_predicate_idx, dataset, sample_ID_batch, T_max)
+                arg_list.append(args)
 
-                with Pool(worker_num) as p:
-                    ret = p.starmap(self._optimize_log_likelihood_mp_worker, arg_list)
+        worker_num = min(worker_num, len(arg_list))
+        print("use {} workers for {} batches".format(worker_num, len(arg_list)))
+        with Pool(worker_num) as p:
+            ret = p.starmap(self._optimize_log_likelihood_mp_worker, arg_list)
   
-                for batch_id in range(real_batch_num):
-                    num_batch_run += 1
-                    batch_ret = ret[batch_id*worker_num: (batch_id+1)*worker_num]
-                    log_likelihood, batch_gradient, params = zip(*batch_ret)
-                    log_likelihood = np.mean(log_likelihood)
-                    log_likelihood_batch.append(log_likelihood)
-                    avg_log_likelihood = np.mean(log_likelihood_batch)
-                    if avg_log_likelihood > best_log_likelihood:
-                        best_log_likelihood = avg_log_likelihood
-                        num_batch_no_update = 0
-                    else:
-                        num_batch_no_update +=1
-
-                    gradient = np.mean(batch_gradient, axis=0)
-                    gradient_batch.append(gradient)
-                    gradient = np.mean(gradient_batch, axis=0) # check the last N number of batch's gradient
-                    gradient /= len(gradient) #bug#44, average gradient for multiple rules.
-                    gradient_norm = np.linalg.norm(gradient)
-                    
-                    params = params[-1]
-                    params_batch.append(params)
-                    #print('Screening now, the moving avg batch gradient norm is', gradient_norm, flush=True)
-                    if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_no_update_limit_opt):
-                        break
-            if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_no_update_limit_opt):
-                break
-        print("Run {} batches".format(num_batch_run))
-        if len(gradient_batch) >= self.num_batch_check_for_gradient and (gradient_norm <= epsilon or num_batch_no_update >= self.num_batch_no_update_limit_opt):
-            print("grad norm {} <= epsilon {}. OR, num_batch_no_update {} >= num_batch_no_update_limit_opt {}".format(gradient_norm, epsilon, num_batch_no_update, self.num_batch_no_update_limit_opt))
-        else:
-            print("reach max iter num.")
-            print("grad norm={}. num_batch_no_update ={}".format(gradient_norm, num_batch_no_update))
-        #use the avg of last several batches log_likelihood
-        log_likelihood = np.mean(log_likelihood_batch)
-        print('Finish optimize_log_likelihood, the log likelihood is', log_likelihood)
-        #print("gradient_norm is ", gradient_norm)
-        param_array = np.mean(params_batch, axis=0).reshape(-1)
-        
+        log_likelihood_list, params_list = zip(*ret) 
+        log_likelihood = np.mean(log_likelihood_list[-self.num_batch_check_for_gradient:])/self.batch_size
+        param_array = np.mean(params_list[-self.num_batch_check_for_gradient:], axis=0).reshape(-1)
         self.set_model_parameters(head_predicate_idx, param_array)
-        print("Params ", params)
-        print("--------",flush=1)
+        print("optimized rule weights are:")
+        self.print_rule()
+        print("---- exit optimize_log_likelihood multi-process----", flush=1)
         
         return log_likelihood
 
@@ -684,6 +646,7 @@ class Logic_Learning_Model():
                         
                         #record the log-likelihood_gradient in performance gain
                         with Timer("optimize log-likelihood") as t:
+                            #self.optimize_log_likelihood( head_predicate_idx, dataset, T_max)
                             gain  = self.optimize_log_likelihood_mp(head_predicate_idx, dataset, T_max)
                         print("Current rule is:", self.get_rule_str(self.logic_template[head_predicate_idx][self.num_formula-1], head_predicate_idx))
                         #print("feature sum is", feature_sum)
@@ -788,16 +751,7 @@ class Logic_Learning_Model():
 
 
         #calculate intensity for sub-problem
-        print("start calculate intensity log and integral.", flush=1)
-        with Timer("calculate intensity log and integral") as t:
-            sample_ID_batch = list(dataset.keys())
-            intensity_log_gradient = dict()
-            intensity_integral_gradient_grid = dict()
-            for sample_ID in sample_ID_batch:
-                data_sample = dataset[sample_ID]
-                intensity_log_gradient[sample_ID] = self.intensity_log_gradient(head_predicate_idx, data_sample)
-                intensity_integral_gradient_grid[sample_ID] = self.intensity_integral_gradient(head_predicate_idx, dataset, sample_ID, T_max)
-
+        intensity_log_gradient, intensity_integral_gradient_grid = self.get_intensity_and_integral_grad( head_predicate_idx, dataset, T_max)
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
@@ -834,6 +788,26 @@ class Logic_Learning_Model():
         print("----- exit generate_rule_via_column_generation -----",flush=1)
         return is_update_weight, is_continue
             
+    def get_intensity_and_integral_grad(self, head_predicate_idx, dataset, T_max):
+        print("---start calculate intensity grad and integral grad.---", flush=1)
+        with Timer("calculate intensity grad and integral grad") as t:
+            sample_ID_batch = list(dataset.keys())
+            intensity_log_gradient = dict()
+            intensity_integral_gradient_grid = dict()
+            arg_list = list()  #args for parallel intensity_integral_gradient_grid()
+            for sample_ID in sample_ID_batch:
+                intensity_log_gradient[sample_ID] = self.intensity_log_gradient(head_predicate_idx, data_sample = dataset[sample_ID])
+                arg_list.append((head_predicate_idx, dataset, sample_ID, T_max)) #args for parallel intensity_integral_gradient_grid()
+            
+            worker_num = min(self.worker_num, cpu_count())
+            worker_num = min(worker_num, len(arg_list))
+            with Pool(worker_num) as p:
+                integral_grad_list = p.starmap(self.intensity_integral_gradient, arg_list) 
+
+            for idx, sample_ID in enumerate(sample_ID_batch):
+                intensity_integral_gradient_grid[sample_ID] = integral_grad_list[idx]
+        print("---exit calculate intensity grad and integral grad.---", flush=1)
+        return intensity_log_gradient, intensity_integral_gradient_grid
 
 
     def add_one_predicate_to_existing_rule(self, head_predicate_idx, dataset, T_max, existing_rule_template):
@@ -851,13 +825,9 @@ class Logic_Learning_Model():
         new_rule_table[head_predicate_idx]['performance_gain'] = []
 
         #calculate intensity for sub-problem
-        sample_ID_batch = list(dataset.keys())
-        intensity_log_gradient = dict()
-        intensity_integral_gradient_grid = dict()
-        for sample_ID in sample_ID_batch:
-            data_sample = dataset[sample_ID]
-            intensity_log_gradient[sample_ID] = self.intensity_log_gradient(head_predicate_idx, data_sample)
-            intensity_integral_gradient_grid[sample_ID] = self.intensity_integral_gradient(head_predicate_idx, dataset, sample_ID, T_max)
+        intensity_log_gradient, intensity_integral_gradient_grid = self.get_intensity_and_integral_grad( head_predicate_idx, dataset, T_max)
+
+
 
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         #be careful, do NOT modify existing rule.
@@ -1127,10 +1097,10 @@ class Logic_Learning_Model():
 
     def search_algorithm(self, head_predicate_idx, dataset, T_max):
         print("----- start search_algorithm -----", flush=1)
-        self.print_info()
-        self.initialize_rule_set(head_predicate_idx, dataset, T_max)
-        print("Initialize with this rule:")
-        self.print_rule_cp()
+        #self.print_info()
+        #self.initialize_rule_set(head_predicate_idx, dataset, T_max)
+        #print("Initialize with this rule:")
+        #self.print_rule_cp()
         #Begin Breadth(width) First Search
         #generate new rule from scratch
         is_continue = True

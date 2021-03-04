@@ -291,17 +291,42 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     use tensorboard 
 
 61. good and cheap initialization
+    [Updated] no need initialization! directly start. since intensity is never zero, no zero-divition-error.
 
-62. parallel generator[Implemented] and optimize_log_likelihood[Implemented].
+62. [Implemented] parallel generator, optimize_log_likelihood, and get_intensity_and_integral_grad.
+    accelerate.
 
-63. systemetic synthetic
+63. systemetic synthetic experiment
 
-Exploit final decision:  log-likelihood-grad(ucb): mean= 5.58166, std= 1.89299, bound= 7.47465, Rule = C --> F , C BEFORE F
-Exploit final decision:  log-likelihood-grad(ucb): mean= 5.44200, std= 1.84390, bound= 7.28590, Rule = Not C --> F , Not C BEFORE F
+64. inconsistent result of multiprocess opt and opt.
+    maybe because, the first worker_num batches are started with same weights, but the following batches are started sequentially.
+    mp-opt:
+    grad norm=2.5704365477001274. num_batch_no_update =0
+    Finish optimize_log_likelihood, the log likelihood is -9.413276336477095
+    Params  [tensor([-0.2085], dtype=torch.float64, requires_grad=True), tensor([0.0550], dtype=torch.float64, requires_grad=True)]
+
+    opt:
+    grad norm=2.643148751161549. num_batch_no_update =0
+    Finish optimize_log_likelihood, the log likelihood is -9.406897454891597
+    Params  [tensor([-0.2309], dtype=torch.float64, requires_grad=True), tensor([0.0499], dtype=torch.float64, requires_grad=True)]
+    
+    likelihood div batch-size? otherwise lr is batch-size*lr
+    currently, we do not div batch-size, and use batch-size=64, lr=0.005
+
+    maybe because batch_size should not too small.
+
+65. set time-window[Implemented], set smaller weights\intensity to get less events, to avoid too much computation.
+    TODO: need to re-generate datasets. 
+
+66. add AFTER experiment?
+
+67. larger best_N?  e.g. 8,  or even add all positive rules? (need theoreticall analysis.)
 
 
 
 run (fit data-2, worker_num=16, iter_num=5) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Mar1, 16:37
 
-run (fit data-2 multiprocess likelihood) setsid python3 logic_learning_2.py 1>out-4.txt 2>err-4.txt at Mar1, 22:37
-run (fit data-2 multiprocess likelihood) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt at Mar2, 9:08
+run (fit data-2 multiprocess likelihood, no early stop) setsid python3 logic_learning_2.py 1>out-1.txt 2>err-1.txt at Mar3, 15:00
+run (fit data-2 multiprocess likelihood, no early stop) setsid python3 logic_learning_2.py 1>out-.txt 2>err-.txt at Mar3, 15:56
+
+run (fit data-2 multiprocess likelihood, batch_size_mp=64) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt, at Mar4,9:38

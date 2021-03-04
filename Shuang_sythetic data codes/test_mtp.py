@@ -26,6 +26,7 @@ class Model(nn.Module):
             l = p.map(self.loss, [optimizer for i in range(worker_num)])
         
         print(self.weights)
+        return self.weight.detach()
             
 
 def optimize(model):
@@ -34,6 +35,7 @@ def optimize(model):
     for epoch in range(1):
         for batch in range(1):
             #print("enter batch",flush=1)
+            print("------------")
             print("enter weights=",model.weights.data)
             optimizer.zero_grad()
             #print("cleaned grad",flush=1)
@@ -45,6 +47,7 @@ def optimize(model):
             #print("optimized weights",flush=1)
             print("loss=",loss.item())
             print("out weights=",model.weights.data)
+    return model.weights.data
 
 def run1():
     m = Model()
@@ -53,7 +56,8 @@ def run1():
     m.weights.share_memory_()
     print("start mp",flush=1)
     with tmp.Pool(worker_num) as p:
-        p.starmap(optimize, [(m,) for i in range(worker_num)])
+        l = p.starmap(optimize, [(m,) for i in range(worker_num*2)])
+    print(l)
 
 def run2():
     m = Model()
