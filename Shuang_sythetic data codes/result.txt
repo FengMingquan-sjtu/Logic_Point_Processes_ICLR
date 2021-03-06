@@ -1014,3 +1014,31 @@ Head = F, base = 0.1372
 [GT=0.5]Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.5003
 [GT=0.6]Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.5750
 [GT=0.7]Rule4: Not C --> F , Not C BEFORE F, weight=0.7399
+
+
+data file is  data-2.npy
+num_sample = 1000
+pred 0 avg event num is 19.5070
+pred 1 avg event num is 20.6810
+pred 2 avg event num is 20.0190
+pred 3 avg event num is 20.2490
+pred 4 avg event num is 19.9320
+pred 5 avg event num is 7.5080
+
+data file is  data-3.npy
+num_sample = 1000
+pred 0 avg event num is 21.1650
+pred 1 avg event num is 21.6940
+pred 2 avg event num is 19.2600
+pred 3 avg event num is 17.9050
+pred 4 avg event num is 22.5720
+pred 5 avg event num is 17.2960
+pred 6 avg event num is 8.1060
+
+data file is  data-4.npy
+num_sample = 100
+pred 0 avg event num is 9.2700
+pred 1 avg event num is 11.1500
+pred 2 avg event num is 8.8800
+pred 3 avg event num is 10.0900
+pred 4 avg event num is 10.6400

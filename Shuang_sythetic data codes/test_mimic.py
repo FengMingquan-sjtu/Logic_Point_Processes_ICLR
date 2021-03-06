@@ -3,7 +3,7 @@ import os.path as osp
 import numpy as np
 import pandas as pd
 import pickle
-from logic_learning_2 import Logic_Learning_Model
+from logic_learning import Logic_Learning_Model
 
 def load_mimic(file_path, n_types):
     df = pd.read_csv(file_path)

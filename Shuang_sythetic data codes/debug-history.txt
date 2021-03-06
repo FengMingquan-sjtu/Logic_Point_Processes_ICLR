@@ -61,7 +61,7 @@ mutual-information?
 
 13. decay. if too large, forget too fast. 
 
-14. BEFORE--> long-term mem, AFTER--> short-term mem.
+14. BEFORE--> long-term mem, Equal--> short-term mem.
 
 [Fixed]15. Why B-->C has negative grad?
 Because in log-grad, Only calculate feature, missing formula-effect 
@@ -164,6 +164,7 @@ in initialize, some filtered rules are wrongly added to table.  They take idx of
 36. AFTER is always zero-feature.
 mask = (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
 [Temporal fix] remove AFTER in enumeration.
+[fixed] remove all After relation in codes
 
 37. [Implemented] add a function: delete negative-weight rules.
 
@@ -322,10 +323,11 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     TODO: need to re-generate datasets. 
 
 66. add AFTER experiment?
+    [updated] remove AFTER experiment
 
 67. larger best_N?  e.g. 8,  or even add all positive rules? (need theoreticall analysis.)
 
-68. add seq-avg-len 
+68. [implemented]add seq-avg-len 
 
 69. modify feature calculation to O(n)
 
@@ -341,11 +343,11 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     reason?
     time_window=7,8 does not fit.
     time_window=10 works 
+
+73. in enumeration candidate rules, do not enumerate target sign, since this is redundant, by symmetricity.
+    the symmetricity is "grad(R->Y) = - grad(R->notY)", it is guaranteed by (wf) term and chain-rule. 
+    after calculation of log-grad, for all negative log-grad rules, revert its target sign and log-grad sign.
+    Note: this is risky if there are contradictory rules in rule set. But in old verison, such risk was also not considered.
     
 
 
-run (fit data-2, worker_num=16, iter_num=5) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Mar1, 16:37
-
-run (fit data-2 multiprocess likelihood, batch_size_mp=64) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt, at Mar4,9:38
-run (generate data-2 with time-window=10, add feature filter) setsid python3 generate_synthetic_data.py 1>out-1.txt 2>err-1.txt at Mar5, 20:29
-run (generate data-2 with time-window=10) setsid python3 generate_synthetic_data.py 1>out-.txt 2>err-.txt at Mar5, 19:34

@@ -237,22 +237,22 @@ class Logic_Learning_Model():
             transition_time = np.array(history[body_predicate_idx]['time'])
             transition_state = np.array(history[body_predicate_idx]['state'])
             
-            #for time-relation with target, filter events by time-relation
             if [body_predicate_idx, head_predicate_idx] in template['temporal_relation_idx']:
+                #for time-relation with target, filter events by time-relation
                 temporal_idx = template['temporal_relation_idx'].index([body_predicate_idx, head_predicate_idx])
                 if template['temporal_relation_type'][temporal_idx] == self.BEFORE:
                     mask = (transition_time >= cur_time - self.time_window) * (transition_time <= cur_time - self.Time_tolerance) * (transition_state == template['body_predicate_sign'][idx])
                 elif template['temporal_relation_type'][temporal_idx] == self.EQUAL:
-                    mask = (transition_time >= cur_time - self.Time_tolerance) * (transition_time <= cur_time + self.Time_tolerance) * (transition_state == template['body_predicate_sign'][idx])
-                elif template['temporal_relation_type'][temporal_idx] == self.AFTER:
-                    mask = (transition_time >= cur_time + self.Time_tolerance) * (transition_time <= cur_time + self.time_window) * (transition_state == template['body_predicate_sign'][idx])
+                    mask = (transition_time >= cur_time - self.Time_tolerance) * (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
+                else:
+                    raise ValueError
             else:
-                #TODO: AFTER is always zero-feature.
                 mask = (transition_time >= cur_time-self.time_window) * (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
 
             transition_time_dic[body_predicate_idx] = transition_time[mask]
         transition_time_dic[head_predicate_idx] = [cur_time]
         ### get weights
+        #print(transition_time_dic)
         # compute features whenever any item of the transition_item_dic is nonempty
         history_transition_len = [len(i) for i in transition_time_dic.values()]
         if min(history_transition_len) > 0:
@@ -268,8 +268,6 @@ class Logic_Learning_Model():
                     temporal_kernel *= (time_difference < - self.Time_tolerance) * np.exp(-self.decay_rate *(cur_time - time_combination_dic[temporal_relation_idx[0]]))
                 elif template['temporal_relation_type'][idx] == 'EQUAL':
                     temporal_kernel *= (abs(time_difference) <= self.Time_tolerance) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
-                elif template['temporal_relation_type'][idx] == 'AFTER':
-                    temporal_kernel *= (time_difference > self.Time_tolerance) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[1]]))
             feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
         return feature
 
@@ -771,32 +769,32 @@ class Logic_Learning_Model():
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
-        for head_predicate_sign in [1, 0]:  # consider head_predicate_sign = 1/0
-            for body_predicate_sign in [1, 0]: # consider head_predicate_sign = 1/0
-                for body_predicate_idx in self.predicate_set:  
-                    if body_predicate_idx == head_predicate_idx: # all the other predicates, excluding the head predicate, can be the potential body predicates
+        
+        for body_predicate_sign in [1, 0]: # consider head_predicate_sign = 1/0
+            for body_predicate_idx in self.predicate_set:  
+                if body_predicate_idx == head_predicate_idx: # all the other predicates, excluding the head predicate, can be the potential body predicates
+                    continue
+                for temporal_relation_type in [self.BEFORE, self.EQUAL]:
+                    # create new rule
+                    head_predicate_sign = 1   # due to bug#73
+                    new_rule_template = {}
+                    new_rule_template[head_predicate_idx]= {}
+                    new_rule_template[head_predicate_idx]['body_predicate_idx'] = [body_predicate_idx]
+                    new_rule_template[head_predicate_idx]['body_predicate_sign'] = [body_predicate_sign]  # use 1 to indicate True; use 0 to indicate False
+                    new_rule_template[head_predicate_idx]['head_predicate_sign'] = [head_predicate_sign]
+                    new_rule_template[head_predicate_idx]['temporal_relation_idx'] = [(body_predicate_idx, head_predicate_idx)]
+                    new_rule_template[head_predicate_idx]['temporal_relation_type'] = [temporal_relation_type]
+
+                    if self.check_repeat(new_rule_template[head_predicate_idx], head_predicate_idx): # Repeated rule is not allowed.
                         continue
-                    #NOTE: due to bug#36, remove self.AFTER in enumeration
-                    for temporal_relation_type in [self.BEFORE, self.EQUAL]:
-                        # create new rule
-                        new_rule_template = {}
-                        new_rule_template[head_predicate_idx]= {}
-                        new_rule_template[head_predicate_idx]['body_predicate_idx'] = [body_predicate_idx]
-                        new_rule_template[head_predicate_idx]['body_predicate_sign'] = [body_predicate_sign]  # use 1 to indicate True; use 0 to indicate False
-                        new_rule_template[head_predicate_idx]['head_predicate_sign'] = [head_predicate_sign]
-                        new_rule_template[head_predicate_idx]['temporal_relation_idx'] = [(body_predicate_idx, head_predicate_idx)]
-                        new_rule_template[head_predicate_idx]['temporal_relation_type'] = [temporal_relation_type]
+            
+                    arg_list.append((head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template[head_predicate_idx]))
 
-                        if self.check_repeat(new_rule_template[head_predicate_idx], head_predicate_idx): # Repeated rule is not allowed.
-                            continue
-                
-                        arg_list.append((head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template[head_predicate_idx]))
-
-                        new_rule_table[head_predicate_idx]['body_predicate_idx'].append(new_rule_template[head_predicate_idx]['body_predicate_idx'] )
-                        new_rule_table[head_predicate_idx]['body_predicate_sign'].append(new_rule_template[head_predicate_idx]['body_predicate_sign'])
-                        new_rule_table[head_predicate_idx]['head_predicate_sign'].append(new_rule_template[head_predicate_idx]['head_predicate_sign'])
-                        new_rule_table[head_predicate_idx]['temporal_relation_idx'].append(new_rule_template[head_predicate_idx]['temporal_relation_idx'])
-                        new_rule_table[head_predicate_idx]['temporal_relation_type'].append(new_rule_template[head_predicate_idx]['temporal_relation_type'])
+                    new_rule_table[head_predicate_idx]['body_predicate_idx'].append(new_rule_template[head_predicate_idx]['body_predicate_idx'] )
+                    new_rule_table[head_predicate_idx]['body_predicate_sign'].append(new_rule_template[head_predicate_idx]['body_predicate_sign'])
+                    new_rule_table[head_predicate_idx]['head_predicate_sign'].append(new_rule_template[head_predicate_idx]['head_predicate_sign'])
+                    new_rule_table[head_predicate_idx]['temporal_relation_idx'].append(new_rule_template[head_predicate_idx]['temporal_relation_idx'])
+                    new_rule_table[head_predicate_idx]['temporal_relation_type'].append(new_rule_template[head_predicate_idx]['temporal_relation_type'])
 
 
         is_update_weight, is_continue = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset, T_max)
@@ -1006,9 +1004,19 @@ class Logic_Learning_Model():
             else: #single process, not use pool.
                 gain_all_data = [self.optimize_log_likelihood_gradient(*arg) for arg in arg_list]
         mean_gain_all_data, gain_list_all_data  = list(zip(*gain_all_data))
+        mean_gain_all_data = list(mean_gain_all_data)
         print("-------end multiprocess------",flush=1)
         
 
+        for idx, gain_ in enumerate(mean_gain_all_data):
+            if gain_ < 0:
+                # if gain<0, revert head-pred sign and gain. using symmetricity.
+                sign = new_rule_table[head_predicate_idx]['head_predicate_sign'][idx][0]
+                new_rule_table[head_predicate_idx]['head_predicate_sign'][idx][0] = 1 - sign
+                arg_list[idx][-1]['head_predicate_sign'][0] = 1 - sign
+                mean_gain_all_data[idx] = - mean_gain_all_data[idx]
+
+                
         #delete low gain candidate rules
         for idx, gain_ in enumerate(mean_gain_all_data):
             if gain_ < self.low_grad_threshold:
@@ -1107,9 +1115,6 @@ class Logic_Learning_Model():
             return True
         return False
             
-
-        
-
 
     def search_algorithm(self, head_predicate_idx, dataset, T_max):
         print("----- start search_algorithm -----", flush=1)
@@ -1277,11 +1282,7 @@ def fit_2():
     print("dataset size is {}".format(num_sample) )
 
     small_dataset = {i:dataset[i] for i in range(num_sample)}
-    model.batch_size_cp = num_sample  # sample used by cp
     model.batch_size_grad = num_sample
-
-    
-    
     #model.num_iter = 1
     #warnings.warn("!!using very small num_iter !!")
 
@@ -1292,6 +1293,58 @@ def fit_2():
     if not os.path.exists("./model"):
         os.makedirs("./model")
     with open("./model/model-2.pkl",'wb') as f:
+        pickle.dump(model, f)       
+
+def fit_4():
+    print("Start time is", datetime.datetime.now(),flush=1)
+    head_predicate_idx = [4]
+    model = Logic_Learning_Model(head_predicate_idx = head_predicate_idx)
+    model.predicate_set= [0, 1, 2, 3] # the set of all meaningful predicates
+    model.predicate_notation = ['A', 'B', 'C', 'D', 'E']
+    T_max = 10
+    dataset_path = './data/data-4.npy'
+    dataset = np.load(dataset_path, allow_pickle='TRUE').item()
+    num_sample =1000 #dataset size
+    print("dataset path is ", dataset_path)
+    print("dataset size is {}".format(num_sample))
+
+    small_dataset = {i:dataset[i] for i in range(num_sample)}
+    model.batch_size_grad = num_sample
+
+    with Timer("search_algorithm") as t:
+        model.search_algorithm(head_predicate_idx[0], small_dataset, T_max)
+
+    print("Finish time is", datetime.datetime.now())
+    if not os.path.exists("./model"):
+        os.makedirs("./model")
+    with open("./model/model-4.pkl",'wb') as f:
+        pickle.dump(model, f)       
+
+def fit_5():
+    print("Start time is", datetime.datetime.now(),flush=1)
+    head_predicate_idx = [4]
+    model = Logic_Learning_Model(head_predicate_idx = head_predicate_idx)
+    model.predicate_set= [0, 1, 2, 3] # the set of all meaningful predicates
+    model.predicate_notation = ['A', 'B', 'C', 'D', 'E']
+    T_max = 10
+    dataset_path = './data/data-5.npy'
+    dataset = np.load(dataset_path, allow_pickle='TRUE').item()
+    num_sample =1000 #dataset size
+    print("dataset path is ", dataset_path)
+    print("dataset size is {}".format(num_sample))
+
+    small_dataset = {i:dataset[i] for i in range(num_sample)}
+    model.batch_size_grad = num_sample
+    #model.num_iter = 1
+    #warnings.warn("!!using very small num_iter !!")
+
+    with Timer("search_algorithm") as t:
+        model.search_algorithm(head_predicate_idx[0], small_dataset, T_max)
+
+    print("Finish time is", datetime.datetime.now())
+    if not os.path.exists("./model"):
+        os.makedirs("./model")
+    with open("./model/model-4.pkl",'wb') as f:
         pickle.dump(model, f)       
 
 def redirect_log_file():
@@ -1305,11 +1358,62 @@ def redirect_log_file():
     sys.stdout = open(out_file, 'w')
     sys.stderr = open(err_file, 'w')
 
+def fit(dataset_id, num_sample):
+    print("Start time is", datetime.datetime.now(),flush=1)
 
+    #get model
+    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5
+    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5]
+    m, _ = logic_model_funcs[dataset_id]()
+    model = m.get_model_for_learn()
+
+    #get data
+    dataset_path = './data/data-{}.npy'.format(dataset_id)
+    print("dataset_path is ",dataset_path)
+    dataset = np.load(dataset_path, allow_pickle='TRUE').item()
+    if len(dataset.keys())> num_sample: 
+        dataset = {i:dataset[i] for i in range(num_sample)}
+    num_sample = len(dataset.keys())
+    print("sample num is ", num_sample)
+    model.batch_size_grad = num_sample #use all sample for grad
+
+    with Timer("search_algorithm") as t:
+        model.search_algorithm(model.head_predicate_set[0], dataset, T_max=10)
+    
+    print("Finish time is", datetime.datetime.now())
+    if not os.path.exists("./model"):
+        os.makedirs("./model")
+    with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
+        pickle.dump(model, f)       
+
+
+
+
+
+def test_feature():
+    dataset_path = './data/data-5.npy'
+    dataset = np.load(dataset_path, allow_pickle='TRUE').item()
+    num_sample =100 
+    small_dataset = {i:dataset[i] for i in range(num_sample)}
+
+    import generate_synthetic_data
+    m, _ = generate_synthetic_data.get_logic_model_5()
+    model = m.get_model()
+    model.batch_size_grad = num_sample
+
+    head_predicate_idx = 4
+    cur_time = 7
+    history = small_dataset[0]
+    template = model.logic_template[head_predicate_idx][2]
+    #print(history)
+    #print(template)
+    f = model.get_feature(cur_time, head_predicate_idx, history, template)
+    print(f)
 
 if __name__ == "__main__":
     redirect_log_file()
-    fit_2()
+    fit(4,1280)
+    #test_feature()
 
 
 

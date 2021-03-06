@@ -1,0 +1,8 @@
+run (fit data-2, worker_num=16, iter_num=5) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Mar1, 16:37
+
+run (fit data-2 multiprocess likelihood, batch_size_mp=64) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt, at Mar4,9:38
+run (generate data-2 with time-window=10, add feature filter) setsid python3 generate_synthetic_data.py 1>out-1.txt 2>err-1.txt at Mar5, 20:29
+run (generate data-2 with time-window=10) setsid python3 generate_synthetic_data.py 1>out-.txt 2>err-.txt at Mar5, 19:34
+
+run setsid python3 generate_synthetic_data.py at Mar6,16:53, generate 100 samples for data-4
+run setsid python3 generate_synthetic_data.py at Mar6,16:57, generate 2000 samples for data-4

@@ -1,11 +1,13 @@
 import itertools
 import datetime
 from multiprocessing import Pool, cpu_count
+import os 
+import sys
 
 import numpy as np
 import torch
 
-from logic_learning_2 import Logic_Learning_Model, Timer
+from logic_learning import Logic_Learning_Model, Timer
 
 ##################################################################
 #np.random.seed(1)
@@ -39,6 +41,14 @@ class Logic_Model_Generator:
         model.predicate_notation = self.predicate_notation
         model.Time_tolerance = self.Time_tolerance
         model.decay_rate = self.decay_rate
+        return model
+    
+    def get_model_for_learn(self):
+        # used in logic_learning.py
+        model = Logic_Learning_Model(self.head_predicate_set)
+        model.num_predicate = self.num_predicate
+        model.predicate_set = self.body_predicate_set + self.head_predicate_set 
+        model.predicate_notation = self.predicate_notation
         return model
 
     def generate_one_sample(self, sample_ID=0):
@@ -379,32 +389,177 @@ def get_logic_model_3():
     
     return model, file_name
 
+def get_logic_model_4():
+    # generate to data-4.npy
+    file_name = "data-4.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before C, C Equal E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,2], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    # A ^ C ^ D --> E, A Before E, C Equal E, D Before E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL, model.BEFORE]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_5():
+    # generate to data-5.npy
+    file_name = "data-5.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before C, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,2], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # A ^ C ^ D --> E, A Before E, C Before E, D Before E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE, model.BEFORE]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
 def generate(model,file_name, num_sample, time_horizon, worker_num):
     with Timer("Generate data") as t:
         data = model.generate_data(num_sample=num_sample, time_horizon=time_horizon, worker_num=worker_num)
-    np.save(file_name, data)
+    if not os.path.exists("./data"):
+        os.makedirs("./data")
+    path = os.path.join("./data", file_name)
+    np.save(path, data)
+    print("data saved to", path)
+
+def load_data(file_name):
+    path = os.path.join("./data", file_name)
+    data = np.load(path, allow_pickle='TRUE').item()
+    return data
 
 def fit(model,file_name,time_horizon):
-    data = np.load(file_name, allow_pickle='TRUE').item()
+    data = load_data(file_name)
     with Timer("Fit data") as t:
         model.fit_gt_rules(data, time_horizon=time_horizon)
 
 def fit_mp(model,file_name,time_horizon):
-    data = np.load(file_name, allow_pickle='TRUE').item()
+    data = load_data(file_name)
     with Timer("Fit data") as t:
         model.fit_gt_rules_mp(data, time_horizon=time_horizon)
 
-def analyse(model,file_name,time_horizon):
-    data = np.load(file_name, allow_pickle='TRUE').item()
-    with Timer("Fit data") as t:
-        model.fit_gt_rules_mp(data, time_horizon=time_horizon)
+def analyse(file_name):
+    data = load_data(file_name)
+    event_num_dict = {pred_idx:0 for pred_idx in data[0].keys()}
+    for sample_ID in data.keys():
+        for pred_idx in event_num_dict.keys():
+            event_num_dict[pred_idx] += len(data[sample_ID][pred_idx]['time'])
+    
+    num_sample = len(data.keys())
+    print("data file is ", file_name)
+    print("num_sample = {}".format(num_sample))
+    for pred_idx, cnt in event_num_dict.items():
+        print("pred {} avg event num is {:.4f}".format(pred_idx, cnt/num_sample))
+
+
+def redirect_log_file():
+    log_root = ["./log/out","./log/err"]   
+    for root in log_root:     
+        if not os.path.exists(root):
+            os.makedirs(root)
+    t = str(datetime.datetime.now())
+    out_file = os.path.join(log_root[0], t)
+    err_file = os.path.join(log_root[1], t)
+    sys.stdout = open(out_file, 'w')
+    sys.stderr = open(err_file, 'w')
 
 if __name__ == "__main__":
+    redirect_log_file()
     print("Start time is", datetime.datetime.now(),flush=1)
-    num_sample = 1000
+    num_sample = 100
     time_horizon = 10
     worker_num = 8
-    model, file_name = get_logic_model_2()
+    model, file_name = get_logic_model_5()
+
     generate(model, file_name, num_sample, time_horizon, worker_num)
     print("generate finish",flush=1)
+    analyse(file_name)
     fit_mp(model, file_name, time_horizon)
+    
