@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "logic_learning_2.py", line 1312, in <module>
+    fit_2()
+  File "logic_learning_2.py", line 1274, in fit_2
+    dataset = np.load(dataset_path, allow_pickle='TRUE').item()
+  File "/home/fengmingquan/anaconda3/envs/molecule/lib/python3.7/site-packages/numpy/lib/npyio.py", line 416, in load
+    fid = stack.enter_context(open(os_fspath(file), "rb"))
+FileNotFoundError: [Errno 2] No such file or directory: './data/data-2.npy'

@@ -293,7 +293,7 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 61. good and cheap initialization
     [Updated] no need initialization! directly start. since intensity is never zero, no zero-divition-error.
 
-62. [Implemented] parallel generator, optimize_log_likelihood, and get_intensity_and_integral_grad.
+62. [Implemented] parallel generator, optimize_log_likelihood(2x speed), and get_intensity_and_integral_grad (3x speed).
     accelerate.
 
 63. systemetic synthetic experiment
@@ -315,6 +315,9 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
     maybe because batch_size should not too small.
 
+    successfully recovered data-2, using 8 workers, each with batch-size-mp=64.
+    for 20 ruels, 75 batches, 8-worker-mp use 7min, single-process-cache costs above 10min.
+
 65. set time-window[Implemented], set smaller weights\intensity to get less events, to avoid too much computation.
     TODO: need to re-generate datasets. 
 
@@ -322,11 +325,27 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
 67. larger best_N?  e.g. 8,  or even add all positive rules? (need theoreticall analysis.)
 
+68. add seq-avg-len 
+
+69. modify feature calculation to O(n)
+
+70. draw likelihood function image, verify deletting/adding rule criteria.
+
+71. [Implemented]in featrue fucntion, filter predicate if it has time relation with target.
+    add filter, reduce generating data-2 from 5h to 50min
+    time_window=10
+    [Generate data] Elapsed: 55.7610 min.
+    [Generate data] Elapsed: 4.3923 hour.
+
+72. generate data-2 costs long time.
+    reason?
+    time_window=7,8 does not fit.
+    time_window=10 works 
+    
 
 
 run (fit data-2, worker_num=16, iter_num=5) setsid python3 logic_learning_2.py  1>out-2.txt 2>err-2.txt at Mar1, 16:37
 
-run (fit data-2 multiprocess likelihood, no early stop) setsid python3 logic_learning_2.py 1>out-1.txt 2>err-1.txt at Mar3, 15:00
-run (fit data-2 multiprocess likelihood, no early stop) setsid python3 logic_learning_2.py 1>out-.txt 2>err-.txt at Mar3, 15:56
-
 run (fit data-2 multiprocess likelihood, batch_size_mp=64) setsid python3 logic_learning_2.py 1>out-3.txt 2>err-3.txt, at Mar4,9:38
+run (generate data-2 with time-window=10, add feature filter) setsid python3 generate_synthetic_data.py 1>out-1.txt 2>err-1.txt at Mar5, 20:29
+run (generate data-2 with time-window=10) setsid python3 generate_synthetic_data.py 1>out-.txt 2>err-.txt at Mar5, 19:34

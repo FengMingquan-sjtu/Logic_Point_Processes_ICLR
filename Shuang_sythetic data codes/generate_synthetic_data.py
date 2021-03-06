@@ -159,6 +159,8 @@ class Logic_Model_Generator:
 
 def get_logic_model_1():
     # generate to data-1.npy
+    file_name = "data-1.npy"
+
     model = Logic_Model_Generator()
     model.body_intensity= {0:2, 1:2, 2:2, 3:2}
     model.body_predicate_set = [0,1,2,3]
@@ -228,10 +230,11 @@ def get_logic_model_1():
 
     model.logic_template = logic_template
     
-    return model
+    return model, file_name
 
 def get_logic_model_2():
     # generate to data-2.npy
+    file_name = "data-2.npy"
     # E is noise variable
     model = Logic_Model_Generator()
     model.body_intensity= {0:2, 1:2, 2:2, 3:2, 4:2}
@@ -300,10 +303,11 @@ def get_logic_model_2():
 
     model.logic_template = logic_template
     
-    return model
+    return model, file_name
 
 def get_logic_model_3():
     # generate to data-3.npy
+    file_name = "data-3.npy"
     # E,F are noise variables
     model = Logic_Model_Generator()
     model.body_intensity= {0:2.1, 1:2.2, 2:1.9, 3:1.8, 4:2.3, 5:1.7}
@@ -373,7 +377,7 @@ def get_logic_model_3():
 
     model.logic_template = logic_template
     
-    return model
+    return model, file_name
 
 def generate(model,file_name, num_sample, time_horizon, worker_num):
     with Timer("Generate data") as t:
@@ -390,13 +394,17 @@ def fit_mp(model,file_name,time_horizon):
     with Timer("Fit data") as t:
         model.fit_gt_rules_mp(data, time_horizon=time_horizon)
 
+def analyse(model,file_name,time_horizon):
+    data = np.load(file_name, allow_pickle='TRUE').item()
+    with Timer("Fit data") as t:
+        model.fit_gt_rules_mp(data, time_horizon=time_horizon)
+
 if __name__ == "__main__":
     print("Start time is", datetime.datetime.now(),flush=1)
-    file_name = 'data-3.npy'
     num_sample = 1000
     time_horizon = 10
-    worker_num = 16
-    model = get_logic_model_3()
-    #generate(model, file_name, num_sample, time_horizon, worker_num)
-    #print("generate finish",flush=1)
+    worker_num = 8
+    model, file_name = get_logic_model_2()
+    generate(model, file_name, num_sample, time_horizon, worker_num)
+    print("generate finish",flush=1)
     fit_mp(model, file_name, time_horizon)

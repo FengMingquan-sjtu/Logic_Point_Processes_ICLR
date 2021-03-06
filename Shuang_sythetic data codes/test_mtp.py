@@ -64,5 +64,9 @@ def run2():
     m.train()
 if __name__ == "__main__":
     from logic_learning_2 import Timer
+    #import sys
+    #sys.stdout = open('out.txt', 'w')
+    #sys.stderr = open('err.txt', 'w')
+    #raise ValueError
     with Timer("without share-mem"):
         run1()

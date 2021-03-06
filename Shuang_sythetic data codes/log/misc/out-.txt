@@ -1,0 +1,75 @@
+Start time is 2021-03-05 19:33:27.493019
+Generate 1000 samples
+with following rules:
+Head = F, base = 0.0000
+Rule0: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.8000
+Rule1: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.9000
+Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.5000
+Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.6000
+Rule4: Not C --> F , Not C BEFORE F, weight=0.7000
+Intensity A is 2
+Intensity B is 2
+Intensity C is 2
+Intensity D is 2
+Intensity E is 2
+-----
+cpu num = 48, use 8 workers. 
+[Generate data] Elapsed: 4.3923 hour.
+generate finish
+-----key model information----
+num_formula=5
+time_window=10
+Time_tolerance=0.1
+integral_resolution=0.1
+decay_rate=1
+batch_size=64
+num_batch_check_for_feature=1
+num_batch_check_for_gradient=20
+num_batch_no_update_limit_opt=300
+num_batch_no_update_limit_ucb=4
+num_iter=100
+epsilon=0.003
+gain_threshold=0.02
+low_grad_threshold=0.01
+low_grad_tolerance=2
+weight_threshold=0.01
+strict_weight_threshold=0.1
+learning_rate=0.005
+max_rule_body_length=3
+max_num_rule=30
+batch_size_cp=500
+batch_size_grad=500
+batch_size_init_ucb=5
+explore_rule_num_ucb=8
+explore_batch_size_ucb=500
+use_cp=False
+worker_num=8
+best_N=2
+num_predicate=5
+----
+---- start optimize_log_likelihood multi-process----
+Rule set is:
+Head = F, base = -0.2000
+Rule0: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.0100
+Rule1: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.0100
+Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.0100
+Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.0100
+Rule4: Not C --> F , Not C BEFORE F, weight=0.0100
+use 8 workers for 1500 batches
+optimized rule weights are:
+Head = F, base = 0.1639
+Rule0: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.6437
+Rule1: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.7335
+Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.4224
+Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.5587
+Rule4: Not C --> F , Not C BEFORE F, weight=0.8571
+---- exit optimize_log_likelihood multi-process----
+Log-likelihood (torch)=  -4.909952035877404
+rule set is:
+Head = F, base = 0.1639
+Rule0: A ^ C --> F , A BEFORE F ^ C BEFORE F, weight=0.6437
+Rule1: A ^ B ^ C --> F , A BEFORE F ^ B EQUAL F ^ C BEFORE F, weight=0.7335
+Rule2: B ^ C ^ D --> F , B EQUAL F ^ C BEFORE F ^ D BEFORE F, weight=0.4224
+Rule3: C ^ D --> F , C EQUAL F ^ D BEFORE F, weight=0.5587
+Rule4: Not C --> F , Not C BEFORE F, weight=0.8571
+[Fit data] Elapsed: 38.8451 min.
