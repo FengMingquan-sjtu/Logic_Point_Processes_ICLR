@@ -348,6 +348,16 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     the symmetricity is "grad(R->Y) = - grad(R->notY)", it is guaranteed by (wf) term and chain-rule. 
     after calculation of log-grad, for all negative log-grad rules, revert its target sign and log-grad sign.
     Note: this is risky if there are contradictory rules in rule set. But in old verison, such risk was also not considered.
+    [update] due to repeated rule bug, discard this fix.
+
+74. fit failed for 1280, 640 samples of data-4
+    2560 samples killed by system?? in [multiprocess log-grad] 40 tasks, only get 17 result and quit.
+    still use cache??
+
+75. after run setsid, check model-info and running states of program!!
+
+76. use cp instead of torch to solve master.
+    note: no l1 panelty.
     
 
 

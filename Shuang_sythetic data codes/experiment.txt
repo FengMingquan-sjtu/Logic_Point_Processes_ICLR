@@ -6,3 +6,13 @@ run (generate data-2 with time-window=10) setsid python3 generate_synthetic_data
 
 run setsid python3 generate_synthetic_data.py at Mar6,16:53, generate 100 samples for data-4
 run setsid python3 generate_synthetic_data.py at Mar6,16:57, generate 2000 samples for data-4
+
+at Mar6,21:35-21:36, fit 320,640,1280 samples of data-4
+at Mar7,10:02-10:05, fit 2560,1280,640 samples of data-4. remove fix of bug#73, and set rule_num to 20.
+at Mar7,23:10 re-generate data-4
+at Mar7,23:32, re-generate simple data-4 fit 1280,640 samples of data-4. 
+at Mar8,10:27-28, tune hyper-params,  fit data-4 2560,1280,640, samples. 
+at Mar8,15:36-41, tune hyper-params,  fit data-4 2560,1280,640, samples. 
+at Mar8,17:09 use cp(ecos solver), fit 320 samples
+at Mar8,17:54 use cp(mosek solver, single thread), fit 320 samples
+at Mar8,17:58 use cp(mosek solver, 8 thread), fit 320 samples
