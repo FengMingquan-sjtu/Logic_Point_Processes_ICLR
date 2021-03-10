@@ -95,7 +95,7 @@ class Logic_Learning_Model():
         self.explore_batch_size_ucb = 500
         self.use_cp = False
         self.worker_num = 8
-        self.best_N = 2
+        self.best_N = 1
         
         #claim parameters and rule set
         self.model_parameter = {}
@@ -122,14 +122,23 @@ class Logic_Learning_Model():
             parameters.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
         return parameters
     
+    def get_model_parameters_cp(self, head_predicate_idx):
+        # collect all cp parameters in a list, used in l1 panelty
+        parameters = list()
+        parameters.append(self.model_parameter[head_predicate_idx]['base_cp'])
+        for formula_idx in range(self.num_formula): #TODO:potential bug
+            parameters.append(self.model_parameter[head_predicate_idx][formula_idx]['weight_cp'])
+        return parameters
+    
+    def synchronize_cp_weight_with_torch(self,head_predicate_idx):
+        params = self.get_model_parameters()
+        params_array = [p.item() for p in params]
+        self.set_model_parameters_cp(head_predicate_idx, params_array)
+
     def synchronize_torch_weight_with_cp(self,head_predicate_idx):
-        params = list()
-        base = self.model_parameter[head_predicate_idx]['base_cp'].value[0]
-        params.append(base)
-        for formula_idx in range(self.num_formula):
-            weight = self.model_parameter[head_predicate_idx][formula_idx]['weight_cp'].value[0]
-            params.append(weight)
-        self.set_model_parameters(head_predicate_idx, params)
+        params = get_model_parameters_cp(head_predicate_idx)
+        params_array = [p.value[0] for p in params]
+        self.set_model_parameters(head_predicate_idx, params_array)
 
     def set_model_parameters(self, head_predicate_idx, param_array):
         # set model params
@@ -139,6 +148,17 @@ class Logic_Learning_Model():
         for formula_idx in range(self.num_formula):
             weight = param_array[formula_idx+1]
             self.model_parameter[head_predicate_idx][formula_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * weight).double(), requires_grad=True)
+    
+    def set_model_parameters_cp(self, head_predicate_idx, param_array):
+        # set model params
+        parameters = list()
+        base = cp.Variable(1)
+        base.value = [param_array[0]]
+        self.model_parameter[head_predicate_idx]['base_cp'] = base
+        for formula_idx in range(self.num_formula):
+            weight = cp.Variable(1)
+            weight.value = [param_array[formula_idx+1]]
+            self.model_parameter[head_predicate_idx][formula_idx]['weight_cp'] = weight
         
     def delete_rules(self, head_predicate_idx, formula_idx_list):
         # delete formulas listed in formula_idx_list
@@ -478,21 +498,29 @@ class Logic_Learning_Model():
         else:
             sample_ID_batch = list(dataset.keys())
         log_likelihood = self.log_likelihood_cp(head_predicate_idx, dataset, sample_ID_batch, T_max)
-        objective = cp.Maximize(log_likelihood)
+        params = self.get_model_parameters_cp(head_predicate_idx)
+        l1 = cp.sum([cp.abs(i) for i in params])
+        objective = cp.Maximize(log_likelihood - l1) #with l1 penalty
         prob = cp.Problem(objective)
         
         # SCS solver for mimic:
-        #opt_log_likelihood = prob.solve(warm_start=True, verbose=False, solver="SCS")
+        #opt_log_likelihood = prob.solve(warm_start=True, verbose=True, solver="SCS")
 
         #default ECOS solver:
         #opt_log_likelihood = prob.solve(warm_start=True) 
         #MOSEK solver
-        opt_log_likelihood = prob.solve(warm_start=True, solver=cp.MOSEK, mosek_params={"MSK_IPAR_NUM_THREADS":self.worker_num})
+        opt_log_likelihood = prob.solve(warm_start=True, solver=cp.MOSEK)
 
-        #synchronize weight updates to torch.
-        self.synchronize_torch_weight_with_cp(head_predicate_idx)
-
-        return opt_log_likelihood / len(sample_ID_batch)
+        if self.model_parameter[head_predicate_idx]['base_cp'].value is None:
+            print("mosek solver failed, problem status=", prob.status)
+            # solver failed, use torch
+            log_likelihood = self.optimize_log_likelihood_mp(head_predicate_idx, dataset, T_max)
+            
+            return log_likelihood
+        else:
+            #synchronize weight updates to torch.
+            self.synchronize_torch_weight_with_cp(head_predicate_idx)
+            return opt_log_likelihood / len(sample_ID_batch)
 
 
     def intensity_log_gradient(self, head_predicate_idx, data_sample):
@@ -583,15 +611,15 @@ class Logic_Learning_Model():
             
 
     def check_repeat(self, new_rule, head_predicate_idx):
-        new_rule_body_predicate_set = set(zip(new_rule['body_predicate_idx'], new_rule['body_predicate_sign']))
+        new_rule_body_predicate_set = set(new_rule['body_predicate_idx'])
         new_rule_temporal_relation_set = set(zip(new_rule['temporal_relation_idx'], new_rule['temporal_relation_type']))
         for rule in self.logic_template[head_predicate_idx].values():
-            if rule['head_predicate_sign'] == new_rule['head_predicate_sign']:
-                body_predicate_set = set(zip(rule['body_predicate_idx'], rule['body_predicate_sign']))
-                if body_predicate_set == new_rule_body_predicate_set:
-                    temporal_relation_set = set(zip(rule['temporal_relation_idx'], rule['temporal_relation_type']))
-                    if temporal_relation_set == new_rule_temporal_relation_set:
-                        return True #repeat with existing rules
+            # strict check repeat, ignoring sign, due to bug#77
+            body_predicate_set = set(rule['body_predicate_idx'])
+            if body_predicate_set == new_rule_body_predicate_set:
+                temporal_relation_set = set(zip(rule['temporal_relation_idx'], rule['temporal_relation_type']))
+                if temporal_relation_set == new_rule_temporal_relation_set:
+                    return True #repeat with existing rules
         rule_str = self.get_rule_str(new_rule, head_predicate_idx)
         if rule_str in self.deleted_rules:
             return True #repeat with deleted rules
@@ -866,7 +894,7 @@ class Logic_Learning_Model():
         return False
             
 
-    def search_algorithm(self, head_predicate_idx, dataset, T_max):
+    def search_algorithm(self, head_predicate_idx, dataset, T_max, dataset_id):
         print("----- start search_algorithm -----", flush=1)
         self.print_info()
         #Begin Breadth(width) First Search
@@ -874,6 +902,8 @@ class Logic_Learning_Model():
         is_continue = True
         while self.num_formula < self.max_num_rule and is_continue:
             is_update_weight, is_continue = self.generate_rule_via_column_generation(head_predicate_idx, dataset, T_max)
+            with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
+                pickle.dump(self, f)   
             
         #generate new rule by extending existing rules
         extended_rules = set()
@@ -905,6 +935,8 @@ class Logic_Learning_Model():
                 is_continue = True
                 while(self.num_formula < self.max_num_rule and is_continue):
                     is_update_weight, is_continue = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, template_to_extend)
+                    with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
+                        pickle.dump(self, f) 
 
 
         print("Train finished, rule set is:")
@@ -925,7 +957,8 @@ class Logic_Learning_Model():
 
     def print_rule(self):
         for head_predicate_idx, rules in self.logic_template.items():
-            print("Head = {}, base = {:.4f}".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
+            
+            print("Head:{}, base={:.4f}.".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
@@ -936,18 +969,18 @@ class Logic_Learning_Model():
     def print_rule_cp(self):
         for head_predicate_idx, rules in self.logic_template.items():
             base = self.model_parameter[head_predicate_idx]['base'].item()
-            base_cp = self.model_parameter[head_predicate_idx]['base_cp'].value[0]
+            base_cp = self.model_parameter[head_predicate_idx]['base_cp'].value
             if base_cp:
-                print("Head = {}, base(torch) = {:.4f}, base(cp) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base, base_cp))
+                print("Head:{}, base(torch)={:.4f}, base(cp)={:.4f}.".format(self.predicate_notation[head_predicate_idx], base, base_cp[0]))
             else:
-                print("Head = {}, base(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base))
+                print("Head:{}, base(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
                 weight = self.model_parameter[head_predicate_idx][rule_id]['weight'].item()
-                weight_cp = self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value[0]
+                weight_cp = self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value
                 if weight_cp:
-                    rule_str += ", weight(torch)={:.4f}, weight(cp)={:.4f}.".format(weight, weight_cp)
+                    rule_str += ", weight(torch)={:.4f}, weight(cp)={:.4f}.".format(weight, weight_cp[0])
                 else:
                     rule_str += ", weight(torch)={:.4f}.".format(weight)
                 print(rule_str)
@@ -999,14 +1032,25 @@ def redirect_log_file():
     sys.stdout = open(out_file, 'w')
     sys.stderr = open(err_file, 'w')
 
-def fit(dataset_id, num_sample, num_iter=5, use_cp=False):
+def fit(dataset_id, num_sample, num_iter=5, use_cp=False, rule_template = None):
     print("Start time is", datetime.datetime.now(),flush=1)
 
+    if not os.path.exists("./model"):
+        os.makedirs("./model")
+        
     #get model
     from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5
     logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5]
     m, _ = logic_model_funcs[dataset_id]()
     model = m.get_model_for_learn()
+
+    #set initial rules if required
+    import utils
+    if rule_template:
+        model_parameter, logic_template, head_predicate_idx, num_formula = utils.get_template(rule_set_str, model.predicate_notation)
+        model.logic_template = logic_template
+        model.model_parameter = model_parameter
+        model.num_formula = num_formula
 
     #get data
     dataset_path = './data/data-{}.npy'.format(dataset_id)
@@ -1030,13 +1074,11 @@ def fit(dataset_id, num_sample, num_iter=5, use_cp=False):
         model.worker_num = 4
 
     with Timer("search_algorithm") as t:
-        model.search_algorithm(model.head_predicate_set[0], dataset, T_max=10)
+        model.search_algorithm(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
     
     print("Finish time is", datetime.datetime.now())
-    if not os.path.exists("./model"):
-        os.makedirs("./model")
-    with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
-        pickle.dump(model, f)       
+    
+    
 
 
 
@@ -1087,8 +1129,11 @@ if __name__ == "__main__":
     #fit(dataset_id=4, num_sample=640, num_iter=10)
     #fit(dataset_id=4, num_sample=320, num_iter=20)
     #test_feature()
+    
+    #fit(dataset_id=4, num_sample=320, use_cp=True, rule_template = rule_set_str)
     fit(dataset_id=4, num_sample=320, use_cp=True)
-    #fit(dataset_id=4, num_sample=64, use_cp=True)
+    #fit(dataset_id=4, num_sample=640, use_cp=True)
+    #fit(dataset_id=4, num_sample=1280, use_cp=True)
 
 
 

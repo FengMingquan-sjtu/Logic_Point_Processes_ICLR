@@ -357,7 +357,20 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 75. after run setsid, check model-info and running states of program!!
 
 76. use cp instead of torch to solve master.
-    note: no l1 panelty.
+    note: no l1 panelty. [Fixed: added]
+    fit GT rules, 2560 samples cost 10+G memory.
+    mosek solver is 3x faster than scs.
     
+77. when adding contradictory rules, e.g.
+    Best rule is: D ^ Not A --> E , D EQUAL Not A ^ Not A EQUAL E
+    Best log-likelihood-grad(all-data) = 0.04151670803228344
+    new rule added.
+    Best rule is: Not D ^ Not A --> E , Not D EQUAL Not A ^ Not A EQUAL E
+    Best log-likelihood-grad(all-data) = 0.039954239767975484
+    new rule added.
+    mosek returns:
+    Problem status: The problem is primal infeasible.
+
+    So we constraint candidate rules not contradictory.
 
 

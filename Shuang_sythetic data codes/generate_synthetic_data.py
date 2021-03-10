@@ -6,6 +6,7 @@ import sys
 
 import numpy as np
 import torch
+import cvxpy as cp
 
 from logic_learning import Logic_Learning_Model, Timer
 
@@ -82,10 +83,10 @@ class Logic_Model_Generator:
             data = {sample_ID:data_sample}
             # obtain the maximal intensity
             intensity_potential = []
-            use_cache = False # do not need cache in generator.
+            
             for t in np.arange(0, self.time_horizon, 0.1):
                 t = t.item() #convert np scalar to float
-                intensity = self.model.intensity(t, head_predicate_idx, data, sample_ID, use_cache)
+                intensity = self.model.intensity(t, head_predicate_idx, data, sample_ID)
                 intensity_potential.append(intensity)
             intensity_max = max(intensity_potential)
             #print(intensity_max)
@@ -96,7 +97,7 @@ class Logic_Model_Generator:
                 t = t + time_to_event
                 if t >= self.time_horizon:
                     break
-                intensity = self.model.intensity(t, head_predicate_idx, data, sample_ID, use_cache)
+                intensity = self.model.intensity(t, head_predicate_idx, data, sample_ID)
                 ratio = min(intensity / intensity_max, 1)
                 flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
                 if flag == 1: # accept
@@ -110,7 +111,7 @@ class Logic_Model_Generator:
         self.time_horizon = time_horizon
         print("Generate {} samples".format(num_sample))
         print("with following rules:")
-        self.model.print_rule()
+        self.model.print_rule_cp()
         for body_idx in self.body_predicate_set:
             print("Intensity {} is {}".format(self.predicate_notation[body_idx], self.body_intensity[body_idx]))
         print("-----",flush=1)
@@ -121,8 +122,9 @@ class Logic_Model_Generator:
         print("cpu num = {}, use {} workers. ".format(cpu, worker_num_))
         
         if worker_num_ > 1:
-            with Pool(worker_num_) as pool:
-                samples = pool.map(self.generate_one_sample, range(num_sample))
+            with torch.no_grad():
+                with Pool(worker_num_) as pool:
+                    samples = pool.map(self.generate_one_sample, range(num_sample))
         else:
             samples = [self.generate_one_sample() for i in range(num_sample)]
         
@@ -147,6 +149,22 @@ class Logic_Model_Generator:
         print("rule set is:")
         model.print_rule()
     
+    def fit_gt_rules_cp(self, dataset, time_horizon):
+        model = self.get_model()
+        model.print_info()
+
+        # initialize params
+        for head_predicate_idx in self.head_predicate_set:
+            model.model_parameter[head_predicate_idx] = dict()
+            model.model_parameter[head_predicate_idx]['base_cp'] = cp.Variable(1)
+            for formula_idx in range(self.num_formula):
+                model.model_parameter[head_predicate_idx][formula_idx] = {'weight_cp': cp.Variable(1)}
+        
+        l = model.optimize_log_likelihood_cp(head_predicate_idx, dataset, time_horizon)
+        print("Log-likelihood (cp)= ", l, flush=1)
+        print("rule set is:")
+        model.print_rule_cp()
+
     def fit_gt_rules_mp(self, dataset, time_horizon):
         # fit logic learning model
         model = self.get_model()
@@ -432,14 +450,14 @@ def get_logic_model_4():
     logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
     logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
 
-    # C ^ D --> E, C Equal E, D Before E.
+    # C ^ D --> E, C Before E, D Equal E.
     formula_idx = 2
     logic_template[head_predicate_idx][formula_idx] = {}
     logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
     logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
     logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
     logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.EQUAL, model.BEFORE]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
 
     model.logic_template = logic_template
     
@@ -456,66 +474,21 @@ def get_logic_model_5():
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
-    # define weights and base
-    model.model_parameter = dict()
-    head_predicate_idx = 4
-
-    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
-    weights = [1.0, 1.0, 1.0, 1.0, 1.0]
-    model.num_formula = len(weights)
-    for idx, w in enumerate(weights):
-        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
-   
-    # encode rule information
-    logic_template = {}
-    logic_template[head_predicate_idx] = {} 
-
-    # A --> E, A Before E
-    formula_idx = 0
-    logic_template[head_predicate_idx][formula_idx] = {}
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
-    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
-
-    # C --> E, C Before E
-    formula_idx = 1
-    logic_template[head_predicate_idx][formula_idx] = {}
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2]
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
-    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2, 4]]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
-
-    # D --> E, D Before E
-    formula_idx = 2
-    logic_template[head_predicate_idx][formula_idx] = {}
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [3]
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
-    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[3, 4]]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
-
-    # A ^ C --> E,  A Before C, C Before E
-    formula_idx = 3
-    logic_template[head_predicate_idx][formula_idx] = {}
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,2]
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
-    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [2,4]]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
-
-    # A ^ C ^ D --> E, A Before E, C Before E, D Before E.
-    formula_idx = 4
-    logic_template[head_predicate_idx][formula_idx] = {}
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0,2,3]
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1,1]  # use 1 to indicate True; use 0 to indicate False
-    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [2,4], [3,4]]
-    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE, model.BEFORE]
-
+    from utils import get_template
+    rule_set_str = """Head:E, base(torch)=0.1411, base(cp)=0.1411,
+                        Rule0: A --> E , A BEFORE E, weight(torch)=0.7962, weight(cp)=0.7962.
+                        Rule1: Not C --> E , Not C BEFORE E, weight(torch)=0.5391, weight(cp)=0.5391.
+                        Rule2: D --> E , D EQUAL E, weight(torch)=0.4747, weight(cp)=0.4747.
+                        Rule3: Not A --> E , Not A EQUAL E, weight(torch)=0.5983, weight(cp)=0.5983.
+                        Rule4: Not C --> Not E , Not C EQUAL Not E, weight(torch)=0.3989, weight(cp)=0.3989.
+                        Rule5: Not B ^ A --> E , Not B EQUAL E ^ A BEFORE E, weight(torch)=1.3190, weight(cp)=1.3190.
+                        Rule6: D ^ Not A --> E , D EQUAL Not A ^ Not A EQUAL E, weight(torch)=0.01, weight(cp)=0.01.
+                        Rule7: D ^ Not A --> E , D EQUAL E ^ Not A EQUAL E, weight(torch)=0.01, weight(cp)=0.01."""
+    model_parameter, logic_template, head_predicate_idx, num_formula = get_template(rule_set_str, model.predicate_notation)
     model.logic_template = logic_template
+    model.model_parameter = model_parameter
+    model.head_predicate_set = [head_predicate_idx]
+    model.num_formula = num_formula
     
     return model, file_name
 
@@ -540,8 +513,13 @@ def fit(model,file_name,time_horizon):
 
 def fit_mp(model,file_name,time_horizon):
     data = load_data(file_name)
-    with Timer("Fit data") as t:
+    with Timer("Fit data (torch)") as t:
         model.fit_gt_rules_mp(data, time_horizon=time_horizon)
+
+def fit_cp(model,file_name,time_horizon):
+    data = load_data(file_name)
+    with Timer("Fit data (cp)") as t:
+        model.fit_gt_rules_cp(data, time_horizon=time_horizon)
 
 def avg_event_num(file_name):
     data = load_data(file_name)
@@ -595,17 +573,17 @@ def get_model_by_idx(model_idx):
     return model_list[model_idx]()
 
 if __name__ == "__main__":
-    redirect_log_file()
+    #redirect_log_file()
     print("Start time is", datetime.datetime.now(),flush=1)
-    num_sample = 2560
+    num_sample = 64
     time_horizon = 10
     worker_num = 24
     model_idx = 4
     model, file_name = get_model_by_idx(model_idx = model_idx)
 
-    generate(model, file_name, num_sample, time_horizon, worker_num)
+    #generate(model, file_name, num_sample, time_horizon, worker_num)
     print("generate finish",flush=1)
     avg_event_num(file_name)
     feature_mean_std(model_idx = model_idx)
-    fit_mp(model, file_name, time_horizon)
+    fit_cp(model, file_name, time_horizon)
     
