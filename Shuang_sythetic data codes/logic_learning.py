@@ -1,7 +1,8 @@
 
 import itertools
 import random
-from multiprocessing import Pool, cpu_count
+import torch.multiprocessing as mp
+from torch.multiprocessing import Pool, cpu_count
 from collections import deque
 import time
 import os
@@ -131,12 +132,12 @@ class Logic_Learning_Model():
         return parameters
     
     def synchronize_cp_weight_with_torch(self,head_predicate_idx):
-        params = self.get_model_parameters()
+        params = self.get_model_parameters(head_predicate_idx)
         params_array = [p.item() for p in params]
         self.set_model_parameters_cp(head_predicate_idx, params_array)
 
     def synchronize_torch_weight_with_cp(self,head_predicate_idx):
-        params = get_model_parameters_cp(head_predicate_idx)
+        params = self.get_model_parameters_cp(head_predicate_idx)
         params_array = [p.value[0] for p in params]
         self.set_model_parameters(head_predicate_idx, params_array)
 
@@ -593,8 +594,9 @@ class Logic_Learning_Model():
                                        torch.sum(intensity_integral_gradient_grid[sample_ID] * new_feature_grid_times, dim=0)
             log_likelihood_grad_list.append(log_likelihood_grad)
         mean_grad = np.mean(log_likelihood_grad_list) 
+        std_grad = np.std(log_likelihood_grad_list,ddof=1) #ddof=1 for unbiased estimation
         #note: we assume l1 penalty gradient is zero, at w=0
-        return mean_grad, log_likelihood_grad_list # returns avg log-grad adn list.
+        return mean_grad, std_grad
 
 
     def optimize_log_likelihood_gradient(self, head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
@@ -689,8 +691,12 @@ class Logic_Learning_Model():
             
             worker_num = min(self.worker_num, cpu_count())
             worker_num = min(worker_num, len(arg_list))
-            with Pool(worker_num) as p:
-                integral_grad_list = p.starmap(self.intensity_integral_gradient, arg_list) 
+            print("use {} workers, run {} data".format(worker_num,len(arg_list)), flush=1 )
+            if worker_num > 1:
+                with Pool(worker_num) as p:
+                    integral_grad_list = p.starmap(self.intensity_integral_gradient, arg_list) 
+            else:
+                integral_grad_list = [self.intensity_integral_gradient(*arg) for arg in arg_list]
 
             for idx, sample_ID in enumerate(sample_ID_batch):
                 intensity_integral_gradient_grid[sample_ID] = integral_grad_list[idx]
@@ -778,11 +784,12 @@ class Logic_Learning_Model():
         with Timer("multiprocess log-grad") as t:
             
             if worker_num > 1: #multiprocessing
+                
                 with Pool(worker_num) as pool:
                     gain_all_data = pool.starmap(self.optimize_log_likelihood_gradient, arg_list)
             else: #single process, not use pool.
                 gain_all_data = [self.optimize_log_likelihood_gradient(*arg) for arg in arg_list]
-        mean_gain_all_data, gain_list_all_data  = list(zip(*gain_all_data))
+        mean_gain_all_data, std_gain_all_data  = list(zip(*gain_all_data))
         print("-------end multiprocess------",flush=1)
         
                 
@@ -800,11 +807,11 @@ class Logic_Learning_Model():
 
         print("------Select N best rule-------")
         # choose the N-best rules that lead to the optimal log-likelihood
-        sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:x[1], reverse=True) # sort by gain, descending
+        sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:x[1], reverse=True) # sort by mean gain, descending
         for idx, gain in sorted_idx_gain_all_data:
             rule_str = self.get_rule_str(arg_list[idx][-1], head_predicate_idx)
-            std = np.std(gain_list_all_data[idx],ddof=1) #ddof=1 for unbiased estimation
-            print("log-likelihood-grad(all-data) mean= {:.5f}, std={:.5f}, Rule = {}".format(gain, std, rule_str))
+            std_gain = std_gain_all_data[idx]
+            print("log-likelihood-grad(all-data) mean= {:.5f}, std={:.5f}, Rule = {}".format(gain, std_gain, rule_str))
             print("-------------", flush=True)
         is_update_weight = False
         is_continue = False
@@ -1019,8 +1026,15 @@ class Logic_Learning_Model():
                 rule_str += " ^ "   
         return rule_str     
 
-                
+    def DFS(self,head_predicate_idx, dataset, T_max, dataset_id):
+        print("----- start DFS -----", flush=1)
 
+        print("----- end DFS -----", flush=1)
+                
+    def BFS(self,head_predicate_idx, dataset, T_max, dataset_id):
+        print("----- start BFS -----", flush=1)
+        
+        print("----- end BFS -----", flush=1)
 def redirect_log_file():
     log_root = ["./log/out","./log/err"]   
     for root in log_root:     
@@ -1032,7 +1046,7 @@ def redirect_log_file():
     sys.stdout = open(out_file, 'w')
     sys.stderr = open(err_file, 'w')
 
-def fit(dataset_id, num_sample, num_iter=5, use_cp=False, rule_template = None):
+def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_template = None):
     print("Start time is", datetime.datetime.now(),flush=1)
 
     if not os.path.exists("./model"):
@@ -1063,15 +1077,17 @@ def fit(dataset_id, num_sample, num_iter=5, use_cp=False, rule_template = None):
 
     #set model hyper params
     model.batch_size_grad = num_sample #use all sample for grad
+    model.batch_size_cp = num_sample
     model.num_iter = num_iter
     model.use_cp = use_cp
+    model.worker_num = worker_num
     if dataset_id == 4:
         model.max_rule_body_length = 2
-        model.max_num_rule = 10
+        model.max_num_rule = 15
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.3
-    if num_sample >= 2000:
-        model.worker_num = 4
+    #if num_sample >= 2000:
+    #    model.worker_num = 4
 
     with Timer("search_algorithm") as t:
         model.search_algorithm(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
@@ -1124,17 +1140,14 @@ def test_feature():
     
 if __name__ == "__main__":
     redirect_log_file()
-    #fit(dataset_id=4, num_sample=2560, num_iter=3)
-    #fit(dataset_id=4, num_sample=1280, num_iter=5)
-    #fit(dataset_id=4, num_sample=640, num_iter=10)
-    #fit(dataset_id=4, num_sample=320, num_iter=20)
-    #test_feature()
-    
-    #fit(dataset_id=4, num_sample=320, use_cp=True, rule_template = rule_set_str)
-    fit(dataset_id=4, num_sample=320, use_cp=True)
-    #fit(dataset_id=4, num_sample=640, use_cp=True)
-    #fit(dataset_id=4, num_sample=1280, use_cp=True)
 
+    torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
+    
+    fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=3)
+    #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=6)
+    #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12)
+    
+    
 
 
 

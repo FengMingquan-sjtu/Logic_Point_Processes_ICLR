@@ -24,4 +24,14 @@ at Mar9,15:27 use cp(mosek), fit 320 samples, start from Null.
 at Mar9,20:47 use cp(scs), fit 320 samples, start from Null.
 at Mar9,20:58 use cp(mosek), fit 320 samples, start from Null.
 
-at Mar10,09:17 use cp(mosek), fix unbounded bug, fit 320 samples, start from Null.
+at Mar10,18:53 use cp(mosek), fix unbounded bug, fit 320 samples, start from Null.
+
+at Mar10,23:21 use cp(mosek),  fit data-4, 640 samples, start from Null.
+
+at Mar10,23:30 use cp(mosek), fit data-4, 1280 samples, start from Null.
+
+at Mar11, 10:42, use torch, fit data-4, 2560 samples, start from Null. promising result.
+at Mar11, 16:31, use torch, fit data-4, 1200 samples, start from Null. 
+at Mar11, 18:15, use torch, modify rule-set=15, worker_num=12, fit data-4, 1200 samples, start from Null. promising reuslt.
+at Mar11, 19:23, use torch, modify rule-set=15, worker_num=12, fit data-4, 600 samples, start from Null.
+at Mar11, 20:24, use torch, modify rule-set=15, worker_num=12, fit data-4, 2400 samples, start from Null.

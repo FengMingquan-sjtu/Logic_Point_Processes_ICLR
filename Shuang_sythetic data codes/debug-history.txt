@@ -373,4 +373,14 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
     So we constraint candidate rules not contradictory.
 
+78. run multiprocessing program on ubuntu system, ulimit -n = 1024,  gives:
+    RuntimeError: received 0 items of ancdata.
+    which means number of file descriptors is larger than limit.
+    Also, this error is not outputed to stderr or stdout.
+    [Fixed]solution: replace multiprocessing with torch.multiprocessing,
+    and adding the following line in main function:
+    ``torch.multiprocessing.set_sharing_strategy('file_system')``
+    (solution comes from https://forums.fast.ai/t/runtimeerror-received-0-items-of-ancdata/48935/2)
 
+79. the most failure results from long rules.
+    use DFS to probe long rule?
