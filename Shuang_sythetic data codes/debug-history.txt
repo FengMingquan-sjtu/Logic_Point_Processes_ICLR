@@ -382,5 +382,7 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     ``torch.multiprocessing.set_sharing_strategy('file_system')``
     (solution comes from https://forums.fast.ai/t/runtimeerror-received-0-items-of-ancdata/48935/2)
 
-79. the most failure results from long rules.
-    use DFS to probe long rule?
+79. most of failure results from long rules.
+    [Implemented]use DFS to probe long rule?
+    the old search_algorithm keeps extending a short rule, even after it is deleted.
+    [Fixed]fix this bug and modfiy search_algorithm to BFS.

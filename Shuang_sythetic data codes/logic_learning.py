@@ -80,6 +80,7 @@ class Logic_Learning_Model():
         self.num_batch_no_update_limit_opt = 300
         self.num_batch_no_update_limit_ucb = 4
         self.num_iter  = 5
+        self.num_iter_final = 20
         self.epsilon = 0.003
         self.gain_threshold = 0.02
         self.low_grad_threshold = 0.01
@@ -673,10 +674,10 @@ class Logic_Learning_Model():
                         new_rule_table[head_predicate_idx]['temporal_relation_type'].append(new_rule_template[head_predicate_idx]['temporal_relation_type'])
 
 
-        is_update_weight, is_continue = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset, T_max)
+        is_update_weight, is_continue, added_rule_str_list = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset, T_max)
         
         print("----- exit generate_rule_via_column_generation -----",flush=1)
-        return is_update_weight, is_continue
+        return is_update_weight, is_continue, added_rule_str_list
             
     def get_intensity_and_integral_grad(self, head_predicate_idx, dataset, T_max):
         print("---start calculate intensity grad and integral grad.---", flush=1)
@@ -759,10 +760,10 @@ class Logic_Learning_Model():
                         new_rule_table[head_predicate_idx]['temporal_relation_type'].append(new_rule_template[head_predicate_idx]['temporal_relation_type'])
    
 
-        is_update_weight, is_continue = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset, T_max)
+        is_update_weight, is_continue, added_rule_str_list = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset, T_max)
 
         print("----- exit add_one_predicate_to_existing_rule -----",flush=1)
-        return is_update_weight, is_continue
+        return is_update_weight, is_continue, added_rule_str_list
 
     def select_and_add_new_rule(self, head_predicate_idx, arg_list, new_rule_table, dataset, T_max):
         
@@ -815,6 +816,7 @@ class Logic_Learning_Model():
             print("-------------", flush=True)
         is_update_weight = False
         is_continue = False
+        added_rule_str_list = list()
         for i in range(self.best_N):
             if i >= len(sorted_idx_gain_all_data):
                 break
@@ -829,7 +831,9 @@ class Logic_Learning_Model():
                 self.logic_template[head_predicate_idx][self.num_formula]['temporal_relation_idx'] = new_rule_table[head_predicate_idx]['temporal_relation_idx'][idx]
                 self.logic_template[head_predicate_idx][self.num_formula]['temporal_relation_type'] = new_rule_table[head_predicate_idx]['temporal_relation_type'][idx]
 
-                print("Best rule is:", self.get_rule_str(self.logic_template[head_predicate_idx][self.num_formula], head_predicate_idx))
+                best_rule_str = self.get_rule_str(self.logic_template[head_predicate_idx][self.num_formula], head_predicate_idx)
+                added_rule_str_list.append(best_rule_str)
+                print("Best rule is:", best_rule_str)
                 print("Best log-likelihood-grad(all-data) =", best_gain)
                 # add model parameter
                 self.model_parameter[head_predicate_idx][self.num_formula] = {}
@@ -864,9 +868,11 @@ class Logic_Learning_Model():
             is_pruned = self.prune_rules_with_small_weights(head_predicate_idx, dataset, T_max, is_strict)
             if is_pruned: #after prunning, maybe add more rules.
                 is_continue = True
+                #update added_rule_str_list, remove the deleted rule_str.
+                added_rule_str_list = [rule_str for rule_str in added_rule_str_list if self.get_rule_idx(head_predicate_idx, rule_str) > -1]
 
         print("----- exit select_and_add_new_rule -----",flush=1)
-        return is_update_weight, is_continue
+        return is_update_weight, is_continue, added_rule_str_list
 
 
     def prune_rules_with_small_weights(self, head_predicate_idx, dataset, T_max, is_strict=False):
@@ -900,7 +906,6 @@ class Logic_Learning_Model():
             return True
         return False
             
-
     def search_algorithm(self, head_predicate_idx, dataset, T_max, dataset_id):
         print("----- start search_algorithm -----", flush=1)
         self.print_info()
@@ -946,21 +951,74 @@ class Logic_Learning_Model():
                         pickle.dump(self, f) 
 
 
-        print("Train finished, rule set is:")
+        print("search finished, rule set is:")
+        self.print_rule_cp()
+        self.final_tune(head_predicate_idx, dataset, T_max)
+        print("----- exit search_algorithm -----", flush=1)
+
+    def BFS(self, head_predicate_idx, dataset, T_max, dataset_id):
+        print("----- start BFS -----", flush=1)
+        self.print_info()
+        #Begin Breadth(width) First Search
+        #generate new rule from scratch
+        is_continue = True
+        while self.num_formula < self.max_num_rule and is_continue:
+            _, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, dataset, T_max)
+            with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
+                pickle.dump(self, f)   
+            
+        #generate new rule by extending existing rules
+        extended_rules = set()
+        for cur_body_length in range(1, self.max_rule_body_length):
+            flag = True
+            while(self.num_formula < self.max_num_rule and flag):
+                #select all existing rules whose length are cur_body_length
+                idx_template_list = [(idx, template) for idx, template in self.logic_template[head_predicate_idx].items() if len(template['body_predicate_idx']) == cur_body_length]
+                # sort by weights, descending
+                idx_template_list  = sorted(idx_template_list, key=lambda x:self.model_parameter[head_predicate_idx][x[0]]['weight'].data[0], reverse=True) 
+                
+                # select best unextended rule to extend.
+                template_to_extend = None
+                for idx, template in idx_template_list:
+                    rule_str = self.get_rule_str(template, head_predicate_idx)
+                    if not rule_str in extended_rules:
+                        template_to_extend = template
+                        break
+
+                if template_to_extend is None: #no template can be extended, break, go to search next length rule.
+                    flag = False
+                    break
+                
+                #extend the selected rule.
+                rule_str = self.get_rule_str(template_to_extend, head_predicate_idx)
+                print("start to extend this rule:", rule_str)
+                _ , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, template_to_extend)
+                if not is_continue: # this rule is fully explored, don't re-visit it.
+                    extended_rules.add(rule_str) 
+
+
+        print("BFS finished, rule set is:")
         self.print_rule_cp()
 
+        self.final_tune(head_predicate_idx, dataset, T_max)
+
+        print("----- exit BFS -----", flush=1)
+
+    def final_tune(self, head_predicate_idx, dataset, T_max):
+        print("----- exit final_tune -----", flush=1)
         # final prune, with strict threshold of weight.
         pruned = True
         while pruned:
             pruned = self.prune_rules_with_small_weights(head_predicate_idx, dataset, T_max, is_strict=True )
         
-        # final optimize, with large iter_num (only for torch)
+        # final optimize, with large num_iter (only for torch)
         if not self.use_cp:
-            self.iter_num = 50
+            self.num_iter = self.num_iter_final
             self.optimize_log_likelihood_mp(head_predicate_idx, dataset, T_max)
-        print("Train finished, rule set is:")
+        print("final_tune finished, rule set is:")
         self.print_rule_cp()
-        print("----- exit search_algorithm -----", flush=1)
+        print("----- exit final_tune -----", flush=1)
+        
 
     def print_rule(self):
         for head_predicate_idx, rules in self.logic_template.items():
@@ -1026,15 +1084,47 @@ class Logic_Learning_Model():
                 rule_str += " ^ "   
         return rule_str     
 
+    def get_rule_idx(self, head_predicate_idx, rule_str):
+        for i in range(self.num_formula):
+            rule_i = self.logic_template[head_predicate_idx][i]
+            rule_str_i = self.get_rule_str(rule_i, head_predicate_idx)
+            if rule_str_i == rule_str:
+                return i #return matched formula_idx
+        return -1 #if no such rule, return -1.
+
     def DFS(self,head_predicate_idx, dataset, T_max, dataset_id):
         print("----- start DFS -----", flush=1)
+        rule_to_extend_str_stack = list() #use stack to implement DFS
+        while self.num_formula < self.max_num_rule:
+            if len(rule_to_extend_str_stack) == 0: #if stack empty,  generate len-1 rule
+                print("--- DFS stack is empty, add len-1 rules ---")
+                is_update_weight, is_continue, added_rule_str_list = self.generate_rule_via_column_generation(head_predicate_idx, dataset, T_max)
+                for added_rule_str in added_rule_str_list:
+                    rule_to_extend_str_stack.append(added_rule_str)
+                if len(rule_to_extend_str_stack) == 0: #no new rule added, DFS terminates.
+                    break
 
+            else: #extend existing rule
+                print("--- try to extend existing rule.")
+                print("--- DFS stack now contains:\n", ",\n".join(rule_to_extend_str_stack))
+                rule_to_extend_str = rule_to_extend_str_stack[-1]
+                rule_to_extend_idx = self.get_rule_idx(head_predicate_idx, rule_to_extend_str)
+                if rule_to_extend_idx <= -1 or len(self.logic_template[head_predicate_idx][rule_to_extend_idx]['body_predicate_idx']) >= self.max_rule_body_length:
+                    # if rule_ro_extend is deleted, or too long, then skip it and conitnue.
+                    rule_to_extend_str_stack.pop()
+                    continue 
+                else:
+                    print("--- extend this rule:", rule_to_extend_str)
+                    rule_template = self.logic_template[head_predicate_idx][rule_to_extend_idx]
+                    is_update_weight, is_continue, added_rule_str_list = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, rule_template)
+                    if (not is_continue) or len(added_rule_str_list) == 0: #don't re-visit this rule.
+                        rule_to_extend_str_stack.pop()
+                    for added_rule_str in added_rule_str_list:
+                        rule_to_extend_str_stack.append(added_rule_str)
+        self.final_tune(head_predicate_idx, dataset, T_max)
         print("----- end DFS -----", flush=1)
                 
-    def BFS(self,head_predicate_idx, dataset, T_max, dataset_id):
-        print("----- start BFS -----", flush=1)
-        
-        print("----- end BFS -----", flush=1)
+
 def redirect_log_file():
     log_root = ["./log/out","./log/err"]   
     for root in log_root:     
@@ -1046,7 +1136,7 @@ def redirect_log_file():
     sys.stdout = open(out_file, 'w')
     sys.stderr = open(err_file, 'w')
 
-def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_template = None):
+def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_template = None, algorithm="OLD_BFS"):
     print("Start time is", datetime.datetime.now(),flush=1)
 
     if not os.path.exists("./model"):
@@ -1089,8 +1179,15 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_tem
     #if num_sample >= 2000:
     #    model.worker_num = 4
 
-    with Timer("search_algorithm") as t:
-        model.search_algorithm(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
+    if algorithm == "OLD_BFS":
+        with Timer("search_algorithm") as t:
+            model.search_algorithm(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
+    elif algorithm == "DFS":
+        with Timer("DFS") as t:
+            model.DFS(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
+    elif algorithm == "BFS":
+        with Timer("BFS") as t:
+            model.BFS(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
     
     print("Finish time is", datetime.datetime.now())
     
@@ -1143,9 +1240,17 @@ if __name__ == "__main__":
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     
-    fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=3)
+    #fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=3)
     #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=6)
     #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12)
+
+    #DFS
+    #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
+    #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=6, algorithm="DFS")
+    fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=3, algorithm="DFS")
+
+    #BFS
+    #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
     
     
 

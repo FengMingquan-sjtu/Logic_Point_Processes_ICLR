@@ -35,3 +35,7 @@ at Mar11, 16:31, use torch, fit data-4, 1200 samples, start from Null.
 at Mar11, 18:15, use torch, modify rule-set=15, worker_num=12, fit data-4, 1200 samples, start from Null. promising reuslt.
 at Mar11, 19:23, use torch, modify rule-set=15, worker_num=12, fit data-4, 600 samples, start from Null.
 at Mar11, 20:24, use torch, modify rule-set=15, worker_num=12, fit data-4, 2400 samples, start from Null.
+
+at Mar12, 10:19, use DFS, torch, worker_num=12, fit data-4, 600 samples
+at Mar12, 11:09, use DFS, torch, worker_num=12, fit data-4, 1200 samples
+at Mar12, 11:12, use DFS, torch, worker_num=12, fit data-4, 2400 samples
