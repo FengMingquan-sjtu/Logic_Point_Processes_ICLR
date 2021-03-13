@@ -371,7 +371,7 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     mosek returns:
     Problem status: The problem is primal infeasible.
 
-    So we constraint candidate rules not contradictory.
+    [Implemented]So we constraint candidate rules not contradictory.
 
 78. run multiprocessing program on ubuntu system, ulimit -n = 1024,  gives:
     RuntimeError: received 0 items of ancdata.
@@ -386,3 +386,8 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     [Implemented]use DFS to probe long rule?
     the old search_algorithm keeps extending a short rule, even after it is deleted.
     [Fixed]fix this bug and modfiy search_algorithm to BFS.
+
+80. data-6 2400 samples, run out of shared-mem?
+    re-run same codes, not reproduce.
+
+81. [Implemented] strict_weight_threshold should change with dataset weight scale.

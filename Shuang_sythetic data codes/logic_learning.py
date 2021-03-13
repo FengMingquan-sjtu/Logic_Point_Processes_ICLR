@@ -78,7 +78,7 @@ class Logic_Learning_Model():
         self.num_batch_check_for_feature = 1
         self.num_batch_check_for_gradient = 20
         self.num_batch_no_update_limit_opt = 300
-        self.num_batch_no_update_limit_ucb = 4
+        #self.num_batch_no_update_limit_ucb = 4
         self.num_iter  = 5
         self.num_iter_final = 20
         self.epsilon = 0.003
@@ -92,9 +92,9 @@ class Logic_Learning_Model():
         self.max_num_rule = 20
         self.batch_size_cp = 500 # batch size used in cp. If too large, may out of memory.
         self.batch_size_grad = 500 #batch_size used in optimize_log_grad.
-        self.batch_size_init_ucb = 5
-        self.explore_rule_num_ucb = 8
-        self.explore_batch_size_ucb = 500
+        #self.batch_size_init_ucb = 5
+        #self.explore_rule_num_ucb = 8
+        #self.explore_batch_size_ucb = 500
         self.use_cp = False
         self.worker_num = 8
         self.best_N = 1
@@ -773,7 +773,7 @@ class Logic_Learning_Model():
             is_update_weight = False
             is_continue = False
             print("----- exit select_and_add_new_rule -----",flush=1)
-            return is_update_weight, is_continue
+            return is_update_weight, is_continue, []
 
         # all-data gradient
         print("-------start multiprocess------",flush=1)
@@ -1005,7 +1005,7 @@ class Logic_Learning_Model():
         print("----- exit BFS -----", flush=1)
 
     def final_tune(self, head_predicate_idx, dataset, T_max):
-        print("----- exit final_tune -----", flush=1)
+        print("----- start final_tune -----", flush=1)
         # final prune, with strict threshold of weight.
         pruned = True
         while pruned:
@@ -1023,31 +1023,31 @@ class Logic_Learning_Model():
     def print_rule(self):
         for head_predicate_idx, rules in self.logic_template.items():
             
-            print("Head:{}, base={:.4f}.".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
+            print("Head:{}, base={:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
                 weight = self.model_parameter[head_predicate_idx][rule_id]['weight'].data[0]
-                rule_str += ", weight={:.4f}".format(weight)
+                rule_str += ", weight={:.4f},".format(weight)
                 print(rule_str)
     
     def print_rule_cp(self):
         for head_predicate_idx, rules in self.logic_template.items():
             base = self.model_parameter[head_predicate_idx]['base'].item()
-            base_cp = self.model_parameter[head_predicate_idx]['base_cp'].value
-            if base_cp:
-                print("Head:{}, base(torch)={:.4f}, base(cp)={:.4f}.".format(self.predicate_notation[head_predicate_idx], base, base_cp[0]))
+            if 'base_cp' in self.model_parameter[head_predicate_idx] and self.model_parameter[head_predicate_idx]['base_cp'].value:
+                base_cp = self.model_parameter[head_predicate_idx]['base_cp'].value
+                print("Head:{}, base(torch)={:.4f}, base(cp)={:.4f},".format(self.predicate_notation[head_predicate_idx], base, base_cp[0]))
             else:
                 print("Head:{}, base(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
                 weight = self.model_parameter[head_predicate_idx][rule_id]['weight'].item()
-                weight_cp = self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value
-                if weight_cp:
-                    rule_str += ", weight(torch)={:.4f}, weight(cp)={:.4f}.".format(weight, weight_cp[0])
+                if "weight_cp" in self.model_parameter[head_predicate_idx][rule_id] and self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value:
+                    weight_cp = self.model_parameter[head_predicate_idx][rule_id]['weight_cp'].value
+                    rule_str += ", weight(torch)={:.4f}, weight(cp)={:.4f},".format(weight, weight_cp[0])
                 else:
-                    rule_str += ", weight(torch)={:.4f}.".format(weight)
+                    rule_str += ", weight(torch)={:.4f},".format(weight)
                 print(rule_str)
     
     def get_rule_str(self, rule, head_predicate_idx):
@@ -1093,6 +1093,7 @@ class Logic_Learning_Model():
         return -1 #if no such rule, return -1.
 
     def DFS(self,head_predicate_idx, dataset, T_max, dataset_id):
+        self.print_info()
         print("----- start DFS -----", flush=1)
         rule_to_extend_str_stack = list() #use stack to implement DFS
         while self.num_formula < self.max_num_rule:
@@ -1122,7 +1123,7 @@ class Logic_Learning_Model():
                     for added_rule_str in added_rule_str_list:
                         rule_to_extend_str_stack.append(added_rule_str)
         self.final_tune(head_predicate_idx, dataset, T_max)
-        print("----- end DFS -----", flush=1)
+        print("----- exit DFS -----", flush=1)
                 
 
 def redirect_log_file():
@@ -1143,8 +1144,8 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_tem
         os.makedirs("./model")
         
     #get model
-    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5
-    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5]
+    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6
+    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6]
     m, _ = logic_model_funcs[dataset_id]()
     model = m.get_model_for_learn()
 
@@ -1176,6 +1177,16 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_tem
         model.max_num_rule = 15
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.3
+    elif dataset_id == 5:
+        model.max_rule_body_length = 2
+        model.max_num_rule = 15
+        model.weight_threshold = 0.05
+        model.strict_weight_threshold= 0.1
+    elif dataset_id == 6:
+        model.max_rule_body_length = 2
+        model.max_num_rule = 15
+        model.weight_threshold = 0.2
+        model.strict_weight_threshold= 0.5
     #if num_sample >= 2000:
     #    model.worker_num = 4
 
@@ -1234,7 +1245,8 @@ def test_feature():
         #            for cur_time in range(1,10):
         #                f = model.get_feature(cur_time, head_predicate_idx, history, template)
     
-    
+
+
 if __name__ == "__main__":
     redirect_log_file()
 
@@ -1244,13 +1256,35 @@ if __name__ == "__main__":
     #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=6)
     #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12)
 
-    #DFS
-    #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
-    #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=6, algorithm="DFS")
-    fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=3, algorithm="DFS")
+    #DFS on data-4
+    fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
+    fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
+    fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
 
-    #BFS
+    #BFS on data-4
     #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+
+    #DFS on data-5
+    #fit(dataset_id=5, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
+    #fit(dataset_id=5, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
+    #fit(dataset_id=5, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
+
+    #BFS on data-5
+    #fit(dataset_id=5, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=5, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=5, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+
+    #DFS on data-6
+    #fit(dataset_id=6, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
+    #fit(dataset_id=6, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
+    #fit(dataset_id=6, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
+
+    #BFS on data-6
+    #fit(dataset_id=6, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=6, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=6, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
     
     
 

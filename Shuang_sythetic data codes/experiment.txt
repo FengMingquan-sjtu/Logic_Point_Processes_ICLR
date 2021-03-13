@@ -36,6 +36,29 @@ at Mar11, 18:15, use torch, modify rule-set=15, worker_num=12, fit data-4, 1200 
 at Mar11, 19:23, use torch, modify rule-set=15, worker_num=12, fit data-4, 600 samples, start from Null.
 at Mar11, 20:24, use torch, modify rule-set=15, worker_num=12, fit data-4, 2400 samples, start from Null.
 
-at Mar12, 10:19, use DFS, torch, worker_num=12, fit data-4, 600 samples
-at Mar12, 11:09, use DFS, torch, worker_num=12, fit data-4, 1200 samples
-at Mar12, 11:12, use DFS, torch, worker_num=12, fit data-4, 2400 samples
+at Mar12, 10:19, use DFS, torch, worker_num=12, num_iter=12, fit data-4, 600 samples
+at Mar12, 11:09, use DFS, torch, worker_num=12, num_iter=6, fit data-4, 1200 samples
+at Mar12, 11:12, use DFS, torch, worker_num=12, num_iter=3, fit data-4, 2400 samples
+
+data-4{
+at Mar12, 15:22, 15:22, 15:25 use BFS, torch, worker_num=12, num_iter=12, fit data-4, 600,1200,2400 samples
+at Mar12, 15:52, 15:56, 15:59, fit GT rules, torch, worker_num=12, num_iter=50, data-4, 600, 1200, 2400 samples.
+at Mar13, 10:29, use DFS, torch, worker_num=12, num_iter=12, fit data-4, 600,1200,2400 samples
+}
+
+data-5{
+at Mar12, 16:27, generate data-5. data-5 has same rule set with data-4, but w=0.5 
+at Mar12, 16:28, fit GT rules, torch, worker_num=12, num_iter=50, data-5, 600,1200,2400 samples.
+at Mar12, 17:01, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-5, 600,1200,2400 samples
+at Mar13, 09:56, tune prune-weights, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-5, 600,1200,2400 samples
+
+}
+
+data-6{
+at Mar12, 16:36, generate data-6. data-6 has same rule set with data-4, but w=1.5 
+                fit GT rules, torch, worker_num=12, num_iter=50, data-6, 600,1200,2400 samples.
+at Mar12, 23:37, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-6, 600,1200,2400 samples
+at Mar13, 09:55, tune prune-weights, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-6, 600,1200,2400 samples
+
+}
+
