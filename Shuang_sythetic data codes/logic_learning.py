@@ -106,6 +106,8 @@ class Logic_Learning_Model():
         for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
             self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
+            #self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
+            #self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             self.model_parameter[idx]['base_cp'] = cp.Variable(1)
             self.logic_template[idx] = {}
 
@@ -120,6 +122,8 @@ class Logic_Learning_Model():
         # collect all parameters in a list, used as input of Adam optimizer.
         parameters = list()
         parameters.append(self.model_parameter[head_predicate_idx]['base'])
+        #parameters.append(self.model_parameter[head_predicate_idx]['base_0_1'])
+        #parameters.append(self.model_parameter[head_predicate_idx]['base_1_0'])
         for formula_idx in range(self.num_formula): #TODO:potential bug
             parameters.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
         return parameters
@@ -145,6 +149,10 @@ class Logic_Learning_Model():
     def set_model_parameters(self, head_predicate_idx, param_array):
         # set model params
         parameters = list()
+        #base_0_1 = param_array[0]
+        #base_1_0 = param_array[1]
+        #self.model_parameter[head_predicate_idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * base_0_1).double(), requires_grad=True)
+        #self.model_parameter[head_predicate_idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * base_1_0).double(), requires_grad=True)
         base = param_array[0]
         self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * base).double(), requires_grad=True)
         for formula_idx in range(self.num_formula):
@@ -175,6 +183,8 @@ class Logic_Learning_Model():
         tmp_logic_template = dict()
         tmp_model_parameter = dict()
         tmp_model_parameter['base'] = self.model_parameter[head_predicate_idx]['base']
+        #tmp_model_parameter['base_0_1'] = self.model_parameter[head_predicate_idx]['base_0_1']
+        #tmp_model_parameter['base_1_0'] = self.model_parameter[head_predicate_idx]['base_1_0']
         tmp_model_parameter['base_cp'] = self.model_parameter[head_predicate_idx]['base_cp']
         
         new_formula_idx = 0
@@ -212,7 +222,13 @@ class Logic_Learning_Model():
 
         else:
             intensity = torch.zeros(1)
-        intensity = self.model_parameter[head_predicate_idx]['base'] + torch.sum(intensity)
+        #cur_state = self.get_state(cur_time=cur_time, pred_idx=head_predicate_idx, history=dataset[sample_ID])
+        #if cur_state == 0:
+        #    base = self.model_parameter[head_predicate_idx]['base_0_1']
+        #else:
+        #    base = self.model_parameter[head_predicate_idx]['base_1_0']
+        base = self.model_parameter[head_predicate_idx]['base']
+        intensity = base + torch.sum(intensity)
         intensity = torch.exp(intensity)
 
         return intensity
@@ -273,6 +289,13 @@ class Logic_Learning_Model():
                     temporal_kernel *= (abs(time_difference) <= self.Time_tolerance) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
             feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
         return feature
+
+    def get_state(self, cur_time, pred_idx, history):
+        transition_time = np.array(history[pred_idx]['time'])
+        transition_state = np.array(history[pred_idx]['state'])
+        idx = np.sum(cur_time > transition_time) - 1
+        cur_state = transition_state[idx]
+        return cur_state
 
     def get_formula_effect(self, cur_time, head_predicate_idx, history, template):
         ## Note this part is very important!! For generator, this should be np.sum(cur_time > head_transition_time) - 1
@@ -1023,6 +1046,7 @@ class Logic_Learning_Model():
     def print_rule(self):
         for head_predicate_idx, rules in self.logic_template.items():
             
+            #print("Head:{}, base_0_1={:.4f}, base_1_0={:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base_0_1'].data[0], self.model_parameter[head_predicate_idx]['base_1_0'].data[0]))
             print("Head:{}, base={:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
@@ -1033,11 +1057,15 @@ class Logic_Learning_Model():
     
     def print_rule_cp(self):
         for head_predicate_idx, rules in self.logic_template.items():
-            base = self.model_parameter[head_predicate_idx]['base'].item()
+            
             if 'base_cp' in self.model_parameter[head_predicate_idx] and self.model_parameter[head_predicate_idx]['base_cp'].value:
                 base_cp = self.model_parameter[head_predicate_idx]['base_cp'].value
-                print("Head:{}, base(torch)={:.4f}, base(cp)={:.4f},".format(self.predicate_notation[head_predicate_idx], base, base_cp[0]))
+                print("Head:{}, base(cp)={:.4f},".format(self.predicate_notation[head_predicate_idx], base_cp[0]))
             else:
+                #base_0_1 = self.model_parameter[head_predicate_idx]['base_0_1'].item()
+                #base_1_0 = self.model_parameter[head_predicate_idx]['base_1_0'].item()
+                #print("Head:{}, base_0_1(torch) = {:.4f}, base_1_0(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base_0_1, base_1_0))
+                base = self.model_parameter[head_predicate_idx]['base'].item()
                 print("Head:{}, base(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
@@ -1124,7 +1152,52 @@ class Logic_Learning_Model():
                         rule_to_extend_str_stack.append(added_rule_str)
         self.final_tune(head_predicate_idx, dataset, T_max)
         print("----- exit DFS -----", flush=1)
-                
+
+    def generate_target_one_sample(self, head_predicate_idx, T_max, data_sample):
+        data_sample[head_predicate_idx] = {"time":[0,], "state":[0,]} 
+        #initial value determined by data?
+        # input is modified?
+        local_sample_ID = 0
+        data = {local_sample_ID:data_sample}
+        # obtain the maximal intensity
+        intensity_potential = []
+        
+        for t in np.arange(0, T_max, 0.1):
+            t = t.item() #convert np scalar to float
+            intensity = self.intensity(t, head_predicate_idx, data, local_sample_ID).detach()
+            intensity_potential.append(intensity)
+        intensity_max = max(intensity_potential)
+        #print(intensity_max)
+        # generate events via accept and reject
+        t = 0
+        while t < T_max:
+            time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
+            t = t + time_to_event
+            if t >= T_max:
+                break
+            intensity = self.intensity(t, head_predicate_idx, data, local_sample_ID).detach()
+            ratio = min(intensity / intensity_max, 1)
+            flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
+            if flag == 1: # accept
+                data_sample[head_predicate_idx]['time'].append(t)
+                cur_state = 1 - data_sample[head_predicate_idx]['state'][-1]
+                data_sample[head_predicate_idx]['state'].append(cur_state)
+        return data_sample
+
+    def generate_target(self, head_predicate_idx, dataset, T_max):
+        true_target_set = dict()
+        generated_target_set = dict()
+        for sample_ID, data_sample in dataset.items():
+            true_target_set[sample_ID] = data_sample[head_predicate_idx]
+            generated_sample = self.generate_target_one_sample(head_predicate_idx, T_max, data_sample)
+            generated_target_set[sample_ID] = generated_sample[head_predicate_idx]
+            print("---SampleID:{}---".format(sample_ID))
+            print("True:", true_target_set[sample_ID])
+            print("Generated:", generated_target_set[sample_ID])
+        
+
+
+
 
 def redirect_log_file():
     log_root = ["./log/out","./log/err"]   
@@ -1137,27 +1210,7 @@ def redirect_log_file():
     sys.stdout = open(out_file, 'w')
     sys.stderr = open(err_file, 'w')
 
-def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_template = None, algorithm="OLD_BFS"):
-    print("Start time is", datetime.datetime.now(),flush=1)
-
-    if not os.path.exists("./model"):
-        os.makedirs("./model")
-        
-    #get model
-    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6
-    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6]
-    m, _ = logic_model_funcs[dataset_id]()
-    model = m.get_model_for_learn()
-
-    #set initial rules if required
-    import utils
-    if rule_template:
-        model_parameter, logic_template, head_predicate_idx, num_formula = utils.get_template(rule_set_str, model.predicate_notation)
-        model.logic_template = logic_template
-        model.model_parameter = model_parameter
-        model.num_formula = num_formula
-
-    #get data
+def get_data(dataset_id, num_sample):
     dataset_path = './data/data-{}.npy'.format(dataset_id)
     print("dataset_path is ",dataset_path)
     dataset = np.load(dataset_path, allow_pickle='TRUE').item()
@@ -1165,6 +1218,38 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_tem
         dataset = {i:dataset[i] for i in range(num_sample)}
     num_sample = len(dataset.keys())
     print("sample num is ", num_sample)
+    return dataset
+
+def get_model(dataset_id):
+    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16
+    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16]
+    m, _ = logic_model_funcs[dataset_id]()
+    model = m.get_model_for_learn()
+    return model
+
+def set_rule(model, rule_set_str):
+    import utils
+    model_parameter, logic_template, head_predicate_idx, num_formula = utils.get_template(rule_set_str, model.predicate_notation)
+    model.logic_template = logic_template
+    model.model_parameter = model_parameter
+    model.num_formula = num_formula
+
+def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
+    print("Start time is", datetime.datetime.now(),flush=1)
+
+    if not os.path.exists("./model"):
+        os.makedirs("./model")
+        
+    #get model
+    model = get_model(dataset_id)
+
+    #set initial rules if required
+    if rule_set_str:
+        set_rule(model, rule_set_str)
+        
+
+    #get data
+    dataset =  get_data(dataset_id, num_sample)
 
     #set model hyper params
     model.batch_size_grad = num_sample #use all sample for grad
@@ -1172,28 +1257,35 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_tem
     model.num_iter = num_iter
     model.use_cp = use_cp
     model.worker_num = worker_num
-    if dataset_id == 4:
-        model.max_rule_body_length = 2
-        model.max_num_rule = 15
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.3
-    elif dataset_id == 5:
+    
+    if dataset_id in [5,12]:
         model.max_rule_body_length = 2
         model.max_num_rule = 15
         model.weight_threshold = 0.05
         model.strict_weight_threshold= 0.1
-    elif dataset_id == 6:
+    elif dataset_id in [6,13]:
         model.max_rule_body_length = 2
         model.max_num_rule = 15
         model.weight_threshold = 0.2
         model.strict_weight_threshold= 0.5
-    #if num_sample >= 2000:
-    #    model.worker_num = 4
+    elif dataset_id in [7,14]:
+        model.max_rule_body_length = 3
+        model.max_num_rule = 20
+        model.weight_threshold = 0.1
+        model.strict_weight_threshold= 0.3
+    elif dataset_id in [8,15]:
+        model.max_rule_body_length = 2
+        model.max_num_rule = 20
+        model.weight_threshold = 0.1
+        model.strict_weight_threshold= 0.3
+    elif dataset_id in [4,9,10,11,16]:
+        model.max_rule_body_length = 2
+        model.max_num_rule = 15
+        model.weight_threshold = 0.1
+        model.strict_weight_threshold= 0.3
 
-    if algorithm == "OLD_BFS":
-        with Timer("search_algorithm") as t:
-            model.search_algorithm(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
-    elif algorithm == "DFS":
+
+    if algorithm == "DFS":
         with Timer("DFS") as t:
             model.DFS(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
     elif algorithm == "BFS":
@@ -1203,6 +1295,21 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_tem
     print("Finish time is", datetime.datetime.now())
     
     
+def generate(dataset_id, num_sample, rule_set_str, T_max=10):
+    print("Start time is", datetime.datetime.now(),flush=1)
+    #get data
+    dataset =  get_data(dataset_id, num_sample)
+
+    #get model
+    model = get_model(dataset_id)
+
+    #set initial rules if required
+    if rule_set_str:
+        set_rule(model, rule_set_str)
+    model.print_rule()
+    #generate
+    model.generate_target(model.head_predicate_set[0], dataset, T_max)
+    print("Finish time is", datetime.datetime.now())
 
 
 
@@ -1244,49 +1351,36 @@ def test_feature():
         #        for template in model.logic_template[head_predicate_idx].values():
         #            for cur_time in range(1,10):
         #                f = model.get_feature(cur_time, head_predicate_idx, history, template)
-    
+
+
+def run_expriment_group(dataset_id):
+    #DFS
+    fit(dataset_id=dataset_id, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
+    fit(dataset_id=dataset_id, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
+    fit(dataset_id=dataset_id, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
+
+    #BFS 
+    fit(dataset_id=dataset_id, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(dataset_id=dataset_id, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(dataset_id=dataset_id, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+
 
 
 if __name__ == "__main__":
-    redirect_log_file()
+    #redirect_log_file()
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     
-    #fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=3)
-    #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=6)
-    #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12)
-
-    #DFS on data-4
-    fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
-    fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
-    fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
-
-    #BFS on data-4
-    #fit(dataset_id=4, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
-    #fit(dataset_id=4, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
-    #fit(dataset_id=4, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
-
-    #DFS on data-5
-    #fit(dataset_id=5, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
-    #fit(dataset_id=5, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
-    #fit(dataset_id=5, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
-
-    #BFS on data-5
-    #fit(dataset_id=5, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
-    #fit(dataset_id=5, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
-    #fit(dataset_id=5, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
-
-    #DFS on data-6
-    #fit(dataset_id=6, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
-    #fit(dataset_id=6, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
-    #fit(dataset_id=6, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
-
-    #BFS on data-6
-    #fit(dataset_id=6, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
-    #fit(dataset_id=6, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
-    #fit(dataset_id=6, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
-    
-    
+    #run_expriment_group(dataset_id=13)
+    #run_expriment_group(dataset_id=14)
+    #run_expriment_group(dataset_id=15)
+    #run_expriment_group(dataset_id=16)
+    rule_set_str = """Head:F, base=0.0354,
+ Rule0: A --> F , A BEFORE F, weight=1.0225,
+ Rule1: B ^ C --> F , B BEFORE F ^ C BEFORE F, weight=1.0174,
+ Rule2: C ^ D --> F , C BEFORE F ^ D EQUAL F, weight=0.9770,
+                    """
+    generate(dataset_id=16, num_sample=10, rule_set_str=rule_set_str)
 
 
 

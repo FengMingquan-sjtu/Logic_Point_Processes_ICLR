@@ -391,3 +391,24 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     re-run same codes, not reproduce.
 
 81. [Implemented] strict_weight_threshold should change with dataset weight scale.
+
+82. data variance too high?
+    e.g.:
+    log-likelihood-grad(all-data) mean= 0.04091, std=0.51301, Rule = Not A ^ B ^ C --> E , Not A BEFORE E ^ B BEFORE E ^ C BEFORE E
+    log-likelihood-grad(all-data) mean= 0.03630, std=0.65959, Rule = D ^ B ^ C --> E , D BEFORE E ^ B BEFORE E ^ C BEFORE E
+    [GT]log-likelihood-grad(all-data) mean= 0.03320, std=0.57334, Rule = A ^ B ^ C --> E , A BEFORE E ^ B BEFORE E ^ C BEFORE E
+    solution: increase Best_N, increase_num_sample
+
+83. different base for 0->1, 1->0.  model collapsed.
+
+84. [Implemented] try various body intensity in data-[5,6,7,8,9]
+
+85. Association rule may not apply. 
+    use log-grad to filter some unrelated preds?
+
+86. in data4 old dataset,
+    GT = B-->E
+    But model learns NotB --> E
+    re-generate then fixed.
+
+87. synthetic experiment on large dataset, i.e. 10-20 preds, as in mimic?

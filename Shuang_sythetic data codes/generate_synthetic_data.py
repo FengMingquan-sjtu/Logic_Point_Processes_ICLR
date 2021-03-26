@@ -140,8 +140,6 @@ class Logic_Model_Generator:
         model.print_info()
         # initialize params
         for head_predicate_idx in self.head_predicate_set:
-            model.model_parameter[head_predicate_idx] = dict()
-            model.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             for formula_idx in range(self.num_formula):
                 model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)}
         verbose = True # print mid-result
@@ -174,8 +172,7 @@ class Logic_Model_Generator:
         model.print_info()
         # initialize params
         for head_predicate_idx in self.head_predicate_set:
-            model.model_parameter[head_predicate_idx] = dict()
-            model.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
+            model.model_parameter[head_predicate_idx] = {'base': torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)}
             for formula_idx in range(self.num_formula):
                 model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)}
         verbose = True # print mid-result
@@ -201,7 +198,7 @@ def get_logic_model_1():
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 4
-    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
     weights = [0.3, 0.4, 0.5, 0.6, 0.7]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
@@ -276,7 +273,7 @@ def get_logic_model_2():
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 5
-    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
     weights = [0.8, 0.9, 0.5, 0.6, 0.7]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
@@ -350,7 +347,7 @@ def get_logic_model_3():
     model.model_parameter = dict()
     head_predicate_idx = 6
 
-    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
     weights = [0.9, 0.6, 1.0, 0.8, 0.5]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
@@ -424,7 +421,7 @@ def get_logic_model_4():
     model.model_parameter = dict()
     head_predicate_idx = 4
 
-    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
     weights = [1.0, 1.0, 1.0]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
@@ -481,7 +478,7 @@ def get_logic_model_5():
     model.model_parameter = dict()
     head_predicate_idx = 4
 
-    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
     weights = [0.5, 0.5, 0.5]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
@@ -538,7 +535,7 @@ def get_logic_model_6():
     model.model_parameter = dict()
     head_predicate_idx = 4
 
-    model.model_parameter[head_predicate_idx] = {'base':torch.tensor([0]).double()}
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
     weights = [1.5, 1.5, 1.5]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
@@ -579,9 +576,600 @@ def get_logic_model_6():
     
     return model, file_name
 
+def get_logic_model_7():
+    # difference with model_4 is rule length. data-4 is [1,2,2], data-7 is [1,2,3]
+    
+    file_name = "data-7.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 2.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # A ^ C ^ D --> E, A Before E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0, 2, 3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1, 1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_8():
+    # difference with model_4 is one more rule.
+   
+    file_name = "data-8.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0 }
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2, 3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    # A ^ B --> E, A Before E, B Before E.
+    formula_idx = 3
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0, 1]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [1,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_9():
+    # difference with model_4 is one more predicate.
+    # E is dummy pred, F is target 
+    
+    file_name = "data-9.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0, 4:0.2} #dummy E has lower intensity
+    model.body_predicate_set = [0,1,2,3,4]
+    model.head_predicate_set = [5]
+    model.predicate_notation = ['A','B','C','D','E','F']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 5
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> F, A Before F
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 5]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> F,  B Before F, C Before F
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,5], [2,5]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> F, C Before F, D Equal F.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2, 3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,5], [3,5]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_10():
+    '''!!! Deprecated!!! '''
+    #difference with data-4 is seperate bases for 0->1 and 1->0
+    file_name = "data-10.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = {'base_0_1':torch.tensor([0.1]).double(), 'base_1_0':torch.tensor([-0.1]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_11():
+    # difference with data-4: various body intensity.
+    file_name = "data-11.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_12():
+    # only difference with model_11 is smaller weights.
+    # modified from data-5.npy
+    file_name = "data-12.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [0.5, 0.5, 0.5]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_13():
+    # only difference with model_11 is large weights.
+    # modified from data-6
+    
+    file_name = "data-13.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.5, 1.5, 1.5]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_14():
+    # difference with model_11 is rule length. data-11 is [1,2,2], data-14 is [1,2,3]
+    # modified from data-7
+    file_name = "data-14.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 2.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # A ^ C ^ D --> E, A Before E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0, 2, 3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1, 1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_15():
+    # difference with model_11 is one more rule.
+    #modiied from data-8
+    file_name = "data-15.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2, 3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    # A ^ B --> E, A Before E, B Before E.
+    formula_idx = 3
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0, 1]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,4], [1,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_16():
+    # difference with model_11 is one dummy predicate.
+    # E is dummy pred, F is target 
+    
+    # modified from data-9
+    file_name = "data-16.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4, 4:0.2} #dummy E has lower intensity
+    model.body_predicate_set = [0,1,2,3,4]
+    model.head_predicate_set = [5]
+    model.predicate_notation = ['A','B','C','D','E','F']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 5
+
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> F, A Before F
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 5]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> F,  B Before F, C Before F
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,5], [2,5]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> F, C Before F, D Equal F.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2, 3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,5], [3,5]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
 
 def get_model_by_idx(model_idx):
-    model_list = [None, get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6]
+    model_list = [None, get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16]
     return model_list[model_idx]()
 
 
@@ -672,6 +1260,10 @@ def redirect_log_file():
     sys.stdout = open(out_file, 'w')
     sys.stderr = open(err_file, 'w')
 
+def fit_mp_group(model_idx):
+    fit_mp(model_idx=model_idx, num_sample=600, time_horizon=10, num_iter = 50, worker_num = 12 )
+    fit_mp(model_idx=model_idx, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
+    fit_mp(model_idx=model_idx, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
 
 if __name__ == "__main__":
     redirect_log_file()
@@ -679,22 +1271,33 @@ if __name__ == "__main__":
 
     print("Start time is", datetime.datetime.now(),flush=1)
     
-    #generate(model_idx=5, num_sample=2400, time_horizon=10, worker_num=24)
-    #print("generate finish",flush=1)
-    
-    #generate(model_idx=4, num_sample=2400, time_horizon=10, worker_num=24)
-    #fit_mp(model_idx=4, num_sample=600, time_horizon=10, num_iter = 50, worker_num = 12 )
-    #fit_mp(model_idx=4, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
-    #fit_mp(model_idx=4, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
-    
-    # fit data-5
-    #generate(model_idx=5, num_sample=2400, time_horizon=10, worker_num=24)
-    #fit_mp(model_idx=5, num_sample=600, time_horizon=10, num_iter = 50, worker_num = 12 )
-    #fit_mp(model_idx=5, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
-    #fit_mp(model_idx=5, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
-    
-    # fit data-6
-    generate(model_idx=6, num_sample=2400, time_horizon=10, worker_num=24)
-    fit_mp(model_idx=6, num_sample=600, time_horizon=10, num_iter = 50, worker_num = 12 )
-    fit_mp(model_idx=6, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
-    fit_mp(model_idx=6, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
+
+    #generate(model_idx=8, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=8)
+
+    #generate(model_idx=9, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=9)
+
+    #generate(model_idx=10, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=10)
+
+    #generate(model_idx=11, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=11)
+
+    #generate(model_idx=4, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=4)
+
+    #generate(model_idx=12, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=12)
+
+    #generate(model_idx=13, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=13)
+
+    #generate(model_idx=14, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=14)
+
+    #generate(model_idx=15, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=15)
+
+    #generate(model_idx=16, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=16)

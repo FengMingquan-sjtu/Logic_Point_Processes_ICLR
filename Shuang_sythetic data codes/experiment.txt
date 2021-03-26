@@ -41,24 +41,99 @@ at Mar12, 11:09, use DFS, torch, worker_num=12, num_iter=6, fit data-4, 1200 sam
 at Mar12, 11:12, use DFS, torch, worker_num=12, num_iter=3, fit data-4, 2400 samples
 
 data-4{
-at Mar12, 15:22, 15:22, 15:25 use BFS, torch, worker_num=12, num_iter=12, fit data-4, 600,1200,2400 samples
-at Mar12, 15:52, 15:56, 15:59, fit GT rules, torch, worker_num=12, num_iter=50, data-4, 600, 1200, 2400 samples.
-at Mar13, 10:29, use DFS, torch, worker_num=12, num_iter=12, fit data-4, 600,1200,2400 samples
+    at Mar12, 15:22, 15:22, 15:25 use BFS, torch, worker_num=12, num_iter=12, fit data-4, 600,1200,2400 samples
+    at Mar12, 15:52, 15:56, 15:59, fit GT rules, torch, worker_num=12, num_iter=50, data-4, 600, 1200, 2400 samples.
+    at Mar13, 10:29, use DFS, torch, worker_num=12, num_iter=12, fit data-4, 600,1200,2400 samples
+    at Mar17, 10:51, re-run experiment group.
+    at Mar17, 21:09, re-generate data-4, and fit GT rules.
+    at Mar17, 21:11, re-run experiment group on newly generated data
+    at Mar18, 08:35, re-fit GT rules
+
 }
 
 data-5{
-at Mar12, 16:27, generate data-5. data-5 has same rule set with data-4, but w=0.5 
-at Mar12, 16:28, fit GT rules, torch, worker_num=12, num_iter=50, data-5, 600,1200,2400 samples.
-at Mar12, 17:01, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-5, 600,1200,2400 samples
-at Mar13, 09:56, tune prune-weights, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-5, 600,1200,2400 samples
-
+    at Mar12, 16:27, generate data-5. data-5 has same rule set with data-4, but w=0.5 
+    at Mar12, 16:28, fit GT rules, torch, worker_num=12, num_iter=50, data-5, 600,1200,2400 samples.
+    at Mar13, 09:56, tune prune-weights, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-5, 600,1200,2400 samples
 }
 
 data-6{
-at Mar12, 16:36, generate data-6. data-6 has same rule set with data-4, but w=1.5 
-                fit GT rules, torch, worker_num=12, num_iter=50, data-6, 600,1200,2400 samples.
-at Mar12, 23:37, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-6, 600,1200,2400 samples
-at Mar13, 09:55, tune prune-weights, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-6, 600,1200,2400 samples
+    at Mar12, 16:36, generate data-6. data-6 has same rule set with data-4, but w=1.5 
+                    fit GT rules, torch, worker_num=12, num_iter=50, data-6, 600,1200,2400 samples.
+    at Mar12, 23:37, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-6, 600,1200,2400 samples
+    at Mar13, 09:55, tune prune-weights, use DFS and BFS, torch, worker_num=12, num_iter=12, fit data-6, 600,1200,2400 samples
+}
+
+data-7{
+    at Mar13, 23:48, generate data-7.  
+    at Mar13, 23:59, run experiment group.
+    at Mar14, 10:12, fit GT rules.
+    at Mar14, 10:57, re-generate data-7, and fit GT rules. modify len-3 rule weight from 1 to 5.
+    at Mar14, 11:33, re-generate data-7, and fit GT rules. modify len-3 rule weight from 5 to 2.
+    at Mar14, 15:25, run experiment group.
+}
+
+data-8{
+    at Mar13, 23:49, generate data-8.  
+    at Mar14, 00:00, run experiment group.
+    at Mar14, 10:13, fit GT rules.
+}
+
+data-9{
+    at Mar13, 23:49, generate data-9. 
+    at Mar14, 00:01, run experiment group. 
+    at Mar14, 10:14, fit GT rules.
+    at Mar14, 10:25, re-run experiment group,  change prune-weight from 0.3 to 0.1, 
+    at Mar14, 21:39, re-generate data-9, and fit GT rules. modify intensity of E(dummy) from 1 to 0.2. 
+    at Mar14, 22:45, run experiment group. with prune-weight=0.1.
+    at Mar14, 23:19, run experiment group. with prune-weight=0.3.(failed, due to 2-bases)
+    at Mar15, 10:22, run experiment group. with prune-weight=0.3.
 
 }
 
+data-10{
+    at Mar14, 23:11, generate data-10 and fit GT rules.
+    at Mar14, 23:21, run experiment group. (failed, due to 2-bases)
+}
+
+data-11{
+    at Mar15, 10:28, generate data-11.
+    at Mar15, 10:34, fit GT rules.
+    at Mar15, 10:35, run experiment group. (1-5)
+    at Mar16, 09:10, run experiment 6.
+    at Mar18, 08:38, re-fit GT rules.
+}
+
+
+data-12{
+    at Mar17, 23:06, generate data
+    at Mar17, 23:27, run experiment group
+    ar Mar18, 08:45, fit GT rules
+}
+
+data-13{
+    at Mar17, 23:07, generate data
+    at Mar17, 23:30, run experiment group
+    ar Mar18, 08:45, fit GT rules
+    at MAr18, 21:11, re-run experiment group, fix bug
+}
+
+data-14{
+    at Mar17, 23:08, generate data
+    at Mar17, 23:33, run experiment group
+    ar Mar18, 08:46, fit GT rules
+    at MAr18, 21:11, re-run experiment group, fix bug
+}
+
+data-15{
+    at Mar17, 23:09, generate data
+    at Mar17, 23:33, run experiment group
+    ar Mar18, 08:46, fit GT rules
+    at MAr18, 21:13, re-run experiment group, fix bug
+}
+
+data-16{
+    at Mar17, 23:10, generate data
+    at Mar17, 23:34, run experiment group
+    ar Mar18, 09:27, fit GT rules
+}
