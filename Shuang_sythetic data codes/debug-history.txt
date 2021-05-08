@@ -412,3 +412,15 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     re-generate then fixed.
 
 87. synthetic experiment on large dataset, i.e. 10-20 preds, as in mimic?
+
+88. add static predicate, which follows:
+    1)static pred only interacts with head pred.
+    2)static pred is activated or inactivated by CURRENT state. (e.g. IS_EVENING(t=9pm) is indepent with history of t.)
+    3)static pred has NO time-window and decay. 
+    Modified functions: init(), get_feature(), generate_rule_via_column_generation(), add_one_predicate_to_existing_rule()
+
+89. add self-activation:
+    allow head appears in body.
+    Modified functions: get_feature(), generate_rule_via_column_generation(), add_one_predicate_to_existing_rule()
+    Bug fixed: zero-feature of self-activation rule (because rewrite head time array in time_combination_dict). 
+                Wrongly assign (Head Equal Head) with large weight. (because feature calculation of EQUAL is implemented by abs(time_diff), event is wrongly activated by its current event.)

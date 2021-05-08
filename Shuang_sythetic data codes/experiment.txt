@@ -137,3 +137,7 @@ data-16{
     at Mar17, 23:34, run experiment group
     ar Mar18, 09:27, fit GT rules
 }
+
+data-17{
+    2021-05-08 22:24:34.463477, generate and fit GT
+}

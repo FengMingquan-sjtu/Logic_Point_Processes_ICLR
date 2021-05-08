@@ -59,11 +59,13 @@ class Logic_Learning_Model():
 
         self.predicate_set= [0, 1, 2, 3] # the set of all meaningful predicates
         self.predicate_notation = ['A','B', 'C', 'D']
+        self.static_pred_set = []
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
         self.BEFORE = 'BEFORE'
         self.EQUAL = 'EQUAL'
         self.AFTER = 'AFTER'
+        self.STATIC = "STATIC"
         self.num_formula = 0
         
         self.deleted_rules = set()
@@ -259,17 +261,24 @@ class Logic_Learning_Model():
             if [body_predicate_idx, head_predicate_idx] in template['temporal_relation_idx']:
                 #for time-relation with target, filter events by time-relation
                 temporal_idx = template['temporal_relation_idx'].index([body_predicate_idx, head_predicate_idx])
-                if template['temporal_relation_type'][temporal_idx] == self.BEFORE:
+                temporal_relation_type = template['temporal_relation_type'][temporal_idx]
+                if  temporal_relation_type == self.BEFORE:
                     mask = (transition_time >= cur_time - self.time_window) * (transition_time <= cur_time - self.Time_tolerance) * (transition_state == template['body_predicate_sign'][idx])
-                elif template['temporal_relation_type'][temporal_idx] == self.EQUAL:
-                    mask = (transition_time >= cur_time - self.Time_tolerance) * (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
+                elif temporal_relation_type == self.EQUAL:
+                    mask = (transition_time >= cur_time - self.Time_tolerance) * (transition_time < cur_time) * (transition_state == template['body_predicate_sign'][idx])
+                elif temporal_relation_type == self.STATIC:
+                    mask = (transition_time < cur_time) * (transition_state == template['body_predicate_sign'][idx])
                 else:
                     raise ValueError
             else:
                 mask = (transition_time >= cur_time-self.time_window) * (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
 
             transition_time_dic[body_predicate_idx] = transition_time[mask]
-        transition_time_dic[head_predicate_idx] = [cur_time]
+            if body_predicate_idx in self.static_pred_set and len(transition_time_dic[body_predicate_idx])>1:
+                #for static variable, only keep the lastest matched result.
+                transition_time_dic[body_predicate_idx] = np.array([transition_time_dic[body_predicate_idx][-1],]) 
+            
+        #transition_time_dic[head_predicate_idx] = [cur_time]
         ### get weights
         #print(transition_time_dic)
         # compute features whenever any item of the transition_item_dic is nonempty
@@ -282,12 +291,22 @@ class Logic_Learning_Model():
                 time_combination_dic[idx] = time_combination[:, i]
             temporal_kernel = np.ones(len(time_combination))
             for idx, temporal_relation_idx in enumerate(template['temporal_relation_idx']):
-                time_difference = time_combination_dic[temporal_relation_idx[0]] - time_combination_dic[temporal_relation_idx[1]]
-                if template['temporal_relation_type'][idx] == 'BEFORE':
+                time_0 = time_combination_dic[temporal_relation_idx[0]]
+                if temporal_relation_idx[1] == head_predicate_idx:
+                    time_1 = cur_time
+                else:
+                    time_1 = time_combination_dic[temporal_relation_idx[1]]
+                time_difference = time_0 - time_1
+                if template['temporal_relation_type'][idx] == self.BEFORE:
                     temporal_kernel *= (time_difference < - self.Time_tolerance) * np.exp(-self.decay_rate *(cur_time - time_combination_dic[temporal_relation_idx[0]]))
-                elif template['temporal_relation_type'][idx] == 'EQUAL':
-                    temporal_kernel *= (abs(time_difference) <= self.Time_tolerance) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
+                elif template['temporal_relation_type'][idx] == self.EQUAL:
+                    temporal_kernel *= (- self.Time_tolerance < time_difference) * (time_difference < 0) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
+                elif template['temporal_relation_type'][idx] == self.STATIC:
+                    #static relation are treated as 1, without decay.
+                    pass 
             feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
+        #print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
+        #print("feature is:", feature, flush=1)
         return feature
 
     def get_state(self, cur_time, pred_idx, history):
@@ -673,7 +692,10 @@ class Logic_Learning_Model():
         for head_predicate_sign in [1, 0]:
             for body_predicate_sign in [1, 0]: # consider head_predicate_sign = 1/0
                 for body_predicate_idx in self.predicate_set:  
-                    if body_predicate_idx == head_predicate_idx: # all the other predicates, excluding the head predicate, can be the potential body predicates
+                    # we allow self-exciting now
+                    #if body_predicate_idx == head_predicate_idx: # all the other predicates, excluding the head predicate, can be the potential body predicates
+                    #    continue
+                    if body_predicate_idx in self.static_pred_set: #do not allow static pred form rule alone.
                         continue
                     for temporal_relation_type in [self.BEFORE, self.EQUAL]:
                         # create new rule
@@ -751,24 +773,33 @@ class Logic_Learning_Model():
         #be careful, do NOT modify existing rule.
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
-        existing_predicate_idx_list = [head_predicate_idx] + existing_rule_template['body_predicate_idx']
+        
         for body_predicate_sign in [1, 0]:
             for body_predicate_idx in self.predicate_set:
-                if body_predicate_idx in existing_predicate_idx_list: 
-                    # these predicates are not allowed.
+                if body_predicate_idx in existing_rule_template['body_predicate_idx']: 
+                    # repeated predicates are not allowed.
                     continue 
-                #NOTE: due to bug#36, remove self.AFTER in enumeration
-                for temporal_relation_type in [self.BEFORE, self.EQUAL]:
-                    for existing_predicate_idx in existing_predicate_idx_list:
+                
+                if body_predicate_idx in self.static_pred_set:
+                    # static pred only interact with head.
+                    time_relation_list = [self.STATIC]
+                    candidate_predicate_list = [head_predicate_idx]
+                else:
+                    time_relation_list = [self.BEFORE, self.EQUAL]
+                    # non-static preds can only interact with non-static preds
+                    existing_predicate_idx_list = [head_predicate_idx] + existing_rule_template['body_predicate_idx']
+                    candidate_predicate_list = [pred for pred in existing_predicate_idx_list if pred not in self.static_pred_set] 
+                for temporal_relation_type in time_relation_list:
+                    for candidate_predicate_idx in candidate_predicate_list:
                         
                         # create new rule
                         new_rule_template = {}
                         new_rule_template[head_predicate_idx]= {}
-                        new_rule_template[head_predicate_idx]['body_predicate_idx'] = [body_predicate_idx] + existing_rule_template['body_predicate_idx']
-                        new_rule_template[head_predicate_idx]['body_predicate_sign'] = [body_predicate_sign] + existing_rule_template['body_predicate_sign']
-                        new_rule_template[head_predicate_idx]['head_predicate_sign'] = [] + existing_rule_template['head_predicate_sign']
-                        new_rule_template[head_predicate_idx]['temporal_relation_idx'] = [(body_predicate_idx, existing_predicate_idx)] + existing_rule_template['temporal_relation_idx']
-                        new_rule_template[head_predicate_idx]['temporal_relation_type'] = [temporal_relation_type] + existing_rule_template['temporal_relation_type']
+                        new_rule_template[head_predicate_idx]['body_predicate_idx'] =  existing_rule_template['body_predicate_idx'] + [body_predicate_idx] 
+                        new_rule_template[head_predicate_idx]['body_predicate_sign'] =  existing_rule_template['body_predicate_sign'] + [body_predicate_sign] 
+                        new_rule_template[head_predicate_idx]['head_predicate_sign'] = existing_rule_template['head_predicate_sign'] + []
+                        new_rule_template[head_predicate_idx]['temporal_relation_idx'] =  existing_rule_template['temporal_relation_idx'] + [(body_predicate_idx, candidate_predicate_idx)] 
+                        new_rule_template[head_predicate_idx]['temporal_relation_type'] =  existing_rule_template['temporal_relation_type'] + [temporal_relation_type] 
 
                         if self.check_repeat(new_rule_template[head_predicate_idx], head_predicate_idx): # Repeated rule is not allowed.
                             continue
@@ -1221,8 +1252,8 @@ def get_data(dataset_id, num_sample):
     return dataset
 
 def get_model(dataset_id):
-    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16
-    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16]
+    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17
+    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17]
     m, _ = logic_model_funcs[dataset_id]()
     model = m.get_model_for_learn()
     return model
@@ -1367,7 +1398,7 @@ def run_expriment_group(dataset_id):
 
 
 if __name__ == "__main__":
-    #redirect_log_file()
+    redirect_log_file()
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     
@@ -1375,12 +1406,7 @@ if __name__ == "__main__":
     #run_expriment_group(dataset_id=14)
     #run_expriment_group(dataset_id=15)
     #run_expriment_group(dataset_id=16)
-    rule_set_str = """Head:F, base=0.0354,
- Rule0: A --> F , A BEFORE F, weight=1.0225,
- Rule1: B ^ C --> F , B BEFORE F ^ C BEFORE F, weight=1.0174,
- Rule2: C ^ D --> F , C BEFORE F ^ D EQUAL F, weight=0.9770,
-                    """
-    generate(dataset_id=16, num_sample=10, rule_set_str=rule_set_str)
+    run_expriment_group(dataset_id=17)
 
 
 
