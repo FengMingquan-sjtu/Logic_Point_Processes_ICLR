@@ -1,4 +1,5 @@
 setsid python3 logic_learning.py 
 setsid python3 generate_synthetic_data.py
 ps -ef |grep logic |awk '{print $2}'|xargs kill -9
+ps -ef |grep synthetic |awk '{print $2}'|xargs kill -9
 ps -ef |grep generate |awk '{print $2}'|xargs kill -9

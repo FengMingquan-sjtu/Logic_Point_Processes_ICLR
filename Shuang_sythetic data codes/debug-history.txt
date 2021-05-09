@@ -424,3 +424,8 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
     Modified functions: get_feature(), generate_rule_via_column_generation(), add_one_predicate_to_existing_rule()
     Bug fixed: zero-feature of self-activation rule (because rewrite head time array in time_combination_dict). 
                 Wrongly assign (Head Equal Head) with large weight. (because feature calculation of EQUAL is implemented by abs(time_diff), event is wrongly activated by its current event.)
+
+
+90. Fixed bug: instant head pred. Such head is activated only for a very short interval, thus theoretically, only state-1, no state-0.
+    Though fake state-0 is added, we only consider state-1 in log-intensity.
+    Modified functions:  intensity_log_sum()

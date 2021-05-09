@@ -19,28 +19,9 @@ import torch.optim as optim
 import pickle
 import cvxpy as cp
 
-
+from utils import redirect_log_file, Timer
 #random.seed(1)
 
-class Timer(object):
-    def __init__(self, name=None):
-        self.name = name
-
-    def __enter__(self):
-        self.tstart = time.time()
-
-    def __exit__(self, type, value, traceback):
-        if self.name:
-            print("[%s] " % self.name, end="")
-        dt = time.time() - self.tstart
-        if dt < 60:
-            print("Elapsed: {:.4f} sec.".format(dt))
-        elif dt < 3600:
-            print("Elapsed: {:.4f} min.".format(dt / 60))
-        elif dt < 86400:
-            print("Elapsed: {:.4f} hour.".format(dt / 3600))
-        else:
-            print("Elapsed: {:.4f} day.".format(dt / 86400))
 
 ##################################################################
 
@@ -60,6 +41,7 @@ class Logic_Learning_Model():
         self.predicate_set= [0, 1, 2, 3] # the set of all meaningful predicates
         self.predicate_notation = ['A','B', 'C', 'D']
         self.static_pred_set = []
+        self.instant_pred = []
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
         self.BEFORE = 'BEFORE'
@@ -357,7 +339,13 @@ class Logic_Learning_Model():
 
     def intensity_log_sum(self, head_predicate_idx, dataset, sample_ID):
         intensity_transition = []
-        for t in dataset[sample_ID][head_predicate_idx]['time'][:]:
+        if head_predicate_idx in self.instant_pred:
+            trans_time = np.array(dataset[sample_ID][head_predicate_idx]['time'])
+            state = np.array(dataset[sample_ID][head_predicate_idx]['state'])
+            trans_time = trans_time[state==1]
+        else:
+            trans_time = dataset[sample_ID][head_predicate_idx]['time'][:]
+        for t in trans_time:
             cur_intensity = self.intensity(t, head_predicate_idx, dataset, sample_ID)
             intensity_transition.append(cur_intensity)
         if len(intensity_transition) == 0: # only survival term, not event happens
@@ -689,8 +677,8 @@ class Logic_Learning_Model():
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
-        for head_predicate_sign in [1, 0]:
-            for body_predicate_sign in [1, 0]: # consider head_predicate_sign = 1/0
+        for head_predicate_sign in [1, ]:
+            for body_predicate_sign in [1, ]: # consider head_predicate_sign = 1/0
                 for body_predicate_idx in self.predicate_set:  
                     # we allow self-exciting now
                     #if body_predicate_idx == head_predicate_idx: # all the other predicates, excluding the head predicate, can be the potential body predicates
@@ -774,7 +762,7 @@ class Logic_Learning_Model():
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
         
-        for body_predicate_sign in [1, 0]:
+        for body_predicate_sign in [1, ]:
             for body_predicate_idx in self.predicate_set:
                 if body_predicate_idx in existing_rule_template['body_predicate_idx']: 
                     # repeated predicates are not allowed.
@@ -1010,7 +998,7 @@ class Logic_Learning_Model():
         self.final_tune(head_predicate_idx, dataset, T_max)
         print("----- exit search_algorithm -----", flush=1)
 
-    def BFS(self, head_predicate_idx, dataset, T_max, dataset_id):
+    def BFS(self, head_predicate_idx, dataset, T_max, tag):
         print("----- start BFS -----", flush=1)
         self.print_info()
         #Begin Breadth(width) First Search
@@ -1018,8 +1006,7 @@ class Logic_Learning_Model():
         is_continue = True
         while self.num_formula < self.max_num_rule and is_continue:
             _, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, dataset, T_max)
-            with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
-                pickle.dump(self, f)   
+            
             
         #generate new rule by extending existing rules
         extended_rules = set()
@@ -1055,7 +1042,8 @@ class Logic_Learning_Model():
         self.print_rule_cp()
 
         self.final_tune(head_predicate_idx, dataset, T_max)
-
+        with open("./model/model-{}.pkl".format(tag),'wb') as f:
+            pickle.dump(self, f)
         print("----- exit BFS -----", flush=1)
 
     def final_tune(self, head_predicate_idx, dataset, T_max):
@@ -1151,7 +1139,7 @@ class Logic_Learning_Model():
                 return i #return matched formula_idx
         return -1 #if no such rule, return -1.
 
-    def DFS(self,head_predicate_idx, dataset, T_max, dataset_id):
+    def DFS(self,head_predicate_idx, dataset, T_max, tag):
         self.print_info()
         print("----- start DFS -----", flush=1)
         rule_to_extend_str_stack = list() #use stack to implement DFS
@@ -1182,6 +1170,8 @@ class Logic_Learning_Model():
                     for added_rule_str in added_rule_str_list:
                         rule_to_extend_str_stack.append(added_rule_str)
         self.final_tune(head_predicate_idx, dataset, T_max)
+        with open("./model/model-{}.pkl".format(tag),'wb') as f:
+            pickle.dump(self, f)
         print("----- exit DFS -----", flush=1)
 
     def generate_target_one_sample(self, head_predicate_idx, T_max, data_sample):
@@ -1230,33 +1220,8 @@ class Logic_Learning_Model():
 
 
 
-def redirect_log_file():
-    log_root = ["./log/out","./log/err"]   
-    for root in log_root:     
-        if not os.path.exists(root):
-            os.makedirs(root)
-    t = str(datetime.datetime.now())
-    out_file = os.path.join(log_root[0], t)
-    err_file = os.path.join(log_root[1], t)
-    sys.stdout = open(out_file, 'w')
-    sys.stderr = open(err_file, 'w')
 
-def get_data(dataset_id, num_sample):
-    dataset_path = './data/data-{}.npy'.format(dataset_id)
-    print("dataset_path is ",dataset_path)
-    dataset = np.load(dataset_path, allow_pickle='TRUE').item()
-    if len(dataset.keys())> num_sample: 
-        dataset = {i:dataset[i] for i in range(num_sample)}
-    num_sample = len(dataset.keys())
-    print("sample num is ", num_sample)
-    return dataset
 
-def get_model(dataset_id):
-    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17
-    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17]
-    m, _ = logic_model_funcs[dataset_id]()
-    model = m.get_model_for_learn()
-    return model
 
 def set_rule(model, rule_set_str):
     import utils
@@ -1265,66 +1230,7 @@ def set_rule(model, rule_set_str):
     model.model_parameter = model_parameter
     model.num_formula = num_formula
 
-def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
-    print("Start time is", datetime.datetime.now(),flush=1)
-
-    if not os.path.exists("./model"):
-        os.makedirs("./model")
-        
-    #get model
-    model = get_model(dataset_id)
-
-    #set initial rules if required
-    if rule_set_str:
-        set_rule(model, rule_set_str)
-        
-
-    #get data
-    dataset =  get_data(dataset_id, num_sample)
-
-    #set model hyper params
-    model.batch_size_grad = num_sample #use all sample for grad
-    model.batch_size_cp = num_sample
-    model.num_iter = num_iter
-    model.use_cp = use_cp
-    model.worker_num = worker_num
-    
-    if dataset_id in [5,12]:
-        model.max_rule_body_length = 2
-        model.max_num_rule = 15
-        model.weight_threshold = 0.05
-        model.strict_weight_threshold= 0.1
-    elif dataset_id in [6,13]:
-        model.max_rule_body_length = 2
-        model.max_num_rule = 15
-        model.weight_threshold = 0.2
-        model.strict_weight_threshold= 0.5
-    elif dataset_id in [7,14]:
-        model.max_rule_body_length = 3
-        model.max_num_rule = 20
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.3
-    elif dataset_id in [8,15]:
-        model.max_rule_body_length = 2
-        model.max_num_rule = 20
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.3
-    elif dataset_id in [4,9,10,11,16]:
-        model.max_rule_body_length = 2
-        model.max_num_rule = 15
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.3
-
-
-    if algorithm == "DFS":
-        with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
-    elif algorithm == "BFS":
-        with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, T_max=10, dataset_id=dataset_id)
-    
-    print("Finish time is", datetime.datetime.now())
-    
+   
     
 def generate(dataset_id, num_sample, rule_set_str, T_max=10):
     print("Start time is", datetime.datetime.now(),flush=1)
@@ -1384,16 +1290,6 @@ def test_feature():
         #                f = model.get_feature(cur_time, head_predicate_idx, history, template)
 
 
-def run_expriment_group(dataset_id):
-    #DFS
-    fit(dataset_id=dataset_id, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
-    fit(dataset_id=dataset_id, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
-    fit(dataset_id=dataset_id, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
-
-    #BFS 
-    fit(dataset_id=dataset_id, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
-    fit(dataset_id=dataset_id, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
-    fit(dataset_id=dataset_id, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
 
 
 

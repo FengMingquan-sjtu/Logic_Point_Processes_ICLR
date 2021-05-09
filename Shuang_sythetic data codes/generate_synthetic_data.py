@@ -9,7 +9,8 @@ import numpy as np
 import torch
 import cvxpy as cp
 
-from logic_learning import Logic_Learning_Model, Timer
+from logic_learning import Logic_Learning_Model
+from utils import Timer
 
 ##################################################################
 #np.random.seed(1)
