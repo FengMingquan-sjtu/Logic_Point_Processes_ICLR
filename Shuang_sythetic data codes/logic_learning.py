@@ -206,11 +206,7 @@ class Logic_Learning_Model():
 
         else:
             intensity = torch.zeros(1)
-        #cur_state = self.get_state(cur_time=cur_time, pred_idx=head_predicate_idx, history=dataset[sample_ID])
-        #if cur_state == 0:
-        #    base = self.model_parameter[head_predicate_idx]['base_0_1']
-        #else:
-        #    base = self.model_parameter[head_predicate_idx]['base_1_0']
+
         base = self.model_parameter[head_predicate_idx]['base']
         intensity = base + torch.sum(intensity)
         intensity = torch.exp(intensity)
@@ -291,25 +287,26 @@ class Logic_Learning_Model():
         #print("feature is:", feature, flush=1)
         return feature
 
-    def get_state(self, cur_time, pred_idx, history):
-        transition_time = np.array(history[pred_idx]['time'])
-        transition_state = np.array(history[pred_idx]['state'])
-        idx = np.sum(cur_time > transition_time) - 1
-        cur_state = transition_state[idx]
-        return cur_state
 
     def get_formula_effect(self, cur_time, head_predicate_idx, history, template):
         ## Note this part is very important!! For generator, this should be np.sum(cur_time > head_transition_time) - 1
         ## Since at the transition times, choose the intensity function right before the transition time
         head_transition_time = np.array(history[head_predicate_idx]['time'])
         head_transition_state = np.array(history[head_predicate_idx]['state'])
-        if len(head_transition_time) == 0:
+        if head_predicate_idx in self.instant_pred:
+            #instant pred state is always zero.
             cur_state = 0
-            counter_state = 1 - cur_state
         else:
-            idx = np.sum(cur_time > head_transition_time) - 1
-            cur_state = head_transition_state[idx]
-            counter_state = 1 - cur_state
+            if len(head_transition_time) == 0:
+                cur_state = 0
+            else:
+                idx = np.sum(cur_time > head_transition_time) - 1
+                if idx < 0:
+                    cur_state = 0
+                else:
+                    cur_state = head_transition_state[idx]
+
+        counter_state = 1 - cur_state
         if counter_state == template['head_predicate_sign']:
             formula_effect = torch.tensor([1], dtype=torch.float64)
         else:

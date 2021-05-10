@@ -1,6 +1,6 @@
 def add_base_arguments(parser):
     parser.add_argument(
-        "--dataset", type=str, default="mimic", help="default: mhp-1K-5"
+        "--dataset", type=str, default="mimic"
     )
     parser.add_argument(
         "--input_dir",

@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "credit.py", line 247, in <module>
-    preprocess()
-  File "credit.py", line 54, in preprocess
-    raise ValueError
-ValueError

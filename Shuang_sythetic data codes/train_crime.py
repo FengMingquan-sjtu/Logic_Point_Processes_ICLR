@@ -9,15 +9,22 @@ from utils import redirect_log_file, Timer, get_data
 
 def get_model(model_name):
     if model_name == "crime":
-        model = Logic_Learning_Model(head_predicate_idx=[6])
-        model.predicate_set= [0, 1, 2, 3, 4, 5, 6] # the set of all meaningful predicates
-        model.predicate_notation = ["SUMMER", "WEEKEND",  "EVENNING", 'A','B', 'C', 'D']
-        model.static_pred_set = [0, 1, 2]
-        model.instant_pred = [3, 4, 5, 6]
-        T_max = 24
+        model = Logic_Learning_Model(head_predicate_idx=[8])
+        model.predicate_set= [0, 1, 2, 3, 4, 5, 6, 7, 8] # the set of all meaningful predicates
+        model.predicate_notation = ['SUMMER', 'WINTER', 'WEEKEND', 'EVENNING', 'NIGHT',  'A','B', 'C', 'D']
+        model.static_pred_set = [0, 1, 2, 3, 4]
+        model.instant_pred = [5, 6, 7, 8]
+        T_max = 7 * 24
+        model.time_window = 7 * 24
+        model.decay_rate = 0.1
+        model.batch_size = 8
+        model.max_rule_body_length = 3
+        model.max_num_rule = 20
+        model.weight_threshold = 0.01
+        model.strict_weight_threshold= 0.05
     return model,T_max
 
-def fit(model_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
+def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
     print("Start time is", datetime.datetime.now(),flush=1)
 
     if not os.path.exists("./model"):
@@ -32,7 +39,7 @@ def fit(model_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
         
 
     #get data
-    dataset =  get_data(model_name, num_sample)
+    dataset =  get_data(dataset_name, num_sample)
 
     #set model hyper params
     model.batch_size_grad = num_sample #use all sample for grad
@@ -42,29 +49,32 @@ def fit(model_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     model.worker_num = worker_num
     
     
-    model.max_rule_body_length = 3
-    model.max_num_rule = 20
-    model.weight_threshold = 0.5
-    model.strict_weight_threshold= 1.0
+    
     
 
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, T_max=T_max, tag=model_name)
+            model.DFS(model.head_predicate_set[0], dataset, T_max=T_max, tag="DFS_"+dataset_name)
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, T_max=T_max, tag=model_name)
+            model.BFS(model.head_predicate_set[0], dataset, T_max=T_max, tag="BFS_"+dataset_name)
     
     print("Finish time is", datetime.datetime.now())
  
 
 def run_expriment_group(model_name):
+    #downtown districts
     #DFS
-    fit(model_name=model_name, num_sample=1500, worker_num=12, num_iter=12, algorithm="DFS")
-    
+    fit(model_name=model_name, dataset_name="crime_downtown", num_sample=200, worker_num=12, num_iter=12, algorithm="DFS")
     #BFS
-    fit(model_name=model_name, num_sample=1500, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(model_name=model_name, dataset_name="crime_downtown", num_sample=200, worker_num=12, num_iter=12, algorithm="BFS")
+
+    # other districts
+    #DFS
+    fit(model_name=model_name, dataset_name="crime_other", num_sample=200, worker_num=12, num_iter=12, algorithm="DFS")
+    #BFS
+    fit(model_name=model_name, dataset_name="crime_other", num_sample=200, worker_num=12, num_iter=12, algorithm="BFS")
 
 if __name__ == "__main__":
     redirect_log_file()

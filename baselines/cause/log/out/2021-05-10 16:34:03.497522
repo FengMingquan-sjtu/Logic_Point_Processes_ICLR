@@ -1,0 +1,1 @@
+[ 2021-05-10 16:34:03,650][test.<module>] Namespace(cuda=True, dataset='crime_downtown', decay=1, input_dir='./data', max_seqs=0, model='HExp', output_dir='/home/fengmingquan/data/cause/output', penalty=1000.0, rand_seed=0, skip_eval_infectivity=False, skip_pred_next_event=False, split_id=0, verbose=False)

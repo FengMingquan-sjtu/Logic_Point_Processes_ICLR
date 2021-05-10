@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import sys
 import random
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -43,6 +44,16 @@ from pkg.utils.pp import (
 )
 from pkg.utils.torch import split_dataloader, convert_to_bucketed_dataloader
 
+def redirect_log_file():
+    log_root = ["./log/out","./log/err"]   
+    for root in log_root:     
+        if not os.path.exists(root):
+            os.makedirs(root)
+    t = str(datetime.datetime.now())
+    out_file = os.path.join(log_root[0], t)
+    err_file = os.path.join(log_root[1], t)
+    sys.stdout = open(out_file, 'w')
+    sys.stderr = open(err_file, 'w')
 
 def get_parser():
     parser = argparse.ArgumentParser(description="Training different models. ")
@@ -183,6 +194,7 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred, skip_first_n=0):
     return mse.avg
 
 if __name__ == "__main__":
+    #redirect_log_file()
 
     args = get_parser().parse_args()
     assert args.model is not None, "`model` needs to be specified."
@@ -205,28 +217,27 @@ if __name__ == "__main__":
     export_json(vars(args), osp.join(output_path, "config.json"))
 
     # load data
-    input_path = osp.join(args.input_dir, args.dataset)
+    #input_path = osp.join(args.input_dir, args.dataset)
 
-    if args.dataset.startswith("mimic"):
-        data = np.load(osp.join(args.input_dir, "sepsis_logic_cause.npz"), allow_pickle=True)
-        n_types = int(data["n_types"])
-        train_event_seqs = data["train_event_seqs"]
-        test_event_seqs =  data["test_event_seqs"]
-        event_seqs = np.concatenate((train_event_seqs,test_event_seqs))
-    else:
-        data = np.load(osp.join(input_path, "data.npz"), allow_pickle=True)
-        n_types = int(data["n_types"])
-        event_seqs = data["event_seqs"]
-        train_event_seqs = event_seqs[data["train_test_splits"][args.split_id][0]]
-        test_event_seqs = event_seqs[data["train_test_splits"][args.split_id][1]]
+    data = np.load(osp.join(args.input_dir, "{}.npz".format(args.dataset)), allow_pickle=True)
+    n_types = int(data["n_types"])
+    train_event_seqs = data["train_event_seqs"]
+    test_event_seqs =  data["test_event_seqs"]
+    event_seqs = np.concatenate((train_event_seqs,test_event_seqs))
+    #else:
+    #    data = np.load(osp.join(input_path, "data.npz"), allow_pickle=True)
+    #    n_types = int(data["n_types"])
+    #    event_seqs = data["event_seqs"]
+    #    train_event_seqs = event_seqs[data["train_test_splits"][args.split_id][0]]
+    #    test_event_seqs = event_seqs[data["train_test_splits"][args.split_id][1]]
         
     # sorted test_event_seqs by their length
     test_event_seqs = sorted(test_event_seqs, key=lambda seq: len(seq))
 
-    if osp.exists(osp.join(input_path, "infectivity.txt")):
-        A_true = np.loadtxt(osp.join(input_path, "infectivity.txt"))
-    else:
-        A_true = None
+    #if osp.exists(osp.join(input_path, "infectivity.txt")):
+    #    A_true = np.loadtxt(osp.join(input_path, "infectivity.txt"))
+    #else:
+    A_true = None
 
     with Timer("Loading trained model"):
         # define model
@@ -256,13 +267,15 @@ if __name__ == "__main__":
     if not args.skip_pred_next_event:
         with Timer("Predict the next event"):
             event_seqs_pred = predict_next_event(model, test_event_seqs, args)
-            with open("./mimic/result_{}.pkl".format(args.model),'wb') as f:
+            if not os.path.exists("./"+args.dataset):
+                os.makedirs("./"+args.dataset)
+            with open("./{}/result_{}.pkl".format(args.dataset, args.model),'wb') as f:
                 pickle.dump((event_seqs_pred,test_event_seqs), f)
             if event_seqs_pred is not None:
                 print(event_seqs_pred[0])
                 print(test_event_seqs[0])
                 mae = calc_mean_absolute_error(test_event_seqs, event_seqs_pred)
-                print(mae)
+                print("MAE=",mae)
 
 
 

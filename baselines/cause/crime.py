@@ -1,68 +1,60 @@
+import os.path as osp
+import argparse
+
 import numpy as np
 import pandas as pd
-import os.path as osp
-from pkg.utils.misc import AverageMeter
 import pickle
 from matplotlib import pyplot as plt
+
+from pkg.utils.misc import AverageMeter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+# data format:
+# [(1094.5910501207484, 4), (1098.1079940088416, 7), (1100.4624087040852, 1), (1101.3163237708202, 1), (1105.8506944816406, 1), (1106.1821513888342, 0), (1106.1918308538147, 8)]
+def get_data(dataset_name, start_idx, end_idx):
+    dataset_path = '/home/fengmingquan/codes/Learn_Logic_PP/Shuang_sythetic data codes/data/{}.npy'.format(dataset_name)
+    print("dataset_path is ",dataset_path)
+    dataset = np.load(dataset_path, allow_pickle='TRUE').item()
+    dataset = [dataset[i] for i in range(start_idx, end_idx)]
+    num_sample = len(dataset)
+    print("sample num is ", num_sample)
+    return dataset
 
-def load_credit(file_path, n_types):
-    df = pd.read_csv(file_path)
-    df = df.drop_duplicates()  #remove duplicate rows
-    #print(df)
-
+def load_crime(dataset_name, start_idx, end_idx):
+    data = get_data(dataset_name, start_idx, end_idx)
     event_seqs = list()
-    cust_id_array = df['custAttr1'].unique()
-    print("cust num=",len(cust_id_array))
-
+    pred_list = data[0].keys()
     
+    for sample_idx in range(end_idx-start_idx):
+        sample = list()
+        for pred in pred_list:
+            pred_events = list()
+            for idx,t in enumerate(data[sample_idx][pred]["time"]):
+                if data[sample_idx][pred]["state"] == 1:
+                    pred_events.append((t, pred))
+            if len(pred_events) ==0: #use dummy event to fill empty pred.
+                pred_events.append((168, pred))
+            sample.extend(pred_events)
+            
+        sample.sort(key=lambda x:x[0]) #sort by time
+        event_seqs.append(sample)
+    event_seqs = np.array(event_seqs,dtype=object)
+    n_types = len(pred_list)
+    return event_seqs, n_types
 
-    for cust_id in cust_id_array:
-        cust_df = df[df['custAttr1']==cust_id]
-        cust_list = list()
-        for predicateID in range(0,n_types):
-            pred_df = cust_df[cust_df['itemid']==predicateID].sort_values(by=['time'])
-            state = None
-            init_state = None
-            for _, row in pred_df.iterrows():
-                if state is None:
-                    state = row['value']
-                    init_state = state
-                elif state != row['value']: 
-                    if state == init_state: #only record jumping from init_state to other.
-                        cust_list.append((row['time'], predicateID)) 
-                    state = row['value']
-        if len(cust_list)==0:
-            continue
-        cust_list.sort(key=lambda x:x[0]) #sort by time
-        event_seqs.append(cust_list)
-    return np.array(event_seqs,dtype=object)
-
-def preprocess():
+def preprocess(args):
     print("preprocess start")
-    n_types = 9 # num of predicates, including both body and target
-    data_path = "/home/fengmingquan/data/train_test_data_credit/"
-    test_path = osp.join(data_path,"test_credit_balance_add26.csv")
-    train_path = osp.join(data_path,"train_credit_50000_add26.csv")
-    
-    train_event_seqs = load_credit(train_path, n_types)
-    test_event_seqs = load_credit(test_path, n_types)
-
-    print(train_event_seqs)
-    print(test_event_seqs)
-    raise ValueError
-
-    np.savez_compressed(osp.join(data_path, "credit_cause.npz"),
+    train_event_seqs, n_types = load_crime(args.dataset, 0, 200)
+    test_event_seqs, n_types = load_crime(args.dataset, 200, 268)
+    np.savez_compressed(osp.join("./data", "{}.npz".format(args.dataset)),
         train_event_seqs=train_event_seqs,
         test_event_seqs=test_event_seqs,
         n_types=n_types)
     print("preprocess finished")
 
 
-def test_load():
-    data_path = "/home/fengmingquan/data/sepsis_data_three_versions/sepsis_logic/"
-    data = np.load(osp.join(data_path, "sepsis_logic_cause.npz"), allow_pickle=True)
+def test_load(args):
+    data = np.load(osp.join("./data", "{}.npz".format(args.dataset)), allow_pickle=True)
     n_types = int(data["n_types"])
     train_event_seqs = data["train_event_seqs"]
     test_event_seqs =  data["test_event_seqs"]
@@ -70,19 +62,19 @@ def test_load():
     print(len(test_event_seqs))
     print(len(train_event_seqs))
 
-def load_mat(model_name):
-    path = "/home/fengmingquan/data/cause/output/mimic/split_id=0/{}/scores_mat.txt".format(model_name)
+def load_mat(args):
+    path = "/home/fengmingquan/data/cause/output/{}/split_id=0/{}/scores_mat.txt".format(args.dataset, args.model_name)
     mat = np.genfromtxt(path)
     #print(mat)
     #print(mat.shape)
     return mat
 
-def load_mae(model_name):
-    with open("result_{}.pkl".format(model_name),'rb') as f:
+def load_mae(args):
+    with open("./{}/result_{}.pkl".format(args.dataset, args.model_name),'rb') as f:
         event_seqs_pred, test_event_seqs = pickle.load(f)
     #print(event_seqs_pred)
     #print(test_event_seqs)
-    print(model_name)
+    print(args.dataset, args.model_name)
     calc_mean_absolute_error(test_event_seqs, event_seqs_pred)
     calc_acc(test_event_seqs, event_seqs_pred)
 
@@ -92,7 +84,7 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
         event_seqs_true (List[List[Tuple]]):
         event_seqs_pred (List[List[Tuple]]):
     """
-    target_dict = {'flag': 43, 'mechanical': 1, 'median_dose_vaso': 46, 'max_dose_vaso': 47}
+    target_dict = {'VANDALISM':5, 'THEFT FROM MV':6, 'ASSAULT':7, 'SHOPLIFTING':8}
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
 
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
@@ -101,10 +93,10 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
             if l:
                 result_dict[t].update(np.mean(l), len(l))
     
-    target = ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+    target = list(target_dict.keys())
     mae = [result_dict[t].avg for t in target]
     print("MAE:", target)
-    print("&{:.3f} &{:.3f} &{:.3f} &{:.3f}".format(*mae))
+    print(("&{:.3f} "*len(target)).format(*mae))
 
 def calc_acc(event_seqs_true, event_seqs_pred):
     """
@@ -112,26 +104,21 @@ def calc_acc(event_seqs_true, event_seqs_pred):
         event_seqs_true (List[List[Tuple]]):
         event_seqs_pred (List[List[Tuple]]):
     """
-    target_dict = {'flag': 43, 'mechanical': 1, 'median_dose_vaso': 46, 'max_dose_vaso': 47}
+    target_dict = {'VANDALISM':5, 'THEFT FROM MV':6, 'ASSAULT':7, 'SHOPLIFTING':8}
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
-    threshold = 1
+    threshold = 1 #this threshold is tunable
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
         for t, t_idx in target_dict.items():
-            l = [abs(event_true[0]-event_pred[0])<1 for event_true,event_pred in zip(seq_true,seq_pred) if event_true[1] ==  t_idx]
+            l = [abs(event_true[0]-event_pred[0])<threshold for event_true,event_pred in zip(seq_true,seq_pred) if event_true[1] ==  t_idx]
             if l:
                 result_dict[t].update(np.mean(l), len(l))
     
-    target = ['flag', 'mechanical', 'median_dose_vaso', 'max_dose_vaso']
+    target = list(target_dict.keys())
     acc = [result_dict[t].avg for t in target]
     print("ACC:", target)
-    print("&{:.3f} &{:.3f} &{:.3f} &{:.3f}".format(*acc))
+    print(("&{:.3f} "*len(target)).format(*acc))
 
-def predicate_index():
-    predicates = ['out_put', 'mechanical', '220277',  'adm_order', 'gender',  'weight', 'height', 'Arterial_BE', 'CO2_mEqL', 'Ionised_Ca', 'Glucose', 'Hb', 'Arterial_lactate', 'paCO2', 'ArterialpH', 'paO2', 'SGPT', 'Albumin', 'SGOT', 'HCO3', 'Direct_bili', 'CRP', 'Calcium', 'Chloride', 'Creatinine', 'Magnesium', 'Potassium_mEqL', 'Total_protein', 'Sodium', 'Troponin', 'BUN', 'Ht', 'INR', 'Platelets_count', 'PT', 'PTT', 'RBC_count', 'WBC_count','adm_order', 'gender','Total_bili','sofa', 'age','flag','valuenum1','valuenum2','median_dose_vaso','max_dose_vaso']
-    #len(predicates)=48
-    target = ['flag','mechanical','median_dose_vaso','max_dose_vaso']
-    pred_dict = {t : predicates.index(t) for t in target}
-    print(pred_dict)
+
 
 class Kernel:
     def __init__(self,norms):
@@ -233,24 +220,29 @@ def plot_hawkes_kernel_norms(kernel_object, show=True, pcolor_kwargs=None,
 
     return fig
 
-def draw_mat(model_name):
-    predicates = ['urine\_output', r'\bf{Ventilation}', 'FiO2\_100',  'adm\_order', 'gender',  'weight', 'height', 'Arterial\_BE', 'CO2\_mEqL', 'Ionised\_Ca', 'Glucose', 'Hb', 'Arterial\_lactate', 'paCO2', 'ArterialpH', 'paO2', 'SGPT', 'Albumin', 'SGOT', 'HCO3', 'Direct\_bili', 'CRP', 'Calcium', 'Chloride', 'Creatinine', 'Magnesium', 'Potassium\_mEqL', 'Total\_protein', 'Sodium', 'Troponin', 'BUN', 'Ht', 'INR', 'Platelets\_count', 'PT', 'PTT', 'RBC\_count', 'WBC\_count','adm\_order', 'gender','Total\_bili','sofa', 'age',r'\bf{Mortality}','valuenum1','valuenum2',r'\bf{Median-Vaso}',r'\bf{Max-Vaso}']
-    mat = load_mat(model_name)
+def draw_mat(args):
+    predicates = ['SUMMER', 'WINTER', 'WEEKEND', 'EVENING', 'NIGHT', 'VANDALISM', 'THEFT FROM MV', 'ASSAULT', 'SHOPLIFTING']
+    mat = load_mat(args.model_name)
     kernel_object = Kernel(mat)
     fig = plot_hawkes_kernel_norms(kernel_object, show=False, pcolor_kwargs=None, node_names=predicates, rotate_x_labels=-90.0)
-    fig.savefig('{}.pdf'.format(model_name),dpi =800)
+    fig.savefig('./{}/{}.pdf'.format(args.dataset, args.model_name),dpi =800)
 
+def get_args():
+    """Get argument parser.
+    Inputs: None
+    Returns:
+        args: argparse object that contains user-input arguments.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_name', type=str)
+    parser.add_argument('--dataset', type=str)
+    
+    args = parser.parse_args()
+    return args
 
 if __name__ == "__main__":
-    #load_mimic()
-    #load_mhp()
-    preprocess()
-    #test_load()
-    #load_mat()
-    #load_mae("ERPP")
-    #load_mae("RPPN")
-    #load_mae("HExp")
-    #predicate_index()
-    #draw_mat("HExp")
-    #draw_mat("RPPN")
-    #draw_mat("ERPP")
+    args = get_args()
+    #preprocess(dataset_name="crime_downtown")
+    #test_load(dataset_name="crime_downtown")
+    load_mae(args)
+    
