@@ -2,10 +2,25 @@ import os
 import sys
 import datetime
 import time 
+import argparse
 
 import torch
 import cvxpy as cp
 import numpy as np
+
+
+def get_args():
+    """Get argument parser.
+    Inputs: None
+    Returns:
+        args: argparse object that contains user-input arguments.
+    """
+    parser = argparse.ArgumentParser()
+    #parser.add_argument('--model_name', type=str)
+    parser.add_argument('--dataset', type=str)
+    
+    args = parser.parse_args()
+    return args
 
 def get_data(dataset_name, num_sample):
     dataset_path = './data/{}.npy'.format(dataset_name)

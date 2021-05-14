@@ -1,5 +1,6 @@
 setsid python3 logic_learning.py 
 setsid python3 generate_synthetic_data.py
+setsid python3 train_crime.py
 ps -ef |grep logic |awk '{print $2}'|xargs kill -9
 ps -ef |grep synthetic |awk '{print $2}'|xargs kill -9
 ps -ef |grep crime |awk '{print $2}'|xargs kill -9

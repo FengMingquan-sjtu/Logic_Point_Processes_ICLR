@@ -1330,7 +1330,7 @@ def fit_mp_group(model_idx):
     fit_mp(model_idx=model_idx, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
 
 if __name__ == "__main__":
-    #redirect_log_file()
+    redirect_log_file()
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     print("Start time is", datetime.datetime.now(),flush=1)
@@ -1366,8 +1366,8 @@ if __name__ == "__main__":
     #generate(model_idx=16, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=16)
     #generate(model_idx=17, num_sample=2400, time_horizon=10, worker_num=12)
-    #fit_mp_group(model_idx=17)
+    fit_mp_group(model_idx=17)
 
-    data = load_data(file_name="data-17.npy")
-    print(data[0])
+    #data = load_data(file_name="data-17.npy")
+    #print(data[0])
     

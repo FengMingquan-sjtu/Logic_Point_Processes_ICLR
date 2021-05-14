@@ -141,3 +141,10 @@ data-16{
 data-17{
     2021-05-08 22:24:34.463477, generate and fit GT
 }
+
+
+crime{
+    downtown_month  2021-05-10 22:33:11.751520
+    other_month 2021-05-10 23:15:04.844334
+    downtown/other year 2021-05-11 09:28:05.331101
+}

@@ -5,23 +5,52 @@ import numpy as np
 import torch
 
 from logic_learning import Logic_Learning_Model
-from utils import redirect_log_file, Timer, get_data
+from utils import redirect_log_file, Timer, get_data, get_args
 
-def get_model(model_name):
+def get_model(model_name, dataset_name):
     if model_name == "crime":
         model = Logic_Learning_Model(head_predicate_idx=[8])
         model.predicate_set= [0, 1, 2, 3, 4, 5, 6, 7, 8] # the set of all meaningful predicates
         model.predicate_notation = ['SUMMER', 'WINTER', 'WEEKEND', 'EVENNING', 'NIGHT',  'A','B', 'C', 'D']
         model.static_pred_set = [0, 1, 2, 3, 4]
         model.instant_pred = [5, 6, 7, 8]
-        T_max = 7 * 24
-        model.time_window = 7 * 24
-        model.decay_rate = 0.1
-        model.batch_size = 8
+        
         model.max_rule_body_length = 3
         model.max_num_rule = 20
-        model.weight_threshold = 0.01
-        model.strict_weight_threshold= 0.05
+        model.weight_threshold = 0.001
+        model.strict_weight_threshold= 0.005
+
+    if dataset_name.endswith("day"):
+        T_max = 24
+        model.time_window = 10
+        model.Time_tolerance = 1
+        model.decay_rate = 1
+        model.batch_size = 64
+        model.integral_resolution = 0.1
+    elif dataset_name.endswith("week"):
+        T_max = 7 * 24
+        model.time_window = 7 * 24
+        model.Time_tolerance = 12
+        model.decay_rate = 0.01
+        model.batch_size = 8
+        model.integral_resolution = 1
+    
+    elif dataset_name.endswith("month"):
+        T_max = 30 * 24
+        model.time_window = 7 * 24
+        model.Time_tolerance = 12
+        model.decay_rate = 0.01
+        model.batch_size = 4
+        model.integral_resolution = 2
+    
+    elif dataset_name.endswith("year"):
+        T_max = 365 * 24
+        model.time_window = 7 * 24
+        model.Time_tolerance = 12
+        model.decay_rate = 0.01
+        model.batch_size = 1
+        model.integral_resolution = 10
+    
     return model,T_max
 
 def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
@@ -31,7 +60,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
         os.makedirs("./model")
     
     #get model
-    model, T_max = get_model(model_name)
+    model, T_max = get_model(model_name, dataset_name)
 
     #set initial rules if required
     if rule_set_str:
@@ -63,22 +92,20 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
     print("Finish time is", datetime.datetime.now())
  
 
-def run_expriment_group(model_name):
+def run_expriment_group(dataset_name):
     #downtown districts
     #DFS
-    fit(model_name=model_name, dataset_name="crime_downtown", num_sample=200, worker_num=12, num_iter=12, algorithm="DFS")
+    fit(model_name="crime", dataset_name=dataset_name, num_sample=200, worker_num=12, num_iter=12, algorithm="DFS")
     #BFS
-    fit(model_name=model_name, dataset_name="crime_downtown", num_sample=200, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(model_name="crime", dataset_name=dataset_name, num_sample=200, worker_num=12, num_iter=12, algorithm="BFS")
 
-    # other districts
-    #DFS
-    fit(model_name=model_name, dataset_name="crime_other", num_sample=200, worker_num=12, num_iter=12, algorithm="DFS")
-    #BFS
-    fit(model_name=model_name, dataset_name="crime_other", num_sample=200, worker_num=12, num_iter=12, algorithm="BFS")
+
 
 if __name__ == "__main__":
     redirect_log_file()
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
-    run_expriment_group(model_name="crime")
+    #args = get_args()
+    run_expriment_group(dataset_name="crime_all_month")
+    #run_expriment_group(dataset_name="crime_other_year")
     

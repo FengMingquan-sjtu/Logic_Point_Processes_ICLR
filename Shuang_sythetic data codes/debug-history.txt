@@ -433,3 +433,7 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 91. Split data in week freq.
     bug: all log-grads are negeative.
     fix: instant pred state should always be 0, modify get_formula_effect() to encode this fact. 
+
+92. weights are very small, about 0.01-0.1 
+    key reason: data density. Compare crime_downtown_day, crime_all_day. the weights are 10x.
+

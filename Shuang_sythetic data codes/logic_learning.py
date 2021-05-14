@@ -11,7 +11,6 @@ import datetime
 import warnings
 
 import numpy as np
-import scipy
 import torch.nn as nn
 from torch.autograd import Variable
 import torch
