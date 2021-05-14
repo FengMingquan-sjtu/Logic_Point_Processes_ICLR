@@ -41,6 +41,7 @@ class Logic_Learning_Model():
         self.predicate_notation = ['A','B', 'C', 'D']
         self.static_pred_set = []
         self.instant_pred = []
+        self.body_pred_set = []
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
         self.BEFORE = 'BEFORE'
@@ -313,23 +314,24 @@ class Logic_Learning_Model():
         return formula_effect
 
     ### the following functions are for optimizing the logic weights
-    def log_likelihood(self, head_predicate_idx, dataset, sample_ID_batch, T_max):
+    def log_likelihood(self, head_predicate_idx, dataset, sample_ID_batch):
         log_likelihood = torch.tensor([0], dtype=torch.float64)
         # iterate over samples
         for sample_ID in sample_ID_batch:
             # iterate over head predicates; each predicate corresponds to one intensity
             data_sample = dataset[sample_ID]
+            T_max = max([data_sample[p]["time"][-1] for p in self.predicate_set])
             intensity_log_sum = self.intensity_log_sum(head_predicate_idx, dataset, sample_ID)
-            intensity_integral = self.intensity_integral(head_predicate_idx, dataset, sample_ID, T_max)
+            intensity_integral = self.intensity_integral(head_predicate_idx, dataset, sample_ID)
             log_likelihood += (intensity_log_sum - intensity_integral)
         return log_likelihood
     
-    def log_likelihood_cp(self, head_predicate_idx, dataset, sample_ID_batch, T_max):
+    def log_likelihood_cp(self, head_predicate_idx, dataset, sample_ID_batch):
         log_likelihood = np.zeros(1)
         for sample_ID in sample_ID_batch:
             data_sample = dataset[sample_ID]
             intensity_log_sum = self.intensity_log_sum_cp(head_predicate_idx, data_sample)
-            intensity_integral = self.intensity_integral_cp(head_predicate_idx, data_sample, T_max)
+            intensity_integral = self.intensity_integral_cp(head_predicate_idx, data_sample)
             log_likelihood += intensity_log_sum - intensity_integral
         return log_likelihood
 
@@ -358,8 +360,9 @@ class Logic_Learning_Model():
             log_sum += log_intensity
         return log_sum
 
-    def intensity_integral(self, head_predicate_idx, dataset, sample_ID, T_max):
+    def intensity_integral(self, head_predicate_idx, dataset, sample_ID):
         start_time = 0
+        T_max = max([dataset[sample_ID][p]["time"][-1] for p in self.predicate_set])
         end_time = T_max
         intensity_grid = []
         for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -368,8 +371,9 @@ class Logic_Learning_Model():
         integral = torch.sum(torch.cat(intensity_grid, dim=0) * self.integral_resolution)
         return integral
 
-    def intensity_integral_cp(self, head_predicate_idx, data_sample, T_max):
+    def intensity_integral_cp(self, head_predicate_idx, data_sample):
         start_time = 0
+        T_max = max([data_sample[p]["time"][-1] for p in self.predicate_set])
         end_time = T_max
         integral = np.zeros(1)
         for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -377,7 +381,7 @@ class Logic_Learning_Model():
             integral += cur_intensity * self.integral_resolution
         return integral
 
-    def optimize_log_likelihood(self, head_predicate_idx, dataset, T_max, verbose=True):
+    def optimize_log_likelihood(self, head_predicate_idx, dataset, verbose=True):
         print("---- start optimize_log_likelihood ----", flush=1)
         print("Rule weights are:")
         self.print_rule()
@@ -408,7 +412,7 @@ class Logic_Learning_Model():
                     num_batch_run += 1
                     sample_ID_batch = sample_ID_list[batch_idx*self.batch_size : (batch_idx+1)*self.batch_size]
                     optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
-                    log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch, T_max)
+                    log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
                     l_1 = torch.sum(torch.abs(torch.stack(params)))
                     loss = - log_likelihood + l_1
                     loss.backward(retain_graph=True)
@@ -461,10 +465,10 @@ class Logic_Learning_Model():
         
         return log_likelihood
 
-    def _optimize_log_likelihood_mp_worker(self, optimizer, head_predicate_idx, dataset, sample_ID_batch, T_max):
+    def _optimize_log_likelihood_mp_worker(self, optimizer, head_predicate_idx, dataset, sample_ID_batch):
         # update weitghs
         optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
-        log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch, T_max)
+        log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
         params = self.get_model_parameters(head_predicate_idx)
         l_1 = torch.sum(torch.abs(torch.stack(params)))
         loss = - log_likelihood + l_1
@@ -485,7 +489,7 @@ class Logic_Learning_Model():
         #return log_likelihood, batch_gradient, params
 
 
-    def optimize_log_likelihood_mp(self, head_predicate_idx, dataset, T_max, verbose=True):
+    def optimize_log_likelihood_mp(self, head_predicate_idx, dataset, verbose=True):
         print("---- start optimize_log_likelihood multi-process----", flush=1)
         print("Rule set is:")
         self.print_rule()
@@ -500,7 +504,7 @@ class Logic_Learning_Model():
             
             for batch_idx in range(batch_num):
                 sample_ID_batch = sample_ID_list[batch_idx*self.batch_size : (batch_idx+1)*self.batch_size]
-                args = (optimizer, head_predicate_idx, dataset, sample_ID_batch, T_max)
+                args = (optimizer, head_predicate_idx, dataset, sample_ID_batch)
                 arg_list.append(args)
 
         worker_num = min(worker_num, len(arg_list))
@@ -518,14 +522,14 @@ class Logic_Learning_Model():
         
         return log_likelihood
 
-    def optimize_log_likelihood_cp(self, head_predicate_idx, dataset, T_max):
+    def optimize_log_likelihood_cp(self, head_predicate_idx, dataset):
         # optimize using cvxpy
         print("start optimize using cp:", flush=1)
         if self.batch_size_cp < len(dataset.keys()):
             sample_ID_batch =  random.sample(dataset.keys(), self.batch_size_cp)
         else:
             sample_ID_batch = list(dataset.keys())
-        log_likelihood = self.log_likelihood_cp(head_predicate_idx, dataset, sample_ID_batch, T_max)
+        log_likelihood = self.log_likelihood_cp(head_predicate_idx, dataset, sample_ID_batch)
         params = self.get_model_parameters_cp(head_predicate_idx)
         l1 = cp.sum([cp.abs(i) for i in params])
         objective = cp.Maximize(log_likelihood - l1) #with l1 penalty
@@ -542,7 +546,7 @@ class Logic_Learning_Model():
         if self.model_parameter[head_predicate_idx]['base_cp'].value is None:
             print("mosek solver failed, problem status=", prob.status)
             # solver failed, use torch
-            log_likelihood = self.optimize_log_likelihood_mp(head_predicate_idx, dataset, T_max)
+            log_likelihood = self.optimize_log_likelihood_mp(head_predicate_idx, dataset )
             
             return log_likelihood
         else:
@@ -564,8 +568,9 @@ class Logic_Learning_Model():
         return torch.tensor([1.0],dtype=torch.float64) #intensity_log_gradient of exp kernel is always 1.
 
     ### the following functions are to compute sub-problem objective function
-    def intensity_integral_gradient(self, head_predicate_idx, dataset, sample_ID, T_max):
+    def intensity_integral_gradient(self, head_predicate_idx, dataset, sample_ID):
         start_time = 0
+        T_max = max([dataset[sample_ID][p]["time"][-1] for p in self.predicate_set])
         end_time = T_max
         intensity_gradient_grid = []
         for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -576,7 +581,7 @@ class Logic_Learning_Model():
         return integral_gradient_grid
 
 
-    def log_likelihood_gradient(self, head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
+    def log_likelihood_gradient(self, head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
         #calculate gradient of likelihood at w_new = 0.
 
         log_likelihood_grad_list = list()
@@ -591,7 +596,7 @@ class Logic_Learning_Model():
             # iterate over head predicates; each predicate corresponds to one intensity
             data_sample = dataset[sample_ID]
             # compute the log_intensity_gradient, integral_gradient_grid using existing rules
-
+            T_max = max([data_sample[p]["time"][-1] for p in self.predicate_set])
             start_time = 0
             end_time = T_max # Note for different sample_ID, the T_max can be different
             # compute new feature at the transition times
@@ -626,10 +631,10 @@ class Logic_Learning_Model():
         return mean_grad, std_grad
 
 
-    def optimize_log_likelihood_gradient(self, head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
+    def optimize_log_likelihood_gradient(self, head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
         # in old codes, this function optimizes time relation params,
         # now there is no time relation params, so no optimization.
-        gain = self.log_likelihood_gradient(head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size)
+        gain = self.log_likelihood_gradient(head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size)
         return gain
 
 
@@ -655,7 +660,7 @@ class Logic_Learning_Model():
         return False #not repeat
 
 
-    def generate_rule_via_column_generation(self, head_predicate_idx, dataset, T_max):
+    def generate_rule_via_column_generation(self, head_predicate_idx, dataset):
         print("----- start generate_rule_via_column_generation -----")
         ## generate one new rule to the rule set by columns generation
         new_rule_table = {}
@@ -669,13 +674,13 @@ class Logic_Learning_Model():
 
 
         #calculate intensity for sub-problem
-        intensity_log_gradient, intensity_integral_gradient_grid = self.get_intensity_and_integral_grad( head_predicate_idx, dataset, T_max)
+        intensity_log_gradient, intensity_integral_gradient_grid = self.get_intensity_and_integral_grad( head_predicate_idx, dataset)
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
         for head_predicate_sign in [1, ]:
             for body_predicate_sign in [1, ]: # consider head_predicate_sign = 1/0
-                for body_predicate_idx in self.predicate_set:  
+                for body_predicate_idx in self.body_pred_set:  
                     # we allow self-exciting now
                     #if body_predicate_idx == head_predicate_idx: # all the other predicates, excluding the head predicate, can be the potential body predicates
                     #    continue
@@ -694,7 +699,7 @@ class Logic_Learning_Model():
                         if self.check_repeat(new_rule_template[head_predicate_idx], head_predicate_idx): # Repeated rule is not allowed.
                             continue
                 
-                        arg_list.append((head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template[head_predicate_idx]))
+                        arg_list.append((head_predicate_idx, dataset, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template[head_predicate_idx]))
 
                         new_rule_table[head_predicate_idx]['body_predicate_idx'].append(new_rule_template[head_predicate_idx]['body_predicate_idx'] )
                         new_rule_table[head_predicate_idx]['body_predicate_sign'].append(new_rule_template[head_predicate_idx]['body_predicate_sign'])
@@ -703,12 +708,12 @@ class Logic_Learning_Model():
                         new_rule_table[head_predicate_idx]['temporal_relation_type'].append(new_rule_template[head_predicate_idx]['temporal_relation_type'])
 
 
-        is_update_weight, is_continue, added_rule_str_list = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset, T_max)
+        is_update_weight, is_continue, added_rule_str_list = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset)
         
         print("----- exit generate_rule_via_column_generation -----",flush=1)
         return is_update_weight, is_continue, added_rule_str_list
             
-    def get_intensity_and_integral_grad(self, head_predicate_idx, dataset, T_max):
+    def get_intensity_and_integral_grad(self, head_predicate_idx, dataset):
         print("---start calculate intensity grad and integral grad.---", flush=1)
         with Timer("calculate intensity grad and integral grad") as t:
             sample_ID_batch = list(dataset.keys())
@@ -717,7 +722,7 @@ class Logic_Learning_Model():
             arg_list = list()  #args for parallel intensity_integral_gradient_grid()
             for sample_ID in sample_ID_batch:
                 intensity_log_gradient[sample_ID] = self.intensity_log_gradient(head_predicate_idx, data_sample = dataset[sample_ID])
-                arg_list.append((head_predicate_idx, dataset, sample_ID, T_max)) #args for parallel intensity_integral_gradient_grid()
+                arg_list.append((head_predicate_idx, dataset, sample_ID)) #args for parallel intensity_integral_gradient_grid()
             
             worker_num = min(self.worker_num, cpu_count())
             worker_num = min(worker_num, len(arg_list))
@@ -734,7 +739,7 @@ class Logic_Learning_Model():
         return intensity_log_gradient, intensity_integral_gradient_grid
 
 
-    def add_one_predicate_to_existing_rule(self, head_predicate_idx, dataset, T_max, existing_rule_template):
+    def add_one_predicate_to_existing_rule(self, head_predicate_idx, dataset, existing_rule_template):
         print("----- start add_one_predicate_to_existing_rule -----",flush=1)
         ## increase the length of the existing rules
         ## generate one new rule to the rule set by columns generation
@@ -749,7 +754,7 @@ class Logic_Learning_Model():
         new_rule_table[head_predicate_idx]['performance_gain'] = []
 
         #calculate intensity for sub-problem
-        intensity_log_gradient, intensity_integral_gradient_grid = self.get_intensity_and_integral_grad( head_predicate_idx, dataset, T_max)
+        intensity_log_gradient, intensity_integral_gradient_grid = self.get_intensity_and_integral_grad( head_predicate_idx, dataset )
 
 
 
@@ -759,7 +764,7 @@ class Logic_Learning_Model():
         print("start enumerating candidate rules.", flush=1)
         
         for body_predicate_sign in [1, ]:
-            for body_predicate_idx in self.predicate_set:
+            for body_predicate_idx in self.body_pred_set:
                 if body_predicate_idx in existing_rule_template['body_predicate_idx']: 
                     # repeated predicates are not allowed.
                     continue 
@@ -789,7 +794,7 @@ class Logic_Learning_Model():
                             continue
                         
 
-                        arg_list.append((head_predicate_idx, dataset, T_max, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template[head_predicate_idx]))
+                        arg_list.append((head_predicate_idx, dataset, intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template[head_predicate_idx]))
 
                         new_rule_table[head_predicate_idx]['body_predicate_idx'].append(new_rule_template[head_predicate_idx]['body_predicate_idx'] )
                         new_rule_table[head_predicate_idx]['body_predicate_sign'].append(new_rule_template[head_predicate_idx]['body_predicate_sign'])
@@ -798,12 +803,12 @@ class Logic_Learning_Model():
                         new_rule_table[head_predicate_idx]['temporal_relation_type'].append(new_rule_template[head_predicate_idx]['temporal_relation_type'])
    
 
-        is_update_weight, is_continue, added_rule_str_list = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset, T_max)
+        is_update_weight, is_continue, added_rule_str_list = self.select_and_add_new_rule(head_predicate_idx, arg_list, new_rule_table, dataset)
 
         print("----- exit add_one_predicate_to_existing_rule -----",flush=1)
         return is_update_weight, is_continue, added_rule_str_list
 
-    def select_and_add_new_rule(self, head_predicate_idx, arg_list, new_rule_table, dataset, T_max):
+    def select_and_add_new_rule(self, head_predicate_idx, arg_list, new_rule_table, dataset):
         
         print("----- start select_and_add_new_rule -----",flush=1)
         if len(arg_list) == 0: # No candidate rule generated.
@@ -890,12 +895,12 @@ class Logic_Learning_Model():
             # update model parameter
             if not self.use_cp:
                 with Timer("optimize log-likelihood (torch)") as t:
-                    l = self.optimize_log_likelihood_mp(head_predicate_idx, dataset, T_max)
+                    l = self.optimize_log_likelihood_mp(head_predicate_idx, dataset )
                 print("Update Log-likelihood (torch)= ", l, flush=1)
 
             else:
                 with Timer("optimize log-likelihood (cp)") as t:
-                    l_cp = self.optimize_log_likelihood_cp(head_predicate_idx, dataset, T_max)
+                    l_cp = self.optimize_log_likelihood_cp(head_predicate_idx, dataset)
                 print("Update Log-likelihood (cvxpy)= ", l_cp)
 
             print("Added rule and re-fitted weights. Current rule set is:")
@@ -903,7 +908,7 @@ class Logic_Learning_Model():
             
             # prune after added.
             is_strict = self.num_formula >= self.max_num_rule #if too many rules, use strict threshold, otherwise, use normal threshold.
-            is_pruned = self.prune_rules_with_small_weights(head_predicate_idx, dataset, T_max, is_strict)
+            is_pruned = self.prune_rules_with_small_weights(head_predicate_idx, dataset, is_strict)
             if is_pruned: #after prunning, maybe add more rules.
                 is_continue = True
                 #update added_rule_str_list, remove the deleted rule_str.
@@ -913,7 +918,7 @@ class Logic_Learning_Model():
         return is_update_weight, is_continue, added_rule_str_list
 
 
-    def prune_rules_with_small_weights(self, head_predicate_idx, dataset, T_max, is_strict=False):
+    def prune_rules_with_small_weights(self, head_predicate_idx, dataset, is_strict=False):
         formula_idx_list = list()
         if is_strict:
             thershold = self.strict_weight_threshold
@@ -931,12 +936,12 @@ class Logic_Learning_Model():
             print("start re-fit weights", flush=1)
             if not self.use_cp:
                 with Timer("optimize log-likelihood (torch)") as t:
-                    l = self.optimize_log_likelihood_mp(head_predicate_idx, dataset, T_max)
+                    l = self.optimize_log_likelihood_mp(head_predicate_idx, dataset)
                 print("Update Log-likelihood (torch)= ", l, flush=1)
 
             else:
                 with Timer("optimize log-likelihood (cp)") as t:
-                    l_cp = self.optimize_log_likelihood_cp(head_predicate_idx, dataset, T_max)
+                    l_cp = self.optimize_log_likelihood_cp(head_predicate_idx, dataset)
                 print("Update Log-likelihood (cvxpy)= ", l_cp)
             
             print("Deleted some rules and refited weights, Current rule set is:")
@@ -944,14 +949,14 @@ class Logic_Learning_Model():
             return True
         return False
             
-    def search_algorithm(self, head_predicate_idx, dataset, T_max, dataset_id):
+    def search_algorithm(self, head_predicate_idx, dataset, dataset_id):
         print("----- start search_algorithm -----", flush=1)
         self.print_info()
         #Begin Breadth(width) First Search
         #generate new rule from scratch
         is_continue = True
         while self.num_formula < self.max_num_rule and is_continue:
-            is_update_weight, is_continue = self.generate_rule_via_column_generation(head_predicate_idx, dataset, T_max)
+            is_update_weight, is_continue = self.generate_rule_via_column_generation(head_predicate_idx, dataset)
             with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
                 pickle.dump(self, f)   
             
@@ -984,24 +989,24 @@ class Logic_Learning_Model():
                 #extend the selected rule.
                 is_continue = True
                 while(self.num_formula < self.max_num_rule and is_continue):
-                    is_update_weight, is_continue = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, template_to_extend)
+                    is_update_weight, is_continue = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, template_to_extend)
                     with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
                         pickle.dump(self, f) 
 
 
         print("search finished, rule set is:")
         self.print_rule_cp()
-        self.final_tune(head_predicate_idx, dataset, T_max)
+        self.final_tune(head_predicate_idx, dataset)
         print("----- exit search_algorithm -----", flush=1)
 
-    def BFS(self, head_predicate_idx, dataset, T_max, tag):
+    def BFS(self, head_predicate_idx, dataset, tag):
         print("----- start BFS -----", flush=1)
         self.print_info()
         #Begin Breadth(width) First Search
         #generate new rule from scratch
         is_continue = True
         while self.num_formula < self.max_num_rule and is_continue:
-            _, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, dataset, T_max)
+            _, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, dataset)
             
             
         #generate new rule by extending existing rules
@@ -1029,7 +1034,7 @@ class Logic_Learning_Model():
                 #extend the selected rule.
                 rule_str = self.get_rule_str(template_to_extend, head_predicate_idx)
                 print("start to extend this rule:", rule_str)
-                _ , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, template_to_extend)
+                _ , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, template_to_extend)
                 if not is_continue: # this rule is fully explored, don't re-visit it.
                     extended_rules.add(rule_str) 
 
@@ -1037,22 +1042,22 @@ class Logic_Learning_Model():
         print("BFS finished, rule set is:")
         self.print_rule_cp()
 
-        self.final_tune(head_predicate_idx, dataset, T_max)
+        self.final_tune(head_predicate_idx, dataset)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit BFS -----", flush=1)
 
-    def final_tune(self, head_predicate_idx, dataset, T_max):
+    def final_tune(self, head_predicate_idx, dataset, ):
         print("----- start final_tune -----", flush=1)
         # final prune, with strict threshold of weight.
         pruned = True
         while pruned:
-            pruned = self.prune_rules_with_small_weights(head_predicate_idx, dataset, T_max, is_strict=True )
+            pruned = self.prune_rules_with_small_weights(head_predicate_idx, dataset, is_strict=True )
         
         # final optimize, with large num_iter (only for torch)
         if not self.use_cp:
             self.num_iter = self.num_iter_final
-            self.optimize_log_likelihood_mp(head_predicate_idx, dataset, T_max)
+            self.optimize_log_likelihood_mp(head_predicate_idx, dataset)
         print("final_tune finished, rule set is:")
         self.print_rule_cp()
         print("----- exit final_tune -----", flush=1)
@@ -1135,14 +1140,14 @@ class Logic_Learning_Model():
                 return i #return matched formula_idx
         return -1 #if no such rule, return -1.
 
-    def DFS(self,head_predicate_idx, dataset, T_max, tag):
+    def DFS(self,head_predicate_idx, dataset, tag):
         self.print_info()
         print("----- start DFS -----", flush=1)
         rule_to_extend_str_stack = list() #use stack to implement DFS
         while self.num_formula < self.max_num_rule:
             if len(rule_to_extend_str_stack) == 0: #if stack empty,  generate len-1 rule
                 print("--- DFS stack is empty, add len-1 rules ---")
-                is_update_weight, is_continue, added_rule_str_list = self.generate_rule_via_column_generation(head_predicate_idx, dataset, T_max)
+                is_update_weight, is_continue, added_rule_str_list = self.generate_rule_via_column_generation(head_predicate_idx, dataset)
                 for added_rule_str in added_rule_str_list:
                     rule_to_extend_str_stack.append(added_rule_str)
                 if len(rule_to_extend_str_stack) == 0: #no new rule added, DFS terminates.
@@ -1160,12 +1165,12 @@ class Logic_Learning_Model():
                 else:
                     print("--- extend this rule:", rule_to_extend_str)
                     rule_template = self.logic_template[head_predicate_idx][rule_to_extend_idx]
-                    is_update_weight, is_continue, added_rule_str_list = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, T_max, rule_template)
+                    is_update_weight, is_continue, added_rule_str_list = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, rule_template)
                     if (not is_continue) or len(added_rule_str_list) == 0: #don't re-visit this rule.
                         rule_to_extend_str_stack.pop()
                     for added_rule_str in added_rule_str_list:
                         rule_to_extend_str_stack.append(added_rule_str)
-        self.final_tune(head_predicate_idx, dataset, T_max)
+        self.final_tune(head_predicate_idx, dataset)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit DFS -----", flush=1)

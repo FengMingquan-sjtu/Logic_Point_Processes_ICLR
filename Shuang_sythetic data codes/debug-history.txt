@@ -437,3 +437,10 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 92. weights are very small, about 0.01-0.1 
     key reason: data density. Compare crime_downtown_day, crime_all_day. the weights are 10x.
 
+
+93. in mimic-data proccessing, start from 5 hours before the first treatment.
+
+94.  Small batch_size_grad 
+
+95. different T_max for different sample.
+

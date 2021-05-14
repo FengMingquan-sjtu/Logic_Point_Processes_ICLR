@@ -12,6 +12,7 @@ def get_model(model_name, dataset_name):
         model = Logic_Learning_Model(head_predicate_idx=[8])
         model.predicate_set= [0, 1, 2, 3, 4, 5, 6, 7, 8] # the set of all meaningful predicates
         model.predicate_notation = ['SUMMER', 'WINTER', 'WEEKEND', 'EVENNING', 'NIGHT',  'A','B', 'C', 'D']
+        model.body_pred_set =  model.predicate_set
         model.static_pred_set = [0, 1, 2, 3, 4]
         model.instant_pred = [5, 6, 7, 8]
         
@@ -19,16 +20,18 @@ def get_model(model_name, dataset_name):
         model.max_num_rule = 20
         model.weight_threshold = 0.001
         model.strict_weight_threshold= 0.005
+        model.gain_threshold = 0.001
+        model.low_grad_threshold = 0.001
+        model.batch_size_grad = 100
 
     if dataset_name.endswith("day"):
-        T_max = 24
         model.time_window = 10
         model.Time_tolerance = 1
         model.decay_rate = 1
         model.batch_size = 64
         model.integral_resolution = 0.1
+
     elif dataset_name.endswith("week"):
-        T_max = 7 * 24
         model.time_window = 7 * 24
         model.Time_tolerance = 12
         model.decay_rate = 0.01
@@ -36,22 +39,20 @@ def get_model(model_name, dataset_name):
         model.integral_resolution = 1
     
     elif dataset_name.endswith("month"):
-        T_max = 30 * 24
         model.time_window = 7 * 24
         model.Time_tolerance = 12
         model.decay_rate = 0.01
         model.batch_size = 4
-        model.integral_resolution = 2
+        model.integral_resolution = 1
     
     elif dataset_name.endswith("year"):
-        T_max = 365 * 24
         model.time_window = 7 * 24
         model.Time_tolerance = 12
         model.decay_rate = 0.01
         model.batch_size = 1
-        model.integral_resolution = 10
+        model.integral_resolution = 1
     
-    return model,T_max
+    return model
 
 def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
     print("Start time is", datetime.datetime.now(),flush=1)
@@ -60,7 +61,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
         os.makedirs("./model")
     
     #get model
-    model, T_max = get_model(model_name, dataset_name)
+    model = get_model(model_name, dataset_name)
 
     #set initial rules if required
     if rule_set_str:
@@ -84,10 +85,10 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, T_max=T_max, tag="DFS_"+dataset_name)
+            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_"+dataset_name)
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, T_max=T_max, tag="BFS_"+dataset_name)
+            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_"+dataset_name)
     
     print("Finish time is", datetime.datetime.now())
  
