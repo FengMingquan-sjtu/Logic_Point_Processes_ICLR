@@ -1,22 +1,25 @@
 
 import itertools
 import random
-import torch.multiprocessing as mp
-from torch.multiprocessing import Pool, cpu_count
+
 from collections import deque
 import time
 import os
 import sys
 import datetime
 import warnings
+warnings.filterwarnings("ignore")
+import pickle
 
 import numpy as np
+import torch
 import torch.nn as nn
 from torch.autograd import Variable
-import torch
 import torch.optim as optim
-import pickle
-import cvxpy as cp
+import torch.multiprocessing as mp
+from torch.multiprocessing import Pool, cpu_count
+
+#import cvxpy as cp
 
 from utils import redirect_log_file, Timer
 #random.seed(1)
@@ -92,7 +95,7 @@ class Logic_Learning_Model():
             self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
-            self.model_parameter[idx]['base_cp'] = cp.Variable(1)
+            #self.model_parameter[idx]['base_cp'] = cp.Variable(1)
             self.logic_template[idx] = {}
 
     def print_info(self):
@@ -169,7 +172,7 @@ class Logic_Learning_Model():
         tmp_model_parameter['base'] = self.model_parameter[head_predicate_idx]['base']
         #tmp_model_parameter['base_0_1'] = self.model_parameter[head_predicate_idx]['base_0_1']
         #tmp_model_parameter['base_1_0'] = self.model_parameter[head_predicate_idx]['base_1_0']
-        tmp_model_parameter['base_cp'] = self.model_parameter[head_predicate_idx]['base_cp']
+        #tmp_model_parameter['base_cp'] = self.model_parameter[head_predicate_idx]['base_cp']
         
         new_formula_idx = 0
         for formula_idx in range(self.num_formula):
@@ -177,7 +180,7 @@ class Logic_Learning_Model():
                 tmp_logic_template[new_formula_idx] = self.logic_template[head_predicate_idx][formula_idx]
                 tmp_model_parameter[new_formula_idx] = dict()
                 tmp_model_parameter[new_formula_idx]["weight"] = self.model_parameter[head_predicate_idx][formula_idx]['weight']
-                tmp_model_parameter[new_formula_idx]["weight_cp"] = self.model_parameter[head_predicate_idx][formula_idx]['weight_cp']
+                #tmp_model_parameter[new_formula_idx]["weight_cp"] = self.model_parameter[head_predicate_idx][formula_idx]['weight_cp']
                 new_formula_idx += 1
 
         self.logic_template[head_predicate_idx] = tmp_logic_template
@@ -203,13 +206,14 @@ class Logic_Learning_Model():
             #intensity = torch.exp(torch.cat(weight_formula, dim=0))/torch.sum(torch.exp(torch.cat(weight_formula, dim=0)), dim=0) * torch.cat(feature_formula, dim=0) * torch.cat(effect_formula, dim=0)
             #NOTE: Softmax on weight leads to error when len(weight) = 1. Gradient on weight is very small.
             intensity =  torch.cat(weight_formula, dim=0) * torch.cat(feature_formula, dim=0) * torch.cat(effect_formula, dim=0)
-
+            #print("intensity_raw(t={:.4f})={:.4f}".format(cur_time,intensity.data[0]))
         else:
             intensity = torch.zeros(1)
 
         base = self.model_parameter[head_predicate_idx]['base']
         intensity = base + torch.sum(intensity)
         intensity = torch.exp(intensity)
+        
 
         return intensity
     
@@ -295,6 +299,7 @@ class Logic_Learning_Model():
         head_transition_state = np.array(history[head_predicate_idx]['state'])
         if head_predicate_idx in self.instant_pred:
             #instant pred state is always zero.
+            #print("head_predicate_idx in self.instant_pred")
             cur_state = 0
         else:
             if len(head_transition_time) == 0:
@@ -307,10 +312,14 @@ class Logic_Learning_Model():
                     cur_state = head_transition_state[idx]
 
         counter_state = 1 - cur_state
-        if counter_state == template['head_predicate_sign']:
+        #print("counter_state=", counter_state)
+        #print("template['head_predicate_sign']=", template['head_predicate_sign'])
+        if counter_state - template['head_predicate_sign'][0] == 0: #fatal Error!!!
             formula_effect = torch.tensor([1], dtype=torch.float64)
         else:
             formula_effect = torch.tensor([-1], dtype=torch.float64)
+        #print(formula_effect)
+        #raise ValueError
         return formula_effect
 
     ### the following functions are for optimizing the logic weights
@@ -320,7 +329,7 @@ class Logic_Learning_Model():
         for sample_ID in sample_ID_batch:
             # iterate over head predicates; each predicate corresponds to one intensity
             data_sample = dataset[sample_ID]
-            T_max = max([data_sample[p]["time"][-1] for p in self.predicate_set])
+            T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0 for p in self.predicate_set])
             intensity_log_sum = self.intensity_log_sum(head_predicate_idx, dataset, sample_ID)
             intensity_integral = self.intensity_integral(head_predicate_idx, dataset, sample_ID)
             log_likelihood += (intensity_log_sum - intensity_integral)
@@ -362,7 +371,7 @@ class Logic_Learning_Model():
 
     def intensity_integral(self, head_predicate_idx, dataset, sample_ID):
         start_time = 0
-        T_max = max([dataset[sample_ID][p]["time"][-1] for p in self.predicate_set])
+        T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
         end_time = T_max
         intensity_grid = []
         for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -373,7 +382,7 @@ class Logic_Learning_Model():
 
     def intensity_integral_cp(self, head_predicate_idx, data_sample):
         start_time = 0
-        T_max = max([data_sample[p]["time"][-1] for p in self.predicate_set])
+        T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0  for p in self.predicate_set])
         end_time = T_max
         integral = np.zeros(1)
         for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -570,7 +579,7 @@ class Logic_Learning_Model():
     ### the following functions are to compute sub-problem objective function
     def intensity_integral_gradient(self, head_predicate_idx, dataset, sample_ID):
         start_time = 0
-        T_max = max([dataset[sample_ID][p]["time"][-1] for p in self.predicate_set])
+        T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
         end_time = T_max
         intensity_gradient_grid = []
         for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -581,22 +590,21 @@ class Logic_Learning_Model():
         return integral_gradient_grid
 
 
-    def log_likelihood_gradient(self, head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
+    def log_likelihood_gradient(self, head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template):
         #calculate gradient of likelihood at w_new = 0.
 
         log_likelihood_grad_list = list()
         # iterate over samples
         sample_ID_batch = list(dataset.keys())
-        if batch_size == 0:
-            batch_size = sample_ID_batch
-        elif len(sample_ID_batch) > batch_size:
-            print("Random select {} samples from {} samples".format(batch_size, len(sample_ID_batch)), flush=1)
-            sample_ID_batch = random.sample(sample_ID_batch, batch_size)
+        
+        if len(sample_ID_batch) > self.batch_size_grad and self.batch_size_grad>0:
+            print("Random select {} samples from {} samples".format(self.batch_size_grad, len(sample_ID_batch)), flush=1)
+            sample_ID_batch = random.sample(sample_ID_batch, self.batch_size_grad)
         for sample_ID in sample_ID_batch:
             # iterate over head predicates; each predicate corresponds to one intensity
             data_sample = dataset[sample_ID]
             # compute the log_intensity_gradient, integral_gradient_grid using existing rules
-            T_max = max([data_sample[p]["time"][-1] for p in self.predicate_set])
+            T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0  for p in self.predicate_set])
             start_time = 0
             end_time = T_max # Note for different sample_ID, the T_max can be different
             # compute new feature at the transition times
@@ -622,8 +630,11 @@ class Logic_Learning_Model():
             else:
                 new_feature_grid_times = torch.zeros(1, dtype=torch.float64)
 
-            log_likelihood_grad = torch.sum(intensity_log_gradient[sample_ID] * new_feature_transition_times) - \
-                                       torch.sum(intensity_integral_gradient_grid[sample_ID] * new_feature_grid_times, dim=0)
+            sum_intensity_log_grad = torch.sum(intensity_log_gradient[sample_ID] * new_feature_transition_times)
+            intensity_integral_grad = torch.sum(intensity_integral_gradient_grid[sample_ID] * new_feature_grid_times, dim=0)
+            log_likelihood_grad =  sum_intensity_log_grad - intensity_integral_grad
+            #print("sample-{}: term1={}, term2={}, log-grad={}".format(sample_ID, sum_intensity_log_grad.item(), intensity_integral_grad.item(), log_likelihood_grad.item()))
+                                       
             log_likelihood_grad_list.append(log_likelihood_grad)
         mean_grad = np.mean(log_likelihood_grad_list) 
         std_grad = np.std(log_likelihood_grad_list,ddof=1) #ddof=1 for unbiased estimation
@@ -631,10 +642,10 @@ class Logic_Learning_Model():
         return mean_grad, std_grad
 
 
-    def optimize_log_likelihood_gradient(self, head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size=0):
+    def optimize_log_likelihood_gradient(self, head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template):
         # in old codes, this function optimizes time relation params,
         # now there is no time relation params, so no optimization.
-        gain = self.log_likelihood_gradient(head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template, batch_size)
+        gain = self.log_likelihood_gradient(head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template)
         return gain
 
 
@@ -820,7 +831,8 @@ class Logic_Learning_Model():
 
         # all-data gradient
         print("-------start multiprocess------",flush=1)
-        self.batch_size_grad = len(dataset.keys()) # run all samples for grad.
+        if self.batch_size_grad <=0:
+            self.batch_size_grad = len(dataset.keys()) # run all samples for grad.
         cpu = cpu_count()
         worker_num = min(self.worker_num, cpu)
         worker_num = min(worker_num, len(arg_list))
@@ -881,7 +893,7 @@ class Logic_Learning_Model():
                 # add model parameter
                 self.model_parameter[head_predicate_idx][self.num_formula] = {}
                 self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
-                self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1)
+                #self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1)
                 self.num_formula += 1
                 is_update_weight = True
                 is_continue = True
@@ -1000,6 +1012,7 @@ class Logic_Learning_Model():
         print("----- exit search_algorithm -----", flush=1)
 
     def BFS(self, head_predicate_idx, dataset, tag):
+        self.optimize_log_likelihood_mp(head_predicate_idx, dataset)
         print("----- start BFS -----", flush=1)
         self.print_info()
         #Begin Breadth(width) First Search
@@ -1142,6 +1155,7 @@ class Logic_Learning_Model():
 
     def DFS(self,head_predicate_idx, dataset, tag):
         self.print_info()
+        self.optimize_log_likelihood_mp(head_predicate_idx, dataset)
         print("----- start DFS -----", flush=1)
         rule_to_extend_str_stack = list() #use stack to implement DFS
         while self.num_formula < self.max_num_rule:

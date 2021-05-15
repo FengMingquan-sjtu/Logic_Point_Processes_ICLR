@@ -7,10 +7,6 @@ numpy
 
 torch
 
-pickle
-
-cvxpy
-
 pandas
 ```
 
@@ -25,5 +21,6 @@ pandas
 ```
 python3 train_crime.py
 
-python3 train_mimic.py
+python3 train_mimic.py --dataset mimic_1 --print_log
+python3 train_mimic.py --dataset mimic_2 --print_log
 ```

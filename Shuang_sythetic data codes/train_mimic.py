@@ -1,14 +1,13 @@
-import pandas
-import numpy as np
-
 import datetime
 import os
+import argparse
 
 import numpy as np
 import torch
+import pandas
 
 from logic_learning import Logic_Learning_Model
-from utils import redirect_log_file, Timer, get_data, get_args
+from utils import redirect_log_file, Timer, get_data
 
 def get_model(model_name, dataset_name):
     if model_name == "mimic":
@@ -163,19 +162,15 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
         
 
     #get data
-    dataset =  get_data(dataset_name, num_sample)
+    dataset,num_sample =  get_data(dataset_name, num_sample)
 
     #set model hyper params
-    model.batch_size_grad = num_sample #use all sample for grad
+    model.batch_size_grad = num_sample//10 #use 1/10 samples for grad
     model.batch_size_cp = num_sample
     model.num_iter = num_iter
     model.use_cp = use_cp
     model.worker_num = worker_num
     
-    
-    
-    
-
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
@@ -187,22 +182,40 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
     print("Finish time is", datetime.datetime.now())
  
 
-def run_expriment_group(dataset_name):
+def run_expriment_group(args):
     #downtown districts
     #DFS
-    fit(model_name="mimic", dataset_name=dataset_name, num_sample=2000, worker_num=12, num_iter=12, algorithm="DFS")
+    fit(model_name=args.model, dataset_name=args.dataset, num_sample=2000, worker_num=args.worker, num_iter=12, algorithm="DFS")
     #BFS
-    fit(model_name="mimic", dataset_name=dataset_name, num_sample=2000, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(model_name=args.model, dataset_name=args.dataset, num_sample=2000, worker_num=args.worker, num_iter=12, algorithm="BFS")
 
 
 def run_preprocess():
     process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_1.npy")
     process_raw_data(input_file="second_mimic_dataset_v3.csv", output_file="mimic_2.npy")
 
+def get_args():
+    """Get argument parser.
+    Inputs: None
+    Returns:
+        args: argparse object that contains user-input arguments.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type=str, default="mimic")
+    parser.add_argument('--dataset', type=str, default="mimic_1")
+    parser.add_argument('--worker', type=int, default=12)
+    parser.add_argument('--print_log', action="store_true")
+    
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
     #run_preprocess()
-    #redirect_log_file()
+    
 
     #torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
-    #args = get_args()
-    run_expriment_group(dataset_name="mimic_1")
+    args = get_args()
+    if not args.print_log:
+        redirect_log_file()
+    run_expriment_group(args)

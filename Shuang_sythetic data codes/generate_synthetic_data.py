@@ -7,7 +7,7 @@ import sys
 
 import numpy as np
 import torch
-import cvxpy as cp
+#import cvxpy as cp
 
 from logic_learning import Logic_Learning_Model
 from utils import Timer

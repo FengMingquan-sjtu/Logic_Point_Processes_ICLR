@@ -147,4 +147,15 @@ crime{
     downtown_month  2021-05-10 22:33:11.751520
     other_month 2021-05-10 23:15:04.844334
     downtown/other year 2021-05-11 09:28:05.331101
+
+    all_day, after fixing bug#96-97 2021-05-14 21:45:56.234398
+    all_twodays 2021-05-14 23:49:10.429735
+    all_week 2021-05-15 00:03:45.510283
+    all_month 2021-05-15 00:04:18.110521
+}
+
+
+mimic{
+    first try: 2021-05-14 19:15:42.871314
+    second try, after fixing bug#96-97: 2021-05-15 00:06:26.243448
 }

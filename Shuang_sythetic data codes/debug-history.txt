@@ -444,3 +444,14 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
 95. different T_max for different sample.
 
+
+96. Fatal error: 
+    In get_formula_effect(), counter_state == template['head_predicate_sign'] is always False, since template['head_predicate_sign'] is a LIST, not an int.
+    All experiments should be re-run.
+
+97. Important Issue:
+    why log-grad all neg? Because initial base is too large.
+    Solution: run 1 master before searching.
+
+98. crime_twodays experiment result passed.
+    testing crime_week. modify refreq to keep output dataset same size. 

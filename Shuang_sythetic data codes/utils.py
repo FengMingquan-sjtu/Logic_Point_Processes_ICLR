@@ -5,7 +5,7 @@ import time
 import argparse
 
 import torch
-import cvxpy as cp
+#import cvxpy as cp
 import numpy as np
 
 
@@ -26,11 +26,11 @@ def get_data(dataset_name, num_sample):
     dataset_path = './data/{}.npy'.format(dataset_name)
     print("dataset_path is ",dataset_path)
     dataset = np.load(dataset_path, allow_pickle='TRUE').item()
-    if len(dataset.keys())> num_sample: 
+    if len(dataset.keys())> num_sample and num_sample>0: 
         dataset = {i:dataset[i] for i in range(num_sample)}
     num_sample = len(dataset.keys())
     print("sample num is ", num_sample)
-    return dataset
+    return dataset, num_sample
     
 class Timer(object):
     def __init__(self, name=None):
