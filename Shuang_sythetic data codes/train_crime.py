@@ -42,17 +42,17 @@ def get_model(model_name, dataset_name):
         model.integral_resolution = 0.1
 
     elif dataset_name.endswith("week"):
-        model.time_window = 7 * 24
-        model.Time_tolerance = 12
-        model.decay_rate = 0.01
-        model.batch_size = 8
-        model.integral_resolution = 1
+        model.time_window = 20
+        model.Time_tolerance = 1
+        model.decay_rate = 0.1
+        model.batch_size = 64
+        model.integral_resolution = 0.1
     
     elif dataset_name.endswith("month"):
         model.time_window = 7 * 24
         model.Time_tolerance = 12
         model.decay_rate = 0.01
-        model.batch_size = 4
+        model.batch_size = 2
         model.integral_resolution = 1
     
     elif dataset_name.endswith("year"):
@@ -82,7 +82,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
     dataset, num_sample =  get_data(dataset_name, num_sample)
 
     #set model hyper params
-    model.batch_size_grad = num_sample #use all sample for grad
+    model.batch_size_grad = num_sample #use all samples for grad
     model.batch_size_cp = num_sample
     model.num_iter = num_iter
     model.use_cp = use_cp
@@ -102,7 +102,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 def run_expriment_group(args):
     #downtown districts
     #DFS
-    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=12, algorithm="DFS")
+    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #BFS
     #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=12, algorithm="BFS")
 
@@ -239,7 +239,20 @@ def refreq_data(input_file, output_file, freq):
     np.save("./data/"+output_file, data)
     
 
-
+def dataset_stat(dataset):
+    dataset,num_sample =  get_data(dataset_name=dataset, num_sample=-1)
+    #print("num sample=", num_sample)
+    seq_len = list()
+    for sample in dataset.values():
+        t = 0
+        for data in sample.values():
+            if data["time"]:
+                t = max(t, data["time"][-1])
+        seq_len.append(t)
+    seq_len = np.array(seq_len)
+    mean = np.mean(seq_len)
+    std = np.std(seq_len)
+    print("seq length mean = {:.4f}, std = {:.4f}.".format(mean, std))
 
 def get_args():
     """Get argument parser.
@@ -274,5 +287,6 @@ if __name__ == "__main__":
 
     #data = np.load("./data/crime_all_week.npy", allow_pickle='TRUE').item()
     #print(data[0])
+    #dataset_stat(dataset=args.dataset)
     
     

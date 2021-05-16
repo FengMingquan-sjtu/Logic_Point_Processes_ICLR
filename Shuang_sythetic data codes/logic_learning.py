@@ -92,7 +92,7 @@ class Logic_Learning_Model():
 
         for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
-            self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
+            self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -1).double(), requires_grad=True)
             #self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_cp'] = cp.Variable(1)
@@ -689,12 +689,16 @@ class Logic_Learning_Model():
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
-        for head_predicate_sign in [1, ]:
-            for body_predicate_sign in [1, ]: # consider head_predicate_sign = 1/0
+        for head_predicate_sign in [1, 0]:
+            if head_predicate_idx in self.instant_pred and head_predicate_sign == 0:
+                # instant pred should not be negative
+                continue
+            for body_predicate_sign in [1, 0]: # consider head_predicate_sign = 1/0
                 for body_predicate_idx in self.body_pred_set:  
-                    # we allow self-exciting now
-                    #if body_predicate_idx == head_predicate_idx: # all the other predicates, excluding the head predicate, can be the potential body predicates
-                    #    continue
+                    if body_predicate_idx in self.instant_pred and body_predicate_sign == 0:
+                        # instant pred should not be negative
+                        continue
+
                     if body_predicate_idx in self.static_pred_set: #do not allow static pred form rule alone.
                         continue
                     for temporal_relation_type in [self.BEFORE, self.EQUAL]:
@@ -774,11 +778,16 @@ class Logic_Learning_Model():
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
         
-        for body_predicate_sign in [1, ]:
+        for body_predicate_sign in [1, 0]:
             for body_predicate_idx in self.body_pred_set:
                 if body_predicate_idx in existing_rule_template['body_predicate_idx']: 
                     # repeated predicates are not allowed.
                     continue 
+                if body_predicate_idx in self.instant_pred and body_predicate_sign == 0:
+                    # instant pred should not be negative
+                    continue
+                
+                
                 
                 if body_predicate_idx in self.static_pred_set:
                     # static pred only interact with head.

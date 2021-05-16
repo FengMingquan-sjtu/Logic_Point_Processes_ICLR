@@ -16,13 +16,13 @@ def get_model(model_name, dataset_name):
         model.predicate_notation = ['sysbp_low', 'spo2_sao2_low', 'cvp_low', 'svr_low', 'potassium_meql_low', 'sodium_low', 'chloride_low', 'bun_low', 'creatinine_low', 'crp_low', 'rbc_count_low', 'wbc_count_low', 'arterial_ph_low', 'arterial_be_low', 'arterial_lactate_low', 'hco3_low', 'svo2_scvo2_low', 'sysbp_high', 'spo2_sao2_high', 'cvp_high', 'svr_high', 'potassium_meql_high', 'sodium_high', 'chloride_high', 'bun_high', 'creatinine_high', 'crp_high', 'rbc_count_high', 'wbc_count_high', 'arterial_ph_high', 'arterial_be_high', 'arterial_lactate_high', 'hco3_high', 'svo2_scvo2_high', 'real_time_urine_output_low', 'or_colloid', 'or_crystalloid', 'oral_water', 'norepinephrine_norad_levophed', 'epinephrine_adrenaline', 'dobutamine', 'dopamine', 'phenylephrine_neosynephrine', 'milrinone', 'survival']
         model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
         model.body_pred_set = list(range(33)) #only learn lab-->urine
-        model.max_rule_body_length = 3
+        model.max_rule_body_length = 2
         model.max_num_rule = 20
-        model.weight_threshold = 0.0001
-        model.strict_weight_threshold= 0.0005
-        model.gain_threshold = 0.0001
-        model.low_grad_threshold = 0.0001
-        model.batch_size_grad = 200
+        model.weight_threshold = 0.01
+        model.strict_weight_threshold= 0.02
+        model.gain_threshold = 0.01
+        model.low_grad_threshold = 0.005
+        
 
         model.time_window = 24 * 5
         model.Time_tolerance = 10
@@ -209,13 +209,29 @@ def get_args():
     args = parser.parse_args()
     return args
 
+def dataset_stat(dataset):
+    dataset,num_sample =  get_data(dataset_name=dataset, num_sample=-1)
+    #print("num sample=", num_sample)
+    seq_len = list()
+    for sample in dataset.values():
+        t = 0
+        for data in sample.values():
+            if data["time"]:
+                t = max(t, data["time"][-1])
+        seq_len.append(t)
+    seq_len = np.array(seq_len)
+    mean = np.mean(seq_len)
+    std = np.std(seq_len)
+    print("seq length mean = {:.4f}, std = {:.4f}.".format(mean, std))
+
 
 if __name__ == "__main__":
     #run_preprocess()
     
 
-    #torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
+    torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     args = get_args()
-    if not args.print_log:
-        redirect_log_file()
-    run_expriment_group(args)
+    #if not args.print_log:
+    #    redirect_log_file()
+    #run_expriment_group(args)
+    dataset_stat(dataset=args.dataset)

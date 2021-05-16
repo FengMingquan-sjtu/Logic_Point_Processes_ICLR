@@ -455,3 +455,4 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 
 98. crime_twodays experiment result passed.
     testing crime_week. modify refreq to keep output dataset same size. 
+    for crime, the num of candidate rules are small, thus use all samples for log-grad.(An inaccurate new rule will waste 2 masters, 1 master 10 mins, while log-grad is 2 min.)

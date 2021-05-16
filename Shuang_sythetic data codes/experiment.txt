@@ -152,10 +152,34 @@ crime{
     all_twodays 2021-05-14 23:49:10.429735
     all_week 2021-05-15 00:03:45.510283
     all_month 2021-05-15 00:04:18.110521
+
+    all_week aftre tuning params 2021-05-15 08:59:38.236703 (abort??)
+    all_week aftre tuning params 2021-05-15 09:53:51.903036
+    allow Not 2021-05-16 09:11:15.494265
+
+    ./data/crime_all_week.npy
+    sample num is  1872
+    seq length mean = 166.9721, std = 0.6669.
+
+    ./data/crime_all_twodays.npy
+    sample num is  939
+    seq length mean = 46.9891, std = 0.6710.
+
+    ./data/crime_all_day.npy
+    sample num is  1879
+    seq length mean = 22.9707, std = 0.6669.
 }
 
 
 mimic{
+    ./data/mimic_1.npy
+    sample num is  2020
+    seq length mean = 426.3146, std = 418.5450.
+    ./data/mimic_2.npy
+    sample num is  2241
+    seq length mean = 244.4200, std = 264.4859.
+
     first try: 2021-05-14 19:15:42.871314
     second try, after fixing bug#96-97: 2021-05-15 00:06:26.243448
+    aftre tuning params : 2021-05-15 09:09:39.836282
 }
