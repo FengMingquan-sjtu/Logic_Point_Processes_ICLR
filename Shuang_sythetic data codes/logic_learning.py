@@ -377,6 +377,8 @@ class Logic_Learning_Model():
         for t in np.arange(start_time, end_time, self.integral_resolution):
             cur_intensity = self.intensity(t, head_predicate_idx, dataset, sample_ID)
             intensity_grid.append(cur_intensity)
+        if len(intensity_grid) == 0:
+            return torch.tensor([0], dtype=torch.float64)
         integral = torch.sum(torch.cat(intensity_grid, dim=0) * self.integral_resolution)
         return integral
 
@@ -586,6 +588,8 @@ class Logic_Learning_Model():
             cur_intensity = self.intensity(t, head_predicate_idx, dataset, sample_ID)
             cur_intensity = cur_intensity.detach() #detach, since multiprocessing needs requires_grad=False
             intensity_gradient_grid.append(cur_intensity)   # due to that the derivative of exp(x) is still exp(x)
+        if len(intensity_gradient_grid)==0:
+            return torch.tensor([0],dtype=torch.float64)
         integral_gradient_grid = torch.cat(intensity_gradient_grid, dim=0) * self.integral_resolution
         return integral_gradient_grid
 
@@ -598,7 +602,7 @@ class Logic_Learning_Model():
         sample_ID_batch = list(dataset.keys())
         
         if len(sample_ID_batch) > self.batch_size_grad and self.batch_size_grad>0:
-            print("Random select {} samples from {} samples".format(self.batch_size_grad, len(sample_ID_batch)), flush=1)
+            #print("Random select {} samples from {} samples".format(self.batch_size_grad, len(sample_ID_batch)), flush=1)
             sample_ID_batch = random.sample(sample_ID_batch, self.batch_size_grad)
         for sample_ID in sample_ID_batch:
             # iterate over head predicates; each predicate corresponds to one intensity

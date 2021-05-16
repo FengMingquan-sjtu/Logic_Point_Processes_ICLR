@@ -148,7 +148,8 @@ def convert_from_df_to_dict(pred_list, treat_list, selected_df):
 
 
 def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
-    print("Start time is", datetime.datetime.now(),flush=1)
+    t = str(datetime.datetime.now())
+    print("Start time is", t,flush=1)
 
     if not os.path.exists("./model"):
         os.makedirs("./model")
@@ -165,7 +166,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
     dataset,num_sample =  get_data(dataset_name, num_sample)
 
     #set model hyper params
-    model.batch_size_grad = num_sample//10 #use 1/10 samples for grad
+    model.batch_size_grad = num_sample//5  #use 1/5 samples for grad
     model.batch_size_cp = num_sample
     model.num_iter = num_iter
     model.use_cp = use_cp
@@ -174,10 +175,10 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_"+dataset_name)
+            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_{}_{}".format(dataset_name, t))
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_"+dataset_name)
+            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_{}_{}".format(dataset_name, t))
     
     print("Finish time is", datetime.datetime.now())
  
@@ -185,9 +186,9 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 def run_expriment_group(args):
     #downtown districts
     #DFS
-    fit(model_name=args.model, dataset_name=args.dataset, num_sample=2000, worker_num=args.worker, num_iter=12, algorithm="DFS")
+    fit(model_name=args.model, dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #BFS
-    fit(model_name=args.model, dataset_name=args.dataset, num_sample=2000, worker_num=args.worker, num_iter=12, algorithm="BFS")
+    fit(model_name=args.model, dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
 
 
 def run_preprocess():
@@ -231,7 +232,7 @@ if __name__ == "__main__":
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     args = get_args()
-    #if not args.print_log:
-    #    redirect_log_file()
-    #run_expriment_group(args)
-    dataset_stat(dataset=args.dataset)
+    if not args.print_log:
+        redirect_log_file()
+    run_expriment_group(args)
+    #dataset_stat(dataset=args.dataset)

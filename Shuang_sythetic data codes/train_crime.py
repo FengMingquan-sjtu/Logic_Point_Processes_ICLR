@@ -65,7 +65,8 @@ def get_model(model_name, dataset_name):
     return model
 
 def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
-    print("Start time is", datetime.datetime.now(),flush=1)
+    t = str(datetime.datetime.now())
+    print("Start time is", t,flush=1)
 
     if not os.path.exists("./model"):
         os.makedirs("./model")
@@ -91,10 +92,10 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_"+dataset_name)
+            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_{}_{}".format(dataset_name, t))
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_"+dataset_name)
+            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_{}_{}".format(dataset_name, t))
     
     print("Finish time is", datetime.datetime.now())
  
