@@ -1,6 +1,7 @@
 import datetime
 import os
 import argparse
+import pickle
 
 import numpy as np
 import torch
@@ -11,12 +12,13 @@ from utils import redirect_log_file, Timer, get_data
 
 def get_model(model_name, dataset_name):
     if model_name == "crime":
-        model = Logic_Learning_Model(head_predicate_idx=[8])
-        model.predicate_set= [0, 1, 2, 3, 4, 5, 6, 7, 8] # the set of all meaningful predicates
-        model.predicate_notation = ['SUMMER', 'WINTER', 'WEEKEND', 'EVENNING', 'NIGHT',  'A','B', 'C', 'D']
+        model = Logic_Learning_Model(head_predicate_idx=[13])
+        
+        model.predicate_notation = ["SPRING", "SUMMER", "AUTUMN", "WINTER", "WEEKDAY", "WEEKEND", "MORNING", "AFTERNOON", "EVENING", "NIGHT",  'A','B', 'C', 'D']
+        model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
         model.body_pred_set =  model.predicate_set
-        model.static_pred_set = [0, 1, 2, 3, 4]
-        model.instant_pred = [5, 6, 7, 8]
+        model.static_pred_set = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        model.instant_pred_set = [10, 11, 12, 13]
         
         model.max_rule_body_length = 3
         model.max_num_rule = 20
@@ -35,18 +37,18 @@ def get_model(model_name, dataset_name):
         
 
     elif dataset_name.endswith("twodays"):
-        model.time_window = 20
+        model.time_window = 24 * 2
         model.Time_tolerance = 1
         model.decay_rate = 0.1
         model.batch_size = 64
         model.integral_resolution = 0.1
 
     elif dataset_name.endswith("week"):
-        model.time_window = 20
-        model.Time_tolerance = 1
-        model.decay_rate = 0.1
+        model.time_window = 24 * 2
+        model.Time_tolerance = 12
+        model.decay_rate = 0.01
         model.batch_size = 64
-        model.integral_resolution = 0.1
+        model.integral_resolution = 0.5
     
     elif dataset_name.endswith("month"):
         model.time_window = 7 * 24
@@ -62,11 +64,13 @@ def get_model(model_name, dataset_name):
         model.batch_size = 1
         model.integral_resolution = 1
     
+    model.static_pred_coef = model.time_window/24
+    
     return model
 
 def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
-    t = str(datetime.datetime.now())
-    print("Start time is", t,flush=1)
+    time_ = str(datetime.datetime.now())
+    print("Start time is", time_,flush=1)
 
     if not os.path.exists("./model"):
         os.makedirs("./model")
@@ -92,16 +96,16 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_{}_{}".format(dataset_name, t))
+            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_{}_{}".format(dataset_name, time_))
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_{}_{}".format(dataset_name, t))
+            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_{}_{}".format(dataset_name, time_))
     
     print("Finish time is", datetime.datetime.now())
  
 
 def run_expriment_group(args):
-    #downtown districts
+    
     #DFS
     fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #BFS
@@ -109,11 +113,19 @@ def run_expriment_group(args):
 
 
 def process(crime_selected):
-    summer_months = [6,7,8,9]
+    spring_months = [3,4,5]
+    is_spring = crime_selected['MONTH'].isin(spring_months)
+    is_spring.rename("SPRING", inplace=True)
+
+    summer_months = [6,7,8]
     is_summer = crime_selected['MONTH'].isin(summer_months)
     is_summer.rename("SUMMER", inplace=True)
 
-    winter_months = [10,11,12,1]
+    autumn_months = [9,10,11]
+    is_autumn = crime_selected['MONTH'].isin(autumn_months)
+    is_autumn.rename("AUTUMN", inplace=True)
+
+    winter_months = [12,1,2]
     is_winter = crime_selected['MONTH'].isin(winter_months)
     is_winter.rename("WINTER", inplace=True)
 
@@ -121,7 +133,19 @@ def process(crime_selected):
     is_weekend = crime_selected['DAY_OF_WEEK'].isin(weekend_days)
     is_weekend.rename("WEEKEND", inplace=True)
 
-    evening_hours = [16,17,18,19,20,21]
+    weekday_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    is_weekday = crime_selected['DAY_OF_WEEK'].isin(weekday_days)
+    is_weekday.rename("WEEKDAY", inplace=True)
+
+    morning_hours = [6,7,8,9,10,11]
+    is_morning =  crime_selected['HOUR'].isin(morning_hours)
+    is_morning.rename("MORNING", inplace=True)
+    
+    afternoon_hours=[12,13,14,15,16]
+    is_afternoon =  crime_selected['HOUR'].isin(afternoon_hours)
+    is_afternoon.rename("AFTERNOON", inplace=True)
+
+    evening_hours = [17,18,19,20,21]
     is_evening =  crime_selected['HOUR'].isin(evening_hours)
     is_evening.rename("EVENING", inplace=True)
 
@@ -140,7 +164,7 @@ def process(crime_selected):
     hour = crime_selected["OCCURRED_ON_DATE"].apply(convert_time)
     hour.rename("TIME",inplace=True)
 
-    crime_processed = pandas.concat(objs=(crime_selected["OFFENSE_DESCRIPTION"], date, hour, is_summer, is_winter, is_weekend, is_evening, is_night), axis=1)
+    crime_processed = pandas.concat(objs=(crime_selected["OFFENSE_DESCRIPTION"], date, hour, is_spring, is_summer, is_autumn, is_winter, is_weekday, is_weekend, is_morning, is_afternoon, is_evening, is_night), axis=1)
     return crime_processed
 
 def convert_from_df_to_date(crime_processed):
@@ -149,7 +173,7 @@ def convert_from_df_to_date(crime_processed):
     # {0: {'time': [0, 3.420397849789993, 6.341931048876761, 7.02828641970859, 8.16064604149825, 9.504766128153767], 'state': [1, 0, 1, 0, 1, 0]}, 1: {'time': [0, 0.9831991978572895, 1.4199066113445857, 1.6292485101191285, 2.096475266132198, 4.005069218069917, 5.767948388984466, 5.77743637565431, 6.852427239152188, 7.8930935707342424, 8.589873100390394, 8.820903625226093, 9.048162949232953, 9.342080514689219], 'state': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]}, 2: {'time': [0, 1.1058850237811462, 1.271081383531531, 2.7239366123865625, 2.855376376115736, 3.4611879524020916, 3.674093142880717, 4.3536109404218095, 4.531223527024521, 4.951502883753997, 5.096495412716558, 6.194746446461735, 9.743255577798488], 'state': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]}, 3: {'time': [0, 9.374137055918649], 'state': [1, 0]}, 4: {'time': [0], 'state': [1]}, 5: {'time': [0, 0.01395797611577883, 1.4515718053899762, 1.5554166263608424, 3.2631901045050062, 3.377071446493159, 3.3997887424994264, 3.416948377319663, 6.879589474535199, 8.348522758390544, 9.384507895416254], 'state': [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]}}
     crimes = ["VANDALISM", "LARCENY THEFT FROM MV - NON-ACCESSORY", "ASSAULT - SIMPLE", "LARCENY SHOPLIFTING"]
     names = ["A", "B", "C", "D"]
-    static_preds = ["SUMMER", "WINTER", "WEEKEND",  "EVENING", "NIGHT"]
+    static_preds = ["SPRING", "SUMMER", "AUTUMN", "WINTER", "WEEKDAY", "WEEKEND", "MORNING", "AFTERNOON", "EVENING", "NIGHT"]
     temporal_preds = []
     data = dict()
     name_dict = dict()
@@ -158,19 +182,30 @@ def convert_from_df_to_date(crime_processed):
         df = group[1]
         pid = 0
         for static_pred in static_preds:
-            if static_pred in ["SUMMER", "WINTER", "WEEKEND"]:
+            if static_pred in ["SPRING", "SUMMER", "AUTUMN", "WINTER", "WEEKDAY", "WEEKEND"]:
                 #these preds do not change during seq(day), so just use the first event's value.
                 #their are activated at the start of day, thus time=[0,].
                 state = df[static_pred].tolist()[0]
                 state = [int(state),]
                 time = [0,]
+
+            elif static_pred == "MORNING":
+                morning_hours = [6,7,8,9,10,11]
+                state = [0,1,0]
+                time = [0, morning_hours[0], morning_hours[-1]+0.99]
+
+            elif static_pred == "AFTERNOON":
+                afternoon_hours=[12,13,14,15,16]
+                state = [0,1,0]
+                time = [0, afternoon_hours[0], afternoon_hours[-1]+0.99]
+
             elif static_pred == "NIGHT":
                 night_hours = [22, 23, 0, 1, 2, 3, 4, 5]
                 #"NIGHT" is activated at [00:00-05:59] and [22:00-23:59]
                 state = [1,0,1]
                 time = [0, night_hours[-1]+0.99, night_hours[0]] 
             elif static_pred == "EVENING":
-                evening_hours = [16,17,18,19,20,21]
+                evening_hours = [17,18,19,20,21]
                 #"EVENING" is activated at [16:00-21:59]
                 state = [0,1,0]
                 time = [0, evening_hours[0], evening_hours[-1]+0.99]
@@ -270,6 +305,12 @@ def get_args():
     args = parser.parse_args()
     return args
 
+def test(dataset_name, model_file):
+    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=10)
+    with open("./model/"+model_file, "rb") as f:
+        model = pickle.load(f)
+    model.generate_target(head_predicate_idx=13, dataset=dataset, num_repeat=100)
+
 
 if __name__ == "__main__":
     
@@ -277,9 +318,11 @@ if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     args = get_args()
-    if not args.print_log:
-        redirect_log_file()
-    run_expriment_group(args)
+    #if not args.print_log:
+    #    redirect_log_file()
+    #run_expriment_group(args)
+
+    test(dataset_name="crime_all_week", model_file="model-DFS_crime_all_week_None.pkl")
 
     #process_raw_data("crime_all.csv","crime_all_day.npy" )
     
@@ -287,7 +330,8 @@ if __name__ == "__main__":
     #refreq_data("crime_all_day.npy", "crime_all_month.npy", freq=30)
 
     #data = np.load("./data/crime_all_week.npy", allow_pickle='TRUE').item()
-    #print(data[0])
+    #for k,v in data.items():
+    #    print(v)
     #dataset_stat(dataset=args.dataset)
     
     

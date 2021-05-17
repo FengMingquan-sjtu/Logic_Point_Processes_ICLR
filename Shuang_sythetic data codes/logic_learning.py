@@ -43,7 +43,7 @@ class Logic_Learning_Model():
         self.predicate_set= [0, 1, 2, 3] # the set of all meaningful predicates
         self.predicate_notation = ['A','B', 'C', 'D']
         self.static_pred_set = []
-        self.instant_pred = []
+        self.instant_pred_set = []
         self.body_pred_set = []
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
@@ -85,6 +85,7 @@ class Logic_Learning_Model():
         self.use_cp = False
         self.worker_num = 8
         self.best_N = 1
+        self.static_pred_coef = 1 #coef to balance static preds.
         
         #claim parameters and rule set
         self.model_parameter = {}
@@ -284,8 +285,8 @@ class Logic_Learning_Model():
                 elif template['temporal_relation_type'][idx] == self.EQUAL:
                     temporal_kernel *= (- self.Time_tolerance < time_difference) * (time_difference < 0) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
                 elif template['temporal_relation_type'][idx] == self.STATIC:
-                    #static relation are treated as 1, without decay.
-                    pass 
+                    temporal_kernel *= self.static_pred_coef
+                    #static relation are treated as 1, without decay. 
             feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
         #print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
         #print("feature is:", feature, flush=1)
@@ -297,9 +298,9 @@ class Logic_Learning_Model():
         ## Since at the transition times, choose the intensity function right before the transition time
         head_transition_time = np.array(history[head_predicate_idx]['time'])
         head_transition_state = np.array(history[head_predicate_idx]['state'])
-        if head_predicate_idx in self.instant_pred:
+        if head_predicate_idx in self.instant_pred_set:
             #instant pred state is always zero.
-            #print("head_predicate_idx in self.instant_pred")
+            #print("head_predicate_idx in self.instant_pred_set")
             cur_state = 0
         else:
             if len(head_transition_time) == 0:
@@ -346,7 +347,7 @@ class Logic_Learning_Model():
 
     def intensity_log_sum(self, head_predicate_idx, dataset, sample_ID):
         intensity_transition = []
-        if head_predicate_idx in self.instant_pred:
+        if head_predicate_idx in self.instant_pred_set:
             trans_time = np.array(dataset[sample_ID][head_predicate_idx]['time'])
             state = np.array(dataset[sample_ID][head_predicate_idx]['state'])
             trans_time = trans_time[state==1]
@@ -694,12 +695,12 @@ class Logic_Learning_Model():
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
         for head_predicate_sign in [1, 0]:
-            if head_predicate_idx in self.instant_pred and head_predicate_sign == 0:
+            if head_predicate_idx in self.instant_pred_set and head_predicate_sign == 0:
                 # instant pred should not be negative
                 continue
-            for body_predicate_sign in [1, 0]: # consider head_predicate_sign = 1/0
+            for body_predicate_sign in [1, ]: # consider head_predicate_sign = 1/0
                 for body_predicate_idx in self.body_pred_set:  
-                    if body_predicate_idx in self.instant_pred and body_predicate_sign == 0:
+                    if body_predicate_idx in self.instant_pred_set and body_predicate_sign == 0:
                         # instant pred should not be negative
                         continue
 
@@ -782,12 +783,12 @@ class Logic_Learning_Model():
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
         
-        for body_predicate_sign in [1, 0]:
+        for body_predicate_sign in [1, ]:
             for body_predicate_idx in self.body_pred_set:
                 if body_predicate_idx in existing_rule_template['body_predicate_idx']: 
                     # repeated predicates are not allowed.
                     continue 
-                if body_predicate_idx in self.instant_pred and body_predicate_sign == 0:
+                if body_predicate_idx in self.instant_pred_set and body_predicate_sign == 0:
                     # instant pred should not be negative
                     continue
                 
@@ -1202,47 +1203,79 @@ class Logic_Learning_Model():
             pickle.dump(self, f)
         print("----- exit DFS -----", flush=1)
 
-    def generate_target_one_sample(self, head_predicate_idx, T_max, data_sample):
-        data_sample[head_predicate_idx] = {"time":[0,], "state":[0,]} 
-        #initial value determined by data?
-        # input is modified?
+    def generate_target_one_sample(self, head_predicate_idx, data_sample, num_repeat):
+        input_target_sample = data_sample[head_predicate_idx].copy()
+        target_sample_length = len(data_sample[head_predicate_idx]["time"])
+
+        if target_sample_length == 0:
+            return input_target_sample
+        T_max = data_sample[head_predicate_idx]["time"][-1]
+        init_time = data_sample[head_predicate_idx]["time"][0]
+        init_state = data_sample[head_predicate_idx]["state"][0]
+        
+        
+
         local_sample_ID = 0
-        data = {local_sample_ID:data_sample}
+        local_data = {local_sample_ID: data_sample}
         # obtain the maximal intensity
         intensity_potential = []
         
-        for t in np.arange(0, T_max, 0.1):
+        for t in np.arange(init_time, T_max, self.integral_resolution):
             t = t.item() #convert np scalar to float
-            intensity = self.intensity(t, head_predicate_idx, data, local_sample_ID).detach()
+            intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
             intensity_potential.append(intensity)
+        
+        if len(intensity_potential) == 0:
+            return input_target_sample
         intensity_max = max(intensity_potential)
         #print(intensity_max)
         # generate events via accept and reject
-        t = 0
-        while t < T_max:
-            time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
-            t = t + time_to_event
-            if t >= T_max:
-                break
-            intensity = self.intensity(t, head_predicate_idx, data, local_sample_ID).detach()
-            ratio = min(intensity / intensity_max, 1)
-            flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
-            if flag == 1: # accept
-                data_sample[head_predicate_idx]['time'].append(t)
-                cur_state = 1 - data_sample[head_predicate_idx]['state'][-1]
-                data_sample[head_predicate_idx]['state'].append(cur_state)
-        return data_sample
+        generated_samples_time = list()
+        for i in range(num_repeat):
+            t = init_time
+            sample_length = 1
+            data_sample[head_predicate_idx] = {"time":[init_time,], "state":[init_state,]} 
+            local_data = {local_sample_ID: data_sample}
+            while t < T_max and sample_length < target_sample_length:
+                time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
+                t = t + time_to_event
+                if t >= T_max:
+                    break
+                intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
+                ratio = min(intensity / intensity_max, 1)
+                flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
+                if flag == 1: # accept
+                    data_sample[head_predicate_idx]['time'].append(t)
+                    sample_length +=1
+                    if head_predicate_idx in self.instant_pred_set:
+                        data_sample[head_predicate_idx]['state'].append(1)
+                    else:
+                        cur_state = 1 - data_sample[head_predicate_idx]['state'][-1]
+                        data_sample[head_predicate_idx]['state'].append(cur_state)
+            if sample_length < target_sample_length:
+                data_sample[head_predicate_idx]['time'] += [data_sample[head_predicate_idx]['time'][-1],] * (target_sample_length-sample_length)
+            generated_samples_time.append(data_sample[head_predicate_idx]['time'])
+        generated_samples_time = np.array(generated_samples_time).mean(axis=0)
+        generated_samples_state = data_sample[head_predicate_idx]["state"]
+        return {"time":generated_samples_time, "state":generated_samples_state}
 
-    def generate_target(self, head_predicate_idx, dataset, T_max):
+    def generate_target(self, head_predicate_idx, dataset, num_repeat):
+        #print(self.instant_pred_set)
         true_target_set = dict()
         generated_target_set = dict()
         for sample_ID, data_sample in dataset.items():
-            true_target_set[sample_ID] = data_sample[head_predicate_idx]
-            generated_sample = self.generate_target_one_sample(head_predicate_idx, T_max, data_sample)
-            generated_target_set[sample_ID] = generated_sample[head_predicate_idx]
+            true_target_set[sample_ID] = data_sample[head_predicate_idx].copy()
+            
+            generated_target = self.generate_target_one_sample(head_predicate_idx, data_sample, num_repeat)
+            generated_target_set[sample_ID] = generated_target
             print("---SampleID:{}---".format(sample_ID))
             print("True:", true_target_set[sample_ID])
             print("Generated:", generated_target_set[sample_ID])
+
+            gt_time = np.array(true_target_set[sample_ID]["time"])
+            generated_time =  generated_target_set[sample_ID]["time"]
+            mae = np.sum(np.abs(gt_time- generated_time)) / len(gt_time)
+            print("MAE:", mae)
         
 
 

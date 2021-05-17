@@ -456,3 +456,48 @@ mask = (transition_time <= cur_time) * (transition_state == template['body_predi
 98. crime_twodays experiment result passed.
     testing crime_week. modify refreq to keep output dataset same size. 
     for crime, the num of candidate rules are small, thus use all samples for log-grad.(An inaccurate new rule will waste 2 masters, 1 master 10 mins, while log-grad is 2 min.)
+
+99.
+    for week dataset, these params work well:
+    model.time_window = 20
+    model.Time_tolerance = 1
+    model.decay_rate = 0.1
+    model.integral_resolution = 0.1
+
+    And ablation experiment:
+    (Failed) time_window = 168  --> 2021-05-16 11:42:11.361531
+    dacay_rate = 0.01 --> 2021-05-16 11:42:26.773342
+    integral_resolution=0.5 --> 2021-05-16 11:42:37.277589
+    Time_tolerance=12 -->  2021-05-16 11:42:46.167129
+
+    shows that the time_window is the critical factor of disappearing of static preds. 
+
+    maybe because, static pred has always coeff 1, while other preds can have large coeff when time_window is large and decay is small.
+    Solution: modify coeff to time_window/24
+
+100. mimic data filtering, be careful of negative time(caused by substract statr_time)
+     also, print out data samples to check
+     drug\input should be instant preds.
+
+101. add generate function and MAE.
+but result is ...
+---SampleID:9---
+True: {'time': [11.416666666666666, 11.9, 16.033333333333335, 17.716666666666665, 32.016666666666666, 34.25, 35.666666666666664, 37.05, 38.03333333333333, 38.666666666666664, 38.71666666666667, 40.08333333333333, 43.65, 44.08333333333333, 56.333333333333336, 56.95, 59.45, 60.35, 60.416666666666664, 62.1, 65.11666666666667, 65.61666666666667, 66.36666666666667, 67.0, 67.0, 67.66666666666667, 80.73333333333333, 81.16666666666667, 82.53333333333333, 84.5, 86.26666666666667, 86.4, 90.05, 90.93333333333334, 91.91666666666667, 95.56666666666666, 108.23333333333333, 110.85, 111.11666666666667, 113.21666666666667, 134.58333333333334, 135.6, 135.7, 136.36666666666667, 137.03333333333333, 137.41666666666666, 137.73333333333335, 140.08333333333334, 154.1, 154.76666666666668, 159.61666666666667, 159.98333333333332, 165.25], 'state': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
+Generated: {'time': array([ 11.41666667,  15.74256786,  19.52859191,  22.93964099,
+        27.79744496,  31.99646861,  35.9233582 ,  39.5886063 ,
+        43.37433273,  47.45848796,  51.89302167,  56.60527475,
+        59.77484339,  64.18519066,  67.89670153,  72.23551738,
+        75.73236063,  79.03731879,  82.7463911 ,  86.73432241,
+        91.15173365,  94.8395847 ,  98.24650974, 101.4542888 ,
+       105.45184987, 109.34661274, 113.20294684, 116.73053608,
+       120.05957854, 123.54589987, 127.06982068, 130.12761914,
+       133.44387781, 136.415315  , 139.82185744, 141.87627142,
+       143.71097727, 146.01257607, 147.880168  , 149.72957801,
+       151.48472145, 153.14352834, 154.54938545, 155.77459345,
+       156.71179396, 157.88362522, 158.59307676, 159.4010188 ,
+       159.93128251, 160.40223463, 160.69684666, 161.01344254,
+       161.25248876]), 'state': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
+MAE: 21.493143598091343
+
+    
+
