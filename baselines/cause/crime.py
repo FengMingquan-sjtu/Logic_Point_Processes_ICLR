@@ -244,5 +244,6 @@ if __name__ == "__main__":
     args = get_args()
     #preprocess(dataset_name="crime_downtown")
     #test_load(dataset_name="crime_downtown")
-    load_mae(args)
+    #load_mae(args)
+    load_mat(args)
     

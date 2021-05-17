@@ -877,7 +877,8 @@ class Logic_Learning_Model():
 
         print("------Select N best rule-------")
         # choose the N-best rules that lead to the optimal log-likelihood
-        sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:x[1], reverse=True) # sort by mean gain, descending
+        #sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:x[1], reverse=True) # sort by mean gain, descending
+        sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:abs(x[1]), reverse=True) # sort by mean absolute gain, descending
         for idx, gain in sorted_idx_gain_all_data:
             rule_str = self.get_rule_str(arg_list[idx][-1], head_predicate_idx)
             std_gain = std_gain_all_data[idx]
@@ -890,8 +891,9 @@ class Logic_Learning_Model():
             if i >= len(sorted_idx_gain_all_data):
                 break
             idx, best_gain = sorted_idx_gain_all_data[i]
-        
-            if  best_gain > self.gain_threshold:
+
+            if  abs(best_gain) > self.gain_threshold:
+            #if  best_gain > self.gain_threshold:
                 # add new rule
                 self.logic_template[head_predicate_idx][self.num_formula] = {}
                 self.logic_template[head_predicate_idx][self.num_formula]['body_predicate_idx'] = new_rule_table[head_predicate_idx]['body_predicate_idx'][idx]
@@ -953,7 +955,8 @@ class Logic_Learning_Model():
 
         for formula_idx in range(self.num_formula):
             w = self.model_parameter[head_predicate_idx][formula_idx]['weight'].detach()
-            if w < thershold:
+            #if w < thershold:
+            if  abs(w) < thershold:
                 formula_idx_list.append(formula_idx)
         if len(formula_idx_list) > 0:
             print("delete these rules:",formula_idx_list)

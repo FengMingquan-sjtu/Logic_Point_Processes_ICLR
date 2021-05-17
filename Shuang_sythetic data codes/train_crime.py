@@ -107,9 +107,9 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 def run_expriment_group(args):
     
     #DFS
-    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
+    #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #BFS
-    #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=12, algorithm="BFS")
+    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=12, algorithm="BFS")
 
 
 def process(crime_selected):
@@ -318,11 +318,11 @@ if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     args = get_args()
-    #if not args.print_log:
-    #    redirect_log_file()
-    #run_expriment_group(args)
+    if not args.print_log:
+        redirect_log_file()
+    run_expriment_group(args)
 
-    test(dataset_name="crime_all_week", model_file="model-DFS_crime_all_week_None.pkl")
+    #test(dataset_name="crime_all_week", model_file="model-DFS_crime_all_week_None.pkl")
 
     #process_raw_data("crime_all.csv","crime_all_day.npy" )
     

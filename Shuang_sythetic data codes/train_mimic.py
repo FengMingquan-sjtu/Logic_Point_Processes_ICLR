@@ -58,20 +58,20 @@ def convert_time(date_time_pair):
 def process_raw_data(input_file, output_file):
     df = pandas.read_csv("./data/"+input_file)
     lab_preds = ["sysbp", "spo2_sao2", "cvp", "svr", "potassium_meql", "sodium", "chloride", "bun", "creatinine", "crp", "rbc_count",  "wbc_count", "arterial_ph", "arterial_be", "arterial_lactate", "hco3", "svo2_scvo2"]
-    lab_preds = [p+"_low" for p in lab_preds] + [p+"_high" for p in lab_preds]
+    lab_preds = [p+"_low" for p in lab_preds] + [p+"_normal" for p in lab_preds] + [p+"_high" for p in lab_preds]
     output_preds = ["real_time_urine_output_low"] #only low?
     input_preds = ["or_colloid", "or_crystalloid", "oral_water"] #only one pred, no low,high,normal
     drug_preds = ["norepinephrine_norad_levophed", "epinephrine_adrenaline", "dobutamine", 'dopamine', 'phenylephrine_neosynephrine', 'milrinone']#only one pred, no low,high,normal
     pred_list = lab_preds + output_preds + input_preds + drug_preds
     treat_list = input_preds + drug_preds
-    instant_list = treat_list
+    instant_list = treat_list #treatments are all instant.
 
-    #{0: 'sysbp_low', 1: 'spo2_sao2_low', 2: 'cvp_low', 3: 'svr_low', 4: 'potassium_meql_low', 5: 'sodium_low', 6: 'chloride_low', 7: 'bun_low', 8: 'creatinine_low', 9: 'crp_low', 10: 'rbc_count_low', 11: 'wbc_count_low', 12: 'arterial_ph_low', 13: 'arterial_be_low', 14: 'arterial_lactate_low', 15: 'hco3_low', 16: 'svo2_scvo2_low', 17: 'sysbp_high', 18: 'spo2_sao2_high', 19: 'cvp_high', 20: 'svr_high', 21: 'potassium_meql_high', 22: 'sodium_high', 23: 'chloride_high', 24: 'bun_high', 25: 'creatinine_high', 26: 'crp_high', 27: 'rbc_count_high', 28: 'wbc_count_high', 29: 'arterial_ph_high', 30: 'arterial_be_high', 31: 'arterial_lactate_high', 32: 'hco3_high', 33: 'svo2_scvo2_high', 34: 'real_time_urine_output_low', 35: 'or_colloid', 36: 'or_crystalloid', 37: 'oral_water', 38: 'norepinephrine_norad_levophed', 39: 'epinephrine_adrenaline', 40: 'dobutamine', 41: 'dopamine', 42: 'phenylephrine_neosynephrine', 43: 'milrinone', 44: 'survival'}
-    #[0-33]: lab_preds 
-    #[34]: real_time_urine_output_low
-    #[35,36,37]: input 
-    #[38-43] :drug 
-    #[44]: survival
+    #{0: 'sysbp_low', 1: 'spo2_sao2_low', 2: 'cvp_low', 3: 'svr_low', 4: 'potassium_meql_low', 5: 'sodium_low', 6: 'chloride_low', 7: 'bun_low', 8: 'creatinine_low', 9: 'crp_low', 10: 'rbc_count_low', 11: 'wbc_count_low', 12: 'arterial_ph_low', 13: 'arterial_be_low', 14: 'arterial_lactate_low', 15: 'hco3_low', 16: 'svo2_scvo2_low', 17: 'sysbp_normal', 18: 'spo2_sao2_normal', 19: 'cvp_normal', 20: 'svr_normal', 21: 'potassium_meql_normal', 22: 'sodium_normal', 23: 'chloride_normal', 24: 'bun_normal', 25: 'creatinine_normal', 26: 'crp_normal', 27: 'rbc_count_normal', 28: 'wbc_count_normal', 29: 'arterial_ph_normal', 30: 'arterial_be_normal', 31: 'arterial_lactate_normal', 32: 'hco3_normal', 33: 'svo2_scvo2_normal', 34: 'sysbp_high', 35: 'spo2_sao2_high', 36: 'cvp_high', 37: 'svr_high', 38: 'potassium_meql_high', 39: 'sodium_high', 40: 'chloride_high', 41: 'bun_high', 42: 'creatinine_high', 43: 'crp_high', 44: 'rbc_count_high', 45: 'wbc_count_high', 46: 'arterial_ph_high', 47: 'arterial_be_high', 48: 'arterial_lactate_high', 49: 'hco3_high', 50: 'svo2_scvo2_high', 51: 'real_time_urine_output_low', 52: 'or_colloid', 53: 'or_crystalloid', 54: 'oral_water', 55: 'norepinephrine_norad_levophed', 56: 'epinephrine_adrenaline', 57: 'dobutamine', 58: 'dopamine', 59: 'phenylephrine_neosynephrine', 60: 'milrinone', 61: 'survival'}
+    #[0-50]: lab_preds 
+    #[51]: real_time_urine_output_low
+    #[52, 53, 54]: input 
+    #[55-60] :drug 
+    #[61]: survival
 
     hour = df['charttime'].apply(convert_time)
     hour.rename("hour" ,inplace=True)
@@ -107,21 +107,8 @@ def convert_from_df_to_dict(pred_list, instant_list, treat_list, selected_df):
         sample = dict() 
         patient_df = group[1]
         start_time = patient_df['hour'].tolist()[0]
-        treat_time = 1e10
-        for treat in treat_list:
-            t = patient_df['hour'][patient_df[treat]==True].tolist()
-            if len(t)>0:
-                t = t[0]
-            else:
-                t = 1e10
-            treat_time = min(treat_time, t)
-        if treat_time == 1e10:
-            #ignore patients without treatment
-            continue
         
-        #start_time = max(start_time, treat_time-5)
-        
-        
+
         
         patient_df = patient_df[patient_df['hour'] > start_time]
         patient_df.loc[:, 'hour'] = patient_df['hour'] - start_time
@@ -255,13 +242,13 @@ def test(dataset_name, model_file):
 
 if __name__ == "__main__":
     #run_preprocess()
-    #process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_0.npy")
+    process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_0.npy")
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
-    args = get_args()
-    if not args.print_log:
-        redirect_log_file()
-    run_expriment_group(args)
+    #args = get_args()
+    #if not args.print_log:
+    #    redirect_log_file()
+    #run_expriment_group(args)
     #dataset_stat(dataset=args.dataset)
     #test(dataset_name="mimic_1", model_file="model-DFS_mimic_1.pkl")
     #data, num_sample = get_data(dataset_name=args.dataset, num_sample=100)

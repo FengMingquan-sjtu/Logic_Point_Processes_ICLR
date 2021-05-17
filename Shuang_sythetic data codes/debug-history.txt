@@ -499,5 +499,17 @@ Generated: {'time': array([ 11.41666667,  15.74256786,  19.52859191,  22.9396409
        161.25248876]), 'state': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
 MAE: 21.493143598091343
 
+102. how to express self-correcting of instant pred?
+     in our setting, this is impossible!
+     try to add negative weights!
+     [Added] at  prune_rules_with_small_weights() and select_and_add_new_rule()
+
+103. max-intensity? 
+    in generating, max-intensity sampled is inaccurate?
+    maybe sample intensity at events? Or set a larger max-intensity?
+
+104. Nan error ? 2021-05-17 20:35:44.070133 
+
+
     
 
