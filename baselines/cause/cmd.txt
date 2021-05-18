@@ -12,7 +12,7 @@ python3 ./tasks/test_mimic.py HExp
 
 
 # train crime
-python3 ./tasks/train.py HExp --decay 0.05 --input_dir ./data --dataset crime_downtown
+python3 ./tasks/train.py HExp --decay 0.05 --input_dir ./data --output_dir ./data_output --dataset crime_downtown
 python3 ./tasks/test.py HExp --input_dir ./data --dataset crime_downtown
 python3 crime.py --dataset crime_downtown --model_name HExp
 

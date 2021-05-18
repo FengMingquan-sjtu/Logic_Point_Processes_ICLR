@@ -12,7 +12,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # data format:
 # [(1094.5910501207484, 4), (1098.1079940088416, 7), (1100.4624087040852, 1), (1101.3163237708202, 1), (1105.8506944816406, 1), (1106.1821513888342, 0), (1106.1918308538147, 8)]
 def get_data(dataset_name, start_idx, end_idx):
-    dataset_path = '/home/fengmingquan/codes/Learn_Logic_PP/Shuang_sythetic data codes/data/{}.npy'.format(dataset_name)
+    dataset_path = '../../Shuang_sythetic data codes/data/{}.npy'.format(dataset_name)
     print("dataset_path is ",dataset_path)
     dataset = np.load(dataset_path, allow_pickle='TRUE').item()
     dataset = [dataset[i] for i in range(start_idx, end_idx)]
@@ -63,7 +63,7 @@ def test_load(args):
     print(len(train_event_seqs))
 
 def load_mat(args):
-    path = "/home/fengmingquan/data/cause/output/{}/split_id=0/{}/scores_mat.txt".format(args.dataset, args.model_name)
+    path = "./data/output/{}/split_id=0/{}/scores_mat.txt".format(args.dataset, args.model_name)
     mat = np.genfromtxt(path)
     #print(mat)
     #print(mat.shape)
@@ -236,14 +236,21 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name', type=str)
     parser.add_argument('--dataset', type=str)
+    parser.add_argument('--mode', type=str)
     
     args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
     args = get_args()
-    #preprocess(dataset_name="crime_downtown")
+    if args.mode == "preprocess":
+        preprocess(args)
+    elif args.mode == "mae":
+        load_mae(args)
+    elif args.mode == "mat":
+        load_mat(args)
+    
     #test_load(dataset_name="crime_downtown")
-    #load_mae(args)
-    load_mat(args)
+    #
+    #
     

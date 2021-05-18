@@ -1,4 +1,7 @@
 Shuang_sythetic data codes/data
 Shuang_sythetic data codes/log
 Shuang_sythetic data codes/model
+*.cpython-37.pyc
 *.pyc
+*.npz
+baselines/cause/data
