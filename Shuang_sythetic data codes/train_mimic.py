@@ -242,7 +242,7 @@ def test(dataset_name, model_file):
 
 if __name__ == "__main__":
     #run_preprocess()
-    process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_0.npy")
+    #process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_0.npy")
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     #args = get_args()
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     #    redirect_log_file()
     #run_expriment_group(args)
     #dataset_stat(dataset=args.dataset)
-    #test(dataset_name="mimic_1", model_file="model-DFS_mimic_1.pkl")
+    #FS_mimic_1.pkl")
     #data, num_sample = get_data(dataset_name=args.dataset, num_sample=100)
     #for k,v in data.items():
     #    print(v)

@@ -1207,60 +1207,47 @@ class Logic_Learning_Model():
         print("----- exit DFS -----", flush=1)
 
     def generate_target_one_sample(self, head_predicate_idx, data_sample, num_repeat):
-        input_target_sample = data_sample[head_predicate_idx].copy()
+        input_target_sample = {"time": data_sample[head_predicate_idx]["time"].copy(), "state": data_sample[head_predicate_idx]["state"].copy()}
         target_sample_length = len(data_sample[head_predicate_idx]["time"])
 
-        if target_sample_length == 0:
-            return input_target_sample
-        T_max = data_sample[head_predicate_idx]["time"][-1]
-        init_time = data_sample[head_predicate_idx]["time"][0]
-        init_state = data_sample[head_predicate_idx]["state"][0]
+        if target_sample_length <= 1:
+            return input_target_sample["time"]
         
-        
-
+        # obtain the maximal intensity
+        T_max = data_sample[head_predicate_idx]["time"][-1] + self.Time_tolerance
         local_sample_ID = 0
         local_data = {local_sample_ID: data_sample}
-        # obtain the maximal intensity
         intensity_potential = []
-        
-        for t in np.arange(init_time, T_max, self.integral_resolution):
+        for t in np.arange(0, T_max, self.integral_resolution):
             t = t.item() #convert np scalar to float
             intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
             intensity_potential.append(intensity)
-        
         if len(intensity_potential) == 0:
-            return input_target_sample
+            return input_target_sample["time"]
         intensity_max = max(intensity_potential)
-        #print(intensity_max)
-        # generate events via accept and reject
-        generated_samples_time = list()
-        for i in range(num_repeat):
-            t = init_time
-            sample_length = 1
-            data_sample[head_predicate_idx] = {"time":[init_time,], "state":[init_state,]} 
-            local_data = {local_sample_ID: data_sample}
-            while t < T_max and sample_length < target_sample_length:
-                time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
-                t = t + time_to_event
-                if t >= T_max:
-                    break
-                intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
-                ratio = min(intensity / intensity_max, 1)
-                flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
-                if flag == 1: # accept
-                    data_sample[head_predicate_idx]['time'].append(t)
-                    sample_length +=1
-                    if head_predicate_idx in self.instant_pred_set:
-                        data_sample[head_predicate_idx]['state'].append(1)
-                    else:
-                        cur_state = 1 - data_sample[head_predicate_idx]['state'][-1]
-                        data_sample[head_predicate_idx]['state'].append(cur_state)
-            if sample_length < target_sample_length:
-                data_sample[head_predicate_idx]['time'] += [data_sample[head_predicate_idx]['time'][-1],] * (target_sample_length-sample_length)
-            generated_samples_time.append(data_sample[head_predicate_idx]['time'])
-        generated_samples_time = np.array(generated_samples_time).mean(axis=0)
-        generated_samples_state = data_sample[head_predicate_idx]["state"]
-        return {"time":generated_samples_time, "state":generated_samples_state}
+
+        generated_sample_time = [data_sample[head_predicate_idx]["time"][0] ,]
+        for i in range(target_sample_length-1):
+            T_min = input_target_sample["time"][i]
+            generated_time = list()
+            data_sample[head_predicate_idx] = {"time": input_target_sample["time"][:i+1], "state":input_target_sample["state"][:i+1]} 
+            for r in range(num_repeat):
+                t = T_min
+                while t < T_max:
+                    time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
+                    t = t + time_to_event
+                    if t >= T_max:
+                        t=T_max
+                        break
+                    intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
+                    ratio = min(intensity / intensity_max, 1)
+                    flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
+                    if flag-1 == 0: # accept
+                        break
+                generated_time.append(t)
+            t = sum(generated_time)/len(generated_time)
+            generated_sample_time.append(t)
+        return generated_sample_time
 
     def generate_target(self, head_predicate_idx, dataset, num_repeat):
         #print(self.instant_pred_set)
@@ -1276,7 +1263,7 @@ class Logic_Learning_Model():
             print("Generated:", generated_target_set[sample_ID])
 
             gt_time = np.array(true_target_set[sample_ID]["time"])
-            generated_time =  generated_target_set[sample_ID]["time"]
+            generated_time =  generated_target_set[sample_ID]
             mae = np.sum(np.abs(gt_time- generated_time)) / len(gt_time)
             print("MAE:", mae)
         
