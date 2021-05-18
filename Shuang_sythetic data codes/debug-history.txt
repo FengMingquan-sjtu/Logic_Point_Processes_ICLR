@@ -517,7 +517,7 @@ MAE: 21.493143598091343
     i.e.static preds is source of conflict.
 
 106. update generate function, each time, generate on head of gt samples by one event.
-    mae is about 3. (crime_all_week)
+    mae is 3.819581479668483. (crime_all_week, only 2 rules: D->D, A^D->D)
     while HExp MAE is 0.8612458448834678
 
     

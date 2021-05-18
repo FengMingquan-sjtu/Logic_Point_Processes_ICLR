@@ -21,12 +21,12 @@ def get_model(model_name, dataset_name):
         model.static_pred_set = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         model.instant_pred_set = [10, 11, 12, 13]
         
-        model.max_rule_body_length = 2
+        model.max_rule_body_length = 1
         model.max_num_rule = 20
-        model.weight_threshold = 0.01
-        model.strict_weight_threshold= 0.02
-        model.gain_threshold = 0.01
-        model.low_grad_threshold = 0.01
+        model.weight_threshold = 0.001
+        model.strict_weight_threshold= 0.002
+        model.gain_threshold = 0.001
+        model.low_grad_threshold = 0.001
         
 
     if dataset_name.endswith("day"):
@@ -86,6 +86,9 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     #get data
     dataset, num_sample =  get_data(dataset_name, num_sample)
+    training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
+
 
     #set model hyper params
     model.batch_size_grad = num_sample #use all samples for grad
@@ -97,10 +100,10 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_{}_{}".format(dataset_name, time_))
+            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="DFS_{}_{}".format(dataset_name, time_))
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_{}_{}".format(dataset_name, time_))
+            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="BFS_{}_{}".format(dataset_name, time_))
     
     print("Finish time is", datetime.datetime.now())
  
@@ -110,7 +113,7 @@ def run_expriment_group(args):
     #DFS
     #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #BFS
-    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=12, algorithm="BFS")
+    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
 
 
 def process(crime_selected):
@@ -307,10 +310,11 @@ def get_args():
     return args
 
 def test(dataset_name, model_file):
-    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=10)
+    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=-1)
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
     with open("./model/"+model_file, "rb") as f:
         model = pickle.load(f)
-    model.generate_target(head_predicate_idx=13, dataset=dataset, num_repeat=100)
+    model.generate_target(head_predicate_idx=13, dataset=testing_dataset, num_repeat=100)
 
 
 if __name__ == "__main__":
@@ -319,15 +323,16 @@ if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     args = get_args()
-    #if not args.print_log:
-    #    redirect_log_file()
-    #run_expriment_group(args)
+    if not args.print_log:
+        redirect_log_file()
+    run_expriment_group(args)
 
-    #test(dataset_name="crime_all_week", model_file="model-BFS_crime_all_week_2021-05-18 09:17:22.136497.pkl")
-    #test(dataset_name="crime_all_day", model_file="model-BFS_crime_all_day_2021-05-18 09:34:09.591180.pkl")
+    
+    
     #process_raw_data("crime_all.csv","crime_all_day.npy" )
     
-    refreq_data("crime_all_day.npy", "crime_all_week.npy", freq=7)
+    #refreq_data("crime_all_day.npy", "crime_all_week.npy", freq=7)
+    
     #refreq_data("crime_all_day.npy", "crime_all_month.npy", freq=30)
 
     #data = np.load("./data/crime_all_week.npy", allow_pickle='TRUE').item()
@@ -335,5 +340,8 @@ if __name__ == "__main__":
     #for k,v in data.items():
     #    print(v)
     #dataset_stat(dataset=args.dataset)
+
+    #test(dataset_name="crime_all_week", model_file="model-BFS_crime_all_week_2021-05-18 09:17:22.136497.pkl")
+    #test(dataset_name="crime_all_day", model_file="model-BFS_crime_all_day_2021-05-18 09:34:09.591180.pkl")
     
     

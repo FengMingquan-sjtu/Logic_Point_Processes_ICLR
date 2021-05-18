@@ -30,6 +30,7 @@ def get_data(dataset_name, num_sample):
         dataset = {i:dataset[i] for i in range(num_sample)}
     num_sample = len(dataset.keys())
     print("sample num is ", num_sample)
+    print("num pred is", len(dataset[0].keys()))
     return dataset, num_sample
     
 class Timer(object):

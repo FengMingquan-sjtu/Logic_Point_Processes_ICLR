@@ -166,6 +166,8 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     #get data
     dataset,num_sample =  get_data(dataset_name, num_sample)
+    training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
 
     #set model hyper params
     model.batch_size_grad = num_sample  #use all samples for grad
@@ -177,10 +179,10 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, tag="DFS_{}_{}".format(dataset_name, time_))
+            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="DFS_{}_{}".format(dataset_name, time_))
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, tag="BFS_{}_{}".format(dataset_name, time_))
+            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="BFS_{}_{}".format(dataset_name, time_))
     
     print("Finish time is", datetime.datetime.now())
  

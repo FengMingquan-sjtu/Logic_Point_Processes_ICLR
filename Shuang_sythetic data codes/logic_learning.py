@@ -1028,15 +1028,18 @@ class Logic_Learning_Model():
         self.final_tune(head_predicate_idx, dataset)
         print("----- exit search_algorithm -----", flush=1)
 
-    def BFS(self, head_predicate_idx, dataset, tag):
-        self.optimize_log_likelihood_mp(head_predicate_idx, dataset)
+    def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag):
+        self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
         print("----- start BFS -----", flush=1)
         self.print_info()
         #Begin Breadth(width) First Search
         #generate new rule from scratch
         is_continue = True
         while self.num_formula < self.max_num_rule and is_continue:
-            _, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, dataset)
+            is_update_weight, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, training_dataset)
+            if is_update_weight:
+                self.generate_target( head_predicate_idx, testing_dataset)
+        
             
             
         #generate new rule by extending existing rules
@@ -1064,15 +1067,18 @@ class Logic_Learning_Model():
                 #extend the selected rule.
                 rule_str = self.get_rule_str(template_to_extend, head_predicate_idx)
                 print("start to extend this rule:", rule_str)
-                _ , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, template_to_extend)
+                is_update_weight , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, template_to_extend)
                 if not is_continue: # this rule is fully explored, don't re-visit it.
                     extended_rules.add(rule_str) 
+                if is_update_weight:
+                    self.generate_target( head_predicate_idx, testing_dataset)
 
 
         print("BFS finished, rule set is:")
         self.print_rule_cp()
 
-        self.final_tune(head_predicate_idx, dataset)
+        self.final_tune(head_predicate_idx, training_dataset)
+        self.generate_target( head_predicate_idx, testing_dataset)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit BFS -----", flush=1)
@@ -1170,15 +1176,15 @@ class Logic_Learning_Model():
                 return i #return matched formula_idx
         return -1 #if no such rule, return -1.
 
-    def DFS(self,head_predicate_idx, dataset, tag):
+    def DFS(self,head_predicate_idx, training_dataset, testing_dataset, tag):
         self.print_info()
-        self.optimize_log_likelihood_mp(head_predicate_idx, dataset)
+        self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
         print("----- start DFS -----", flush=1)
         rule_to_extend_str_stack = list() #use stack to implement DFS
         while self.num_formula < self.max_num_rule:
             if len(rule_to_extend_str_stack) == 0: #if stack empty,  generate len-1 rule
                 print("--- DFS stack is empty, add len-1 rules ---")
-                is_update_weight, is_continue, added_rule_str_list = self.generate_rule_via_column_generation(head_predicate_idx, dataset)
+                is_update_weight, is_continue, added_rule_str_list = self.generate_rule_via_column_generation(head_predicate_idx, training_dataset)
                 for added_rule_str in added_rule_str_list:
                     rule_to_extend_str_stack.append(added_rule_str)
                 if len(rule_to_extend_str_stack) == 0: #no new rule added, DFS terminates.
@@ -1196,12 +1202,17 @@ class Logic_Learning_Model():
                 else:
                     print("--- extend this rule:", rule_to_extend_str)
                     rule_template = self.logic_template[head_predicate_idx][rule_to_extend_idx]
-                    is_update_weight, is_continue, added_rule_str_list = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, rule_template)
+                    is_update_weight, is_continue, added_rule_str_list = self.add_one_predicate_to_existing_rule(head_predicate_idx, training_dataset, rule_template)
                     if (not is_continue) or len(added_rule_str_list) == 0: #don't re-visit this rule.
                         rule_to_extend_str_stack.pop()
                     for added_rule_str in added_rule_str_list:
                         rule_to_extend_str_stack.append(added_rule_str)
-        self.final_tune(head_predicate_idx, dataset)
+            if is_update_weight:
+                #test
+                self.generate_target( head_predicate_idx, testing_dataset)
+
+        self.final_tune(head_predicate_idx, training_dataset)
+        self.generate_target( head_predicate_idx, testing_dataset)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit DFS -----", flush=1)
@@ -1247,25 +1258,34 @@ class Logic_Learning_Model():
                 generated_time.append(t)
             t = sum(generated_time)/len(generated_time)
             generated_sample_time.append(t)
-        return generated_sample_time
+        
+        gt = np.array(input_target_sample["time"])
+        generated = np.array(generated_sample_time)
+        mae = np.abs(gt- generated).mean()
+        return mae
 
-    def generate_target(self, head_predicate_idx, dataset, num_repeat):
+    def generate_target(self, head_predicate_idx, dataset, num_repeat=100):
         #print(self.instant_pred_set)
-        true_target_set = dict()
-        generated_target_set = dict()
+        print("----- start generation -----", flush=1)
+        arg_list = list()
         for sample_ID, data_sample in dataset.items():
-            true_target_set[sample_ID] = data_sample[head_predicate_idx].copy()
+            arg_list.append((head_predicate_idx, data_sample, num_repeat))
             
-            generated_target = self.generate_target_one_sample(head_predicate_idx, data_sample, num_repeat)
-            generated_target_set[sample_ID] = generated_target
-            print("---SampleID:{}---".format(sample_ID))
-            print("True:", true_target_set[sample_ID])
-            print("Generated:", generated_target_set[sample_ID])
+        cpu = cpu_count()
+        worker_num = min(self.worker_num, cpu)
+        worker_num = min(worker_num, len(arg_list))
+        print("cpu num = {}, use {} workers, generate {} samples.".format(cpu, worker_num, len(arg_list)))
+        with Timer("multiprocess generation") as t:
+            if worker_num > 1: #multiprocessing
+                with Pool(worker_num) as pool:
+                    mae = pool.starmap(self.generate_target_one_sample, arg_list)
+            else: #single process, not use pool.
+                mae = [self.generate_target_one_sample(*arg) for arg in arg_list]
+        
+        mae = np.array(mae).mean()
+        print("MAE =", mae)
+        print("----- exit generation -----", flush=1)
 
-            gt_time = np.array(true_target_set[sample_ID]["time"])
-            generated_time =  generated_target_set[sample_ID]
-            mae = np.sum(np.abs(gt_time- generated_time)) / len(gt_time)
-            print("MAE:", mae)
         
 
 
