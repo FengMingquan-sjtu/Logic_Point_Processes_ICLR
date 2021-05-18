@@ -1,12 +1,15 @@
 
 
 # train crime
-python3 crime.py --dataset crime_all_day --mode preprocess
-python3 ./tasks/train.py HExp --decay 0.05 --input_dir ./data --output_dir ./data_output --dataset crime_all_day
-python3 ./tasks/train.py RPPN --epoch 200  --init_scale 50  --input_dir ./data --output_dir ./data_output --dataset crime_all_day
+python3 crime.py --dataset crime_all_week --mode preprocess
+python3 ./tasks/train.py HExp --decay 0.05 --input_dir ./data --output_dir ./data_output --dataset crime_all_week
+python3 ./tasks/train.py RPPN --epoch 200  --init_scale 50  --input_dir ./data --output_dir ./data_output --dataset crime_all_week
 python3 ./tasks/train.py ERPP --epoch 200
 python3 ./tasks/train.py HSG --max_mean 1000 --n_gaussians 5 --verbose 
 
+#test crime 
+python3 ./tasks/test.py HExp  --input_dir ./data --output_dir ./data_output  --dataset crime_all_week
+python3 crime.py --dataset crime_all_week --model_name Hexp --mode mae
 
 # train mimic 
 python3 mimic.py --dataset mimic_1 --mode preprocess
@@ -14,6 +17,4 @@ python3 mimic.py --dataset mimic_1 --mode preprocess
 
 
 #test mimic 
-python3 ./tasks/test_mimic.py ERPP
-python3 ./tasks/test_mimic.py RPPN
-python3 ./tasks/test_mimic.py HExp
+

@@ -324,10 +324,10 @@ if __name__ == "__main__":
     #run_expriment_group(args)
 
     #test(dataset_name="crime_all_week", model_file="model-BFS_crime_all_week_2021-05-18 09:17:22.136497.pkl")
-    test(dataset_name="crime_all_day", model_file="model-BFS_crime_all_day_2021-05-18 09:34:09.591180.pkl")
+    #test(dataset_name="crime_all_day", model_file="model-BFS_crime_all_day_2021-05-18 09:34:09.591180.pkl")
     #process_raw_data("crime_all.csv","crime_all_day.npy" )
     
-    #refreq_data("crime_all_day.npy", "crime_all_week.npy", freq=7)
+    refreq_data("crime_all_day.npy", "crime_all_week.npy", freq=7)
     #refreq_data("crime_all_day.npy", "crime_all_month.npy", freq=30)
 
     #data = np.load("./data/crime_all_week.npy", allow_pickle='TRUE').item()

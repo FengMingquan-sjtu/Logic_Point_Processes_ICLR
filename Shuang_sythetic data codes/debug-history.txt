@@ -516,5 +516,9 @@ MAE: 21.493143598091343
     conflict rules: A->D,w=1; A^SUMMER ->D, w=-1
     i.e.static preds is source of conflict.
 
+106. update generate function, each time, generate on head of gt samples by one event.
+    mae is about 3. (crime_all_week)
+    while HExp MAE is 0.8612458448834678
+
     
 

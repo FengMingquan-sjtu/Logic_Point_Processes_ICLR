@@ -30,7 +30,7 @@ def load_mimic(dataset_name, start_idx, end_idx):
         for pred in pred_list:
             pred_events = list()
             for idx,t in enumerate(data[sample_idx][pred]["time"]):
-                if data[sample_idx][pred]["state"] == 1:
+                if data[sample_idx][pred]["state"][idx]-1 == 0:
                     pred_events.append((t, pred))
             if len(pred_events) ==0: #use dummy event to fill empty pred.
                 pred_events.append((600, pred))

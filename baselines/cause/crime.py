@@ -30,7 +30,7 @@ def load_crime(dataset_name, start_idx, end_idx):
         for pred in pred_list:
             pred_events = list()
             for idx,t in enumerate(data[sample_idx][pred]["time"]):
-                if data[sample_idx][pred]["state"] == 1:
+                if data[sample_idx][pred]["state"][idx]-1 == 0:
                     pred_events.append((t, pred))
             if len(pred_events) ==0: #use dummy event to fill empty pred.
                 pred_events.append((168, pred))
@@ -75,6 +75,8 @@ def load_mae(args):
     #print(event_seqs_pred)
     #print(test_event_seqs)
     print(args.dataset, args.model_name)
+    print(len(test_event_seqs))
+    print(test_event_seqs[0])
     calc_mean_absolute_error(test_event_seqs, event_seqs_pred)
     calc_acc(test_event_seqs, event_seqs_pred)
 
@@ -84,7 +86,7 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
         event_seqs_true (List[List[Tuple]]):
         event_seqs_pred (List[List[Tuple]]):
     """
-    target_dict = {'VANDALISM':5, 'THEFT FROM MV':6, 'ASSAULT':7, 'SHOPLIFTING':8}
+    target_dict = {'VANDALISM':10, 'THEFT FROM MV':11, 'ASSAULT':12, 'SHOPLIFTING':13}
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
 
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
@@ -104,7 +106,7 @@ def calc_acc(event_seqs_true, event_seqs_pred):
         event_seqs_true (List[List[Tuple]]):
         event_seqs_pred (List[List[Tuple]]):
     """
-    target_dict = {'VANDALISM':5, 'THEFT FROM MV':6, 'ASSAULT':7, 'SHOPLIFTING':8}
+    target_dict = {'VANDALISM':10, 'THEFT FROM MV':11, 'ASSAULT':12, 'SHOPLIFTING':13}
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
     threshold = 1 #this threshold is tunable
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
