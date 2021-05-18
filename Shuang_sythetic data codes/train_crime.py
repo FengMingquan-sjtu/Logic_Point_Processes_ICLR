@@ -16,16 +16,17 @@ def get_model(model_name, dataset_name):
         
         model.predicate_notation = ["SPRING", "SUMMER", "AUTUMN", "WINTER", "WEEKDAY", "WEEKEND", "MORNING", "AFTERNOON", "EVENING", "NIGHT",  'A','B', 'C', 'D']
         model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
-        model.body_pred_set =  model.predicate_set
+        #model.body_pred_set =  model.predicate_set
+        model.body_pred_set = [10, 11, 12, 13]
         model.static_pred_set = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         model.instant_pred_set = [10, 11, 12, 13]
         
-        model.max_rule_body_length = 3
+        model.max_rule_body_length = 2
         model.max_num_rule = 20
-        model.weight_threshold = 0.001
-        model.strict_weight_threshold= 0.005
-        model.gain_threshold = 0.001
-        model.low_grad_threshold = 0.001
+        model.weight_threshold = 0.01
+        model.strict_weight_threshold= 0.02
+        model.gain_threshold = 0.01
+        model.low_grad_threshold = 0.01
         
 
     if dataset_name.endswith("day"):
@@ -70,7 +71,7 @@ def get_model(model_name, dataset_name):
 
 def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
     time_ = str(datetime.datetime.now())
-    print("Start time is", time_,flush=1)
+    print("Start time is", time_, flush=1)
 
     if not os.path.exists("./model"):
         os.makedirs("./model")
@@ -322,7 +323,7 @@ if __name__ == "__main__":
         redirect_log_file()
     run_expriment_group(args)
 
-    #test(dataset_name="crime_all_week", model_file="model-DFS_crime_all_week_None.pkl")
+    #test(dataset_name="crime_all_week", model_file="model-BFS_crime_all_week_2021-05-18 00:01:48.834426.pkl")
 
     #process_raw_data("crime_all.csv","crime_all_day.npy" )
     

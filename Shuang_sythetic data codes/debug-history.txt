@@ -509,7 +509,12 @@ MAE: 21.493143598091343
     maybe sample intensity at events? Or set a larger max-intensity?
 
 104. Nan error ? 2021-05-17 20:35:44.070133 
+    crime-DFS failed
 
+105. crime-BFS failed
+    intensity is too low, most of rules are negative.
+    conflict rules: A->D,w=1; A^SUMMER ->D, w=-1
+    i.e.static preds is source of conflict.
 
     
 
