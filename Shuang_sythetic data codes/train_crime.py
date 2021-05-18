@@ -319,9 +319,9 @@ if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     args = get_args()
-    if not args.print_log:
-        redirect_log_file()
-    run_expriment_group(args)
+    #if not args.print_log:
+    #    redirect_log_file()
+    #run_expriment_group(args)
 
     #test(dataset_name="crime_all_week", model_file="model-BFS_crime_all_week_2021-05-18 00:01:48.834426.pkl")
 
@@ -330,7 +330,8 @@ if __name__ == "__main__":
     #refreq_data("crime_all_day.npy", "crime_all_week.npy", freq=7)
     #refreq_data("crime_all_day.npy", "crime_all_month.npy", freq=30)
 
-    #data = np.load("./data/crime_all_week.npy", allow_pickle='TRUE').item()
+    data = np.load("./data/crime_all_week.npy", allow_pickle='TRUE').item()
+    print(len(data.keys()))
     #for k,v in data.items():
     #    print(v)
     #dataset_stat(dataset=args.dataset)

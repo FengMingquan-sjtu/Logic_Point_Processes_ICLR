@@ -5,3 +5,4 @@ Shuang_sythetic data codes/model
 *.pyc
 *.npz
 baselines/cause/data
+baselines/cause/data_output

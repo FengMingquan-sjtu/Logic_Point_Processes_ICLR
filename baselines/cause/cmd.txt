@@ -1,19 +1,19 @@
-#train mimic
-setsid python3 run.py 1> out.txt 2> err.txt
-setsid python3 ./tasks/train.py HExp --decay 0.05 1> out.txt 2> err.txt
-setsid python3 ./tasks/train.py HSG --max_mean 1000 --n_gaussians 5 --verbose 1> out.txt 2> err.txt
-setsid python3 ./tasks/train.py RPPN --epoch 200  --init_scale 50  1> out_.txt 2> err_.txt
-setsid python3 ./tasks/train.py ERPP --epoch 200 1> out.txt 2> err.txt
-
-#test mimic
-python3 ./tasks/test_mimic.py ERPP
-python3 ./tasks/test_mimic.py RPPN
-python3 ./tasks/test_mimic.py HExp
 
 
 # train crime
-python3 ./tasks/train.py HExp --decay 0.05 --input_dir ./data --output_dir ./data_output --dataset crime_downtown
-python3 ./tasks/test.py HExp --input_dir ./data --dataset crime_downtown
-python3 crime.py --dataset crime_downtown --model_name HExp
+python3 crime.py --dataset crime_all_day --mode preprocess
+python3 ./tasks/train.py HExp --decay 0.05 --input_dir ./data --output_dir ./data_output --dataset crime_all_day
+python3 ./tasks/train.py RPPN --epoch 200  --init_scale 50  --input_dir ./data --output_dir ./data_output --dataset crime_all_day
+python3 ./tasks/train.py ERPP --epoch 200
+python3 ./tasks/train.py HSG --max_mean 1000 --n_gaussians 5 --verbose 
 
-setsid python3 ./tasks/train.py RPPN --epoch 200  --init_scale 50  
+
+# train mimic 
+python3 mimic.py --dataset mimic_1 --mode preprocess
+# similar with crime ...
+
+
+#test mimic 
+python3 ./tasks/test_mimic.py ERPP
+python3 ./tasks/test_mimic.py RPPN
+python3 ./tasks/test_mimic.py HExp

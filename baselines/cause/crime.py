@@ -44,8 +44,8 @@ def load_crime(dataset_name, start_idx, end_idx):
 
 def preprocess(args):
     print("preprocess start")
-    train_event_seqs, n_types = load_crime(args.dataset, 0, 200)
-    test_event_seqs, n_types = load_crime(args.dataset, 200, 268)
+    train_event_seqs, n_types = load_crime(args.dataset, 0, 1500)
+    test_event_seqs, n_types = load_crime(args.dataset, 1500, 1860)
     np.savez_compressed(osp.join("./data", "{}.npz".format(args.dataset)),
         train_event_seqs=train_event_seqs,
         test_event_seqs=test_event_seqs,

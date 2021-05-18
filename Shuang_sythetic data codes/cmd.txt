@@ -10,3 +10,4 @@ ps -ef |grep synthetic |awk '{print $2}'|xargs kill -9
 ps -ef |grep crime |awk '{print $2}'|xargs kill -9
 ps -ef |grep generate |awk '{print $2}'|xargs kill -9
 ps -ef |grep mimic |awk '{print $2}'|xargs kill -9
+ps -ef |grep tick |awk '{print $2}'|xargs kill -9

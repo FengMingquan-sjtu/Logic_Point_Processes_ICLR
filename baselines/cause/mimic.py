@@ -84,7 +84,7 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
         event_seqs_true (List[List[Tuple]]):
         event_seqs_pred (List[List[Tuple]]):
     """
-    target_dict = {'survival':44, 'real_time_urine_output_low':34}
+    target_dict = {'survival':61, 'real_time_urine_output_low':51}
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
 
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
