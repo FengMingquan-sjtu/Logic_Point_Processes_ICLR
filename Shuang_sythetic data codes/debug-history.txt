@@ -520,5 +520,10 @@ MAE: 21.493143598091343
     mae is 3.819581479668483. (crime_all_week, only 2 rules: D->D, A^D->D)
     while HExp MAE is 0.8612458448834678
 
+107. torch multiprocessing: all params are defaultly not shared, including variables, grad, optimizer.
+    Solution: Tensor.share_memory_() to assign tensor as shared.
+    Also, for pool method, e.g. 3 workers do 12 tasks, worker 0 does task 0,3,6,9. But when it does task 3, it forgets state of task 0. In our exp, this state refers to optimizer state 
+    Solution: merge 12 tasks into 3 large-tasks, then each work does 1 large-tasks.
+
     
 

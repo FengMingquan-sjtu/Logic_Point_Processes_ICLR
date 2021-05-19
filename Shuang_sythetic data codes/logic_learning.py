@@ -116,6 +116,13 @@ class Logic_Learning_Model():
             parameters.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
         return parameters
     
+    def share_memory(self, head_predicate_idx):
+        params = self.get_model_parameters(head_predicate_idx)
+        for p in params:
+            p.share_memory_()
+
+
+    
     def get_model_parameters_cp(self, head_predicate_idx):
         # collect all cp parameters in a list, used in l1 panelty
         parameters = list()
@@ -477,57 +484,58 @@ class Logic_Learning_Model():
         
         return log_likelihood
 
-    def _optimize_log_likelihood_mp_worker(self, optimizer, head_predicate_idx, dataset, sample_ID_batch):
-        # update weitghs
-        optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
-        log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
+    def _optimize_log_likelihood_mp_worker(self, head_predicate_idx, dataset, sample_ID_batch_list):
         params = self.get_model_parameters(head_predicate_idx)
-        l_1 = torch.sum(torch.abs(torch.stack(params)))
-        loss = - log_likelihood + l_1
-        loss.backward()
-        optimizer.step()
+        optimizer = optim.Adam(params, lr=self.learning_rate)
 
-        params = torch.stack(params).detach().numpy()
-        log_likelihood = log_likelihood.detach().numpy()
+        weights = list()
+        for formula_idx in range(self.num_formula): 
+            weights.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
 
-        return log_likelihood, params
+        for sample_ID_batch in sample_ID_batch_list:
+            # update weitghs
+            optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
+            log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
+            l_1 = torch.sum(torch.abs(torch.stack(weights)))
+            loss = - log_likelihood + l_1
+            loss.backward()
+            optimizer.step()
 
-        #return some values
-        #log_likelihood = log_likelihood.data[0]/len(sample_ID_batch)
-        #batch_gradient = torch.autograd.grad(loss, params) # compute the batch gradient
-        #batch_gradient = torch.stack(batch_gradient).detach().numpy()/len(sample_ID_batch)
-        #params = torch.stack(params).detach().numpy()
+        return log_likelihood.detach().numpy()
 
-        #return log_likelihood, batch_gradient, params
 
 
     def optimize_log_likelihood_mp(self, head_predicate_idx, dataset, verbose=True):
         print("---- start optimize_log_likelihood multi-process----", flush=1)
         print("Rule set is:")
         self.print_rule()
-        worker_num = min(self.worker_num, cpu_count())
-        params = self.get_model_parameters(head_predicate_idx)
-        optimizer = optim.Adam(params, lr=self.learning_rate)
+        
+        
         batch_num = len(dataset.keys())// self.batch_size
-        arg_list = list()
+        batch_list= list()
         for i in range(self.num_iter):
             sample_ID_list = list(dataset.keys())
             random.shuffle(sample_ID_list) #random dataset order
-            
             for batch_idx in range(batch_num):
                 sample_ID_batch = sample_ID_list[batch_idx*self.batch_size : (batch_idx+1)*self.batch_size]
-                args = (optimizer, head_predicate_idx, dataset, sample_ID_batch)
-                arg_list.append(args)
+                batch_list.append(sample_ID_batch)
 
-        worker_num = min(worker_num, len(arg_list))
-        print("use {} workers for {} batches".format(worker_num, len(arg_list)))
+        worker_num = min(self.worker_num, cpu_count())
+        worker_num = min(worker_num, len(batch_list))
+        print("use {} workers for {} batches".format(worker_num, len(batch_list)))
+        arg_list = list()
+        batch_per_worker = len(batch_list)//worker_num
+        for w in range(worker_num):
+            sample_ID_batch_list = batch_list[w*batch_per_worker: (w+1)*batch_per_worker]
+            arg_list.append((head_predicate_idx, dataset, sample_ID_batch_list))
+        
+        self.share_memory(head_predicate_idx) #very important! share varibales across procs.
+
         with Pool(worker_num) as p:
             ret = p.starmap(self._optimize_log_likelihood_mp_worker, arg_list)
   
-        log_likelihood_list, params_list = zip(*ret) 
-        log_likelihood = np.mean(log_likelihood_list[-self.num_batch_check_for_gradient:])/self.batch_size
-        param_array = np.mean(params_list[-self.num_batch_check_for_gradient:], axis=0).reshape(-1)
-        self.set_model_parameters(head_predicate_idx, param_array)
+        log_likelihood_list = ret
+        log_likelihood = np.mean(log_likelihood_list)/self.batch_size
         print("optimized rule weights are:")
         self.print_rule()
         print("---- exit optimize_log_likelihood multi-process----", flush=1)

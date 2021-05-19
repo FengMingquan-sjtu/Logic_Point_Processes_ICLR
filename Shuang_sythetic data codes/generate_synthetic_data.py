@@ -4,13 +4,14 @@ import torch.multiprocessing as mp
 from torch.multiprocessing import Pool, cpu_count
 import os 
 import sys
+import pickle 
 
 import numpy as np
 import torch
 #import cvxpy as cp
 
 from logic_learning import Logic_Learning_Model
-from utils import Timer
+from utils import Timer, get_data
 
 ##################################################################
 #np.random.seed(1)
@@ -28,6 +29,7 @@ class Logic_Model_Generator:
         self.body_predicate_set = list() # the index set of all body predicates
         self.head_predicate_set = list() # the index set of all head predicates
         self.static_pred_set = list()
+        self.instant_pred_set = list()
         self.decay_rate = 1 # decay kernel
         self.predicate_notation = list()
 
@@ -44,9 +46,11 @@ class Logic_Model_Generator:
         model.num_formula = self.num_formula
         model.predicate_set = self.body_predicate_set + self.head_predicate_set 
         model.static_pred_set = self.static_pred_set
+        model.instant_pred_set = self.instant_pred_set
         model.predicate_notation = self.predicate_notation
         model.Time_tolerance = self.Time_tolerance
         model.decay_rate = self.decay_rate
+        model.integral_resolution = self.integral_resolution
         return model
     
     def get_model_for_learn(self):
@@ -56,6 +60,11 @@ class Logic_Model_Generator:
         model.predicate_set = self.body_predicate_set + self.head_predicate_set 
         model.predicate_notation = self.predicate_notation
         model.static_pred_set = self.static_pred_set
+        model.instant_pred_set = self.instant_pred_set
+        model.predicate_notation = self.predicate_notation
+        model.Time_tolerance = self.Time_tolerance
+        model.decay_rate = self.decay_rate
+        model.integral_resolution = self.integral_resolution
         return model
 
     def generate_one_sample(self, sample_ID=0):
@@ -74,10 +83,13 @@ class Logic_Model_Generator:
                 if t >= self.time_horizon:
                     break
                 data_sample[body_predicate_idx]['time'].append(t)
-                if len(data_sample[body_predicate_idx]['state'])>0:
-                    cur_state = 1 - data_sample[body_predicate_idx]['state'][-1]
-                else:
+                if body_predicate_idx in self.instant_pred_set:
                     cur_state = 1
+                else:
+                    if len(data_sample[body_predicate_idx]['state'])>0:
+                        cur_state = 1 - data_sample[body_predicate_idx]['state'][-1]
+                    else:
+                        cur_state = 1
                 data_sample[body_predicate_idx]['state'].append(cur_state)
 
 
@@ -108,7 +120,10 @@ class Logic_Model_Generator:
                 flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
                 if flag == 1: # accept
                     data_sample[head_predicate_idx]['time'].append(t)
-                    cur_state = 1 - data_sample[head_predicate_idx]['state'][-1]
+                    if head_predicate_idx in self.instant_pred_set:
+                        cur_state = 1
+                    else:
+                        cur_state = 1 - data_sample[head_predicate_idx]['state'][-1]
                     data_sample[head_predicate_idx]['state'].append(cur_state)
         return data_sample
 
@@ -181,10 +196,11 @@ class Logic_Model_Generator:
             for formula_idx in range(self.num_formula):
                 model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)}
         verbose = True # print mid-result
-        l = model.optimize_log_likelihood_mp(head_predicate_idx, dataset, time_horizon,verbose)
+        l = model.optimize_log_likelihood_mp(head_predicate_idx, dataset,verbose)
         print("Log-likelihood (torch)= ", l, flush=1)
         print("rule set is:")
         model.print_rule()
+        return model
 
 
         
@@ -1232,8 +1248,65 @@ def get_logic_model_17():
     
     return model, file_name
 
+
+def get_logic_model_18():
+    # test self-exciting 
+    # E is dummy pred, F is target 
+    
+    # modified from data-17
+    file_name = "data-18.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.1}  
+    model.body_predicate_set = [0]
+    model.static_pred_set = []
+    model.instant_pred_set = [0, 1]
+    model.head_predicate_set = [1]
+    model.predicate_notation = ['A', 'B']
+    model.num_predicate = len(model.body_predicate_set)
+    model.Time_tolerance = 12
+    model.decay_rate = 0.01
+    model.time_window = 12
+    model.integral_resolution = 0.5
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 1
+    base = -5
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([base,]).double()}
+    weights = [1, 1]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> B, A Equal B
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0,1],]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.EQUAL]
+
+    # B --> B, B Equal B
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,1],]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
 def get_model_by_idx(model_idx):
-    model_list = [None, get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16, get_logic_model_17]
+    model_list = [None, get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16, get_logic_model_17, get_logic_model_18]
     return model_list[model_idx]()
 
 
@@ -1268,7 +1341,10 @@ def fit_mp(model_idx, num_sample, time_horizon, num_iter, worker_num ):
     avg_event_num(model_idx, num_sample)
     print("fit data-{}, with {} samples".format(model_idx, num_sample))
     with Timer("Fit data (torch)") as t:
-        model.fit_gt_rules_mp(data, time_horizon, num_iter, worker_num)
+        m = model.fit_gt_rules_mp(data, time_horizon, num_iter, worker_num)
+    tag = "fit-gt-{}".format(model_idx)
+    with open("./model/model-{}.pkl".format(tag),'wb') as f:
+        pickle.dump(m, f)
     print("---- exit  fit_mp ----")
 
 def fit_cp(model_idx, num_sample, time_horizon ):
@@ -1329,13 +1405,23 @@ def fit_mp_group(model_idx):
     fit_mp(model_idx=model_idx, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
     fit_mp(model_idx=model_idx, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
 
+
+def test(dataset_name, model_file, head_predicate_idx):
+    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=-1)
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
+    with open("./model/"+model_file, "rb") as f:
+        model = pickle.load(f)
+        model.static_pred_set = list()
+        model.instant_pred_set = list()
+    model.generate_target(head_predicate_idx=head_predicate_idx, dataset=testing_dataset, num_repeat=100)
+
 if __name__ == "__main__":
     redirect_log_file()
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     print("Start time is", datetime.datetime.now(),flush=1)
     
-
+    #test(dataset_name="data-16", model_file="model-16.pkl", head_predicate_idx=5)
     #generate(model_idx=8, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=8)
 
@@ -1366,7 +1452,10 @@ if __name__ == "__main__":
     #generate(model_idx=16, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=16)
     #generate(model_idx=17, num_sample=2400, time_horizon=10, worker_num=12)
-    fit_mp_group(model_idx=17)
+    #fit_mp_group(model_idx=17)
+
+    generate(model_idx=18, num_sample=2400, time_horizon=168, worker_num=12)
+    #fit_mp(model_idx=18, num_sample=1200, time_horizon=168, num_iter = 12, worker_num = 12 )
 
     #data = load_data(file_name="data-17.npy")
     #print(data[0])
