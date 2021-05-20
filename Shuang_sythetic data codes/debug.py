@@ -34,9 +34,11 @@ def get_model():
     num_sample = 1
 
     model.batch_size_grad = num_sample #use all samples for grad
-    model.num_iter = 2000
+    model.num_iter = 1
+    model.num_iter_final = 1
     model.use_cp = False
     model.worker_num = 10
+    model.debug_mode = True
 
     return model
 

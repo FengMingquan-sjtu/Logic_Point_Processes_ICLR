@@ -86,6 +86,7 @@ class Logic_Learning_Model():
         self.worker_num = 8
         self.best_N = 1
         self.static_pred_coef = 1 #coef to balance static preds.
+        self.debug_mode = False
         
         #claim parameters and rule set
         self.model_parameter = {}
@@ -247,21 +248,26 @@ class Logic_Learning_Model():
         for idx, body_predicate_idx in enumerate(template['body_predicate_idx']):
             transition_time = np.array(history[body_predicate_idx]['time'])
             transition_state = np.array(history[body_predicate_idx]['state'])
-            
-            if [body_predicate_idx, head_predicate_idx] in template['temporal_relation_idx']:
+            time_window_idx = (transition_time < cur_time) * (transition_time >= cur_time-self.time_window)
+            transition_time = transition_time[time_window_idx]
+            transition_state = transition_state[time_window_idx]
+            #print("[body_predicate_idx, head_predicate_idx]=", [body_predicate_idx, head_predicate_idx])
+            #print("template['temporal_relation_idx']=", template['temporal_relation_idx'])
+            if (body_predicate_idx, head_predicate_idx) in template['temporal_relation_idx']:
+                #print("early filter")
                 #for time-relation with target, filter events by time-relation
-                temporal_idx = template['temporal_relation_idx'].index([body_predicate_idx, head_predicate_idx])
+                temporal_idx = template['temporal_relation_idx'].index((body_predicate_idx, head_predicate_idx))
                 temporal_relation_type = template['temporal_relation_type'][temporal_idx]
                 if  temporal_relation_type == self.BEFORE:
-                    mask = (transition_time >= cur_time - self.time_window) * (transition_time <= cur_time - self.Time_tolerance) * (transition_state == template['body_predicate_sign'][idx])
+                    mask =  (transition_time < cur_time - self.Time_tolerance) * (transition_state == template['body_predicate_sign'][idx])
                 elif temporal_relation_type == self.EQUAL:
-                    mask = (transition_time >= cur_time - self.Time_tolerance) * (transition_time < cur_time) * (transition_state == template['body_predicate_sign'][idx])
+                    mask = (transition_time >= cur_time - self.Time_tolerance) * (transition_state == template['body_predicate_sign'][idx])
                 elif temporal_relation_type == self.STATIC:
-                    mask = (transition_time < cur_time) * (transition_state == template['body_predicate_sign'][idx])
+                    mask = (transition_state == template['body_predicate_sign'][idx])
                 else:
                     raise ValueError
             else:
-                mask = (transition_time >= cur_time-self.time_window) * (transition_time <= cur_time) * (transition_state == template['body_predicate_sign'][idx])
+                mask = transition_state == template['body_predicate_sign'][idx]
 
             transition_time_dic[body_predicate_idx] = transition_time[mask]
             if body_predicate_idx in self.static_pred_set and len(transition_time_dic[body_predicate_idx])>1:
@@ -272,8 +278,8 @@ class Logic_Learning_Model():
         ### get weights
         #print(transition_time_dic)
         # compute features whenever any item of the transition_item_dic is nonempty
-        history_transition_len = [len(i) for i in transition_time_dic.values()]
-        if min(history_transition_len) > 0:
+        min_hist_len = min([len(i) for i in transition_time_dic.values()])
+        if min_hist_len > 0:
             # need to compute feature using logic rules
             time_combination = np.array(list(itertools.product(*transition_time_dic.values())))
             time_combination_dic = {}
@@ -288,15 +294,16 @@ class Logic_Learning_Model():
                     time_1 = time_combination_dic[temporal_relation_idx[1]]
                 time_difference = time_0 - time_1
                 if template['temporal_relation_type'][idx] == self.BEFORE:
-                    temporal_kernel *= (time_difference < - self.Time_tolerance) * np.exp(-self.decay_rate *(cur_time - time_combination_dic[temporal_relation_idx[0]]))
+                    temporal_kernel *= (time_difference < - self.Time_tolerance)  * np.exp(-self.decay_rate *(cur_time - time_combination_dic[temporal_relation_idx[0]]))
                 elif template['temporal_relation_type'][idx] == self.EQUAL:
-                    temporal_kernel *= (- self.Time_tolerance < time_difference) * (time_difference < 0) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
+                    temporal_kernel *= (- self.Time_tolerance <= time_difference) * (time_difference < 0) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
                 elif template['temporal_relation_type'][idx] == self.STATIC:
                     temporal_kernel *= self.static_pred_coef
                     #static relation are treated as 1, without decay. 
             feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
-        #print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
-        #print("feature is:", feature, flush=1)
+        if self.debug_mode:
+            print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
+            print("feature at t={} is {}".format( cur_time,feature), flush=1)
         return feature
 
 
@@ -486,24 +493,28 @@ class Logic_Learning_Model():
 
     def _optimize_log_likelihood_mp_worker(self, head_predicate_idx, dataset, sample_ID_batch_list):
         params = self.get_model_parameters(head_predicate_idx)
-        optimizer = optim.Adam(params, lr=self.learning_rate)
-        #print("[Debug mode] Use SGD")
-        #optimizer = optim.SGD(params, lr=self.learning_rate)
+        #optimizer = optim.Adam(params, lr=self.learning_rate)
+        print("[Debug mode] Use SGD")
+        optimizer = optim.SGD(params, lr=self.learning_rate)
 
-        for sample_ID_batch in sample_ID_batch_list:
+        for batch_idx, sample_ID_batch in enumerate(sample_ID_batch_list):
             # update weitghs
             optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
+            print("Before batch_idx=", batch_idx)
+            for idx,p in enumerate(params):
+                print("param-{}={}".format(idx, p.data))
+                print("grad-{}=".format(idx), p.grad,flush=1)
             log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
             #print("log_likelihood = ", log_likelihood)
-            l_1 = torch.sum(torch.abs(torch.stack(params)))
-            #print("l1 = ", l_1)
-            loss = - log_likelihood + l_1
+            loss = - log_likelihood
             #print("loss=", loss)
             loss.backward()
             optimizer.step()
-        #for idx,p in enumerate(params):
-        #    print("param-{}={}".format(idx, p.data))
-        #    print("grad-{}={}".format(idx, p.grad.data))
+
+            print("After batch_idx=", batch_idx)
+            for idx,p in enumerate(params):
+                print("param-{}={}".format(idx, p.data))
+                print("grad-{}={}".format(idx, p.grad.data),flush=1)
         return log_likelihood.detach().numpy()
 
 

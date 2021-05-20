@@ -27,7 +27,7 @@ def get_model(model_name, dataset_name):
         model.strict_weight_threshold= 0.002
         model.gain_threshold = 0.001
         model.low_grad_threshold = 0.001
-        model.learning_rate = 0.01
+        model.learning_rate = 0.001
         
 
     if dataset_name.endswith("day"):

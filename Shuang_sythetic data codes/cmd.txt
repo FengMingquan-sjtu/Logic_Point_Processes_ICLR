@@ -2,7 +2,7 @@ setsid python3 logic_learning.py
 setsid python3 generate_synthetic_data.py
 python3 train_crime.py --dataset crime_all_day --worker 16 --print_log
 setsid python3 train_crime.py --dataset crime_all_day --worker 16
-setsid python3 train_crime.py --dataset crime_all_week --worker 16
+setsid python3 train_crime.py --dataset crime_all_week --worker 4
 setsid python3 train_mimic.py --dataset mimic_1 --worker 16
 setsid python3 train_mimic.py --dataset mimic_2 --worker 16
 ps -ef |grep logic |awk '{print $2}'|xargs kill -9
