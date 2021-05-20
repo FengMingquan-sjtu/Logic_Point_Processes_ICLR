@@ -525,5 +525,9 @@ MAE: 21.493143598091343
     Also, for pool method, e.g. 3 workers do 12 tasks, worker 0 does task 0,3,6,9. But when it does task 3, it forgets state of task 0. In our exp, this state refers to optimizer state 
     Solution: merge 12 tasks into 3 large-tasks, then each work does 1 large-tasks.
 
+108. inspect one-sample. hand-calculate updates to check bug.
+
+109. exp mapping may accumulate error, change to max mapping?
+
     
 

@@ -27,6 +27,7 @@ def get_model(model_name, dataset_name):
         model.strict_weight_threshold= 0.002
         model.gain_threshold = 0.001
         model.low_grad_threshold = 0.001
+        model.learning_rate = 0.01
         
 
     if dataset_name.endswith("day"):
@@ -113,7 +114,7 @@ def run_expriment_group(args):
     #DFS
     #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #BFS
-    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
+    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=12, algorithm="BFS")
 
 
 def process(crime_selected):

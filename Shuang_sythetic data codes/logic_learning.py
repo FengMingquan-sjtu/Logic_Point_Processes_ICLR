@@ -74,7 +74,7 @@ class Logic_Learning_Model():
         self.low_grad_tolerance = 2
         self.weight_threshold = 0.01
         self.strict_weight_threshold = 0.1
-        self.learning_rate = 0.005
+        self.learning_rate = 0.001
         self.max_rule_body_length = 3 #
         self.max_num_rule = 20
         self.batch_size_cp = 500 # batch size used in cp. If too large, may out of memory.
@@ -487,20 +487,23 @@ class Logic_Learning_Model():
     def _optimize_log_likelihood_mp_worker(self, head_predicate_idx, dataset, sample_ID_batch_list):
         params = self.get_model_parameters(head_predicate_idx)
         optimizer = optim.Adam(params, lr=self.learning_rate)
-
-        weights = list()
-        for formula_idx in range(self.num_formula): 
-            weights.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
+        #print("[Debug mode] Use SGD")
+        #optimizer = optim.SGD(params, lr=self.learning_rate)
 
         for sample_ID_batch in sample_ID_batch_list:
             # update weitghs
             optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
             log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
-            l_1 = torch.sum(torch.abs(torch.stack(weights)))
+            #print("log_likelihood = ", log_likelihood)
+            l_1 = torch.sum(torch.abs(torch.stack(params)))
+            #print("l1 = ", l_1)
             loss = - log_likelihood + l_1
+            #print("loss=", loss)
             loss.backward()
             optimizer.step()
-
+        #for idx,p in enumerate(params):
+        #    print("param-{}={}".format(idx, p.data))
+        #    print("grad-{}={}".format(idx, p.grad.data))
         return log_likelihood.detach().numpy()
 
 
@@ -1037,9 +1040,11 @@ class Logic_Learning_Model():
         print("----- exit search_algorithm -----", flush=1)
 
     def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag):
-        self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
-        print("----- start BFS -----", flush=1)
         self.print_info()
+        with Timer("initial optimize") as t:
+            l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
+            print("log-likelihood=",l)
+        print("----- start BFS -----", flush=1)
         #Begin Breadth(width) First Search
         #generate new rule from scratch
         is_continue = True
@@ -1186,7 +1191,9 @@ class Logic_Learning_Model():
 
     def DFS(self,head_predicate_idx, training_dataset, testing_dataset, tag):
         self.print_info()
-        self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
+        with Timer("initial optimize") as t:
+            l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
+            print("log-likelihood=",l)
         print("----- start DFS -----", flush=1)
         rule_to_extend_str_stack = list() #use stack to implement DFS
         while self.num_formula < self.max_num_rule:
@@ -1244,6 +1251,7 @@ class Logic_Learning_Model():
         if len(intensity_potential) == 0:
             return input_target_sample["time"]
         intensity_max = max(intensity_potential)
+        #print("intensity_max=", intensity_max,flush=1)
 
         generated_sample_time = [data_sample[head_predicate_idx]["time"][0] ,]
         for i in range(target_sample_length-1):
@@ -1252,9 +1260,11 @@ class Logic_Learning_Model():
             data_sample[head_predicate_idx] = {"time": input_target_sample["time"][:i+1], "state":input_target_sample["state"][:i+1]} 
             for r in range(num_repeat):
                 t = T_min
+                #print("run idx=",r,flush=1)
                 while t < T_max:
                     time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
                     t = t + time_to_event
+                    #print("t=",t,flush=1)
                     if t >= T_max:
                         t=T_max
                         break
@@ -1270,6 +1280,7 @@ class Logic_Learning_Model():
         gt = np.array(input_target_sample["time"])
         generated = np.array(generated_sample_time)
         mae = np.abs(gt- generated).mean()
+        #print("generated 1 sample, mae=",mae,flush=1)
         return mae
 
     def generate_target(self, head_predicate_idx, dataset, num_repeat=100):

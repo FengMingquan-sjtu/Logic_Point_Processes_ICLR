@@ -1406,13 +1406,12 @@ def fit_mp_group(model_idx):
     fit_mp(model_idx=model_idx, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
 
 
-def test(dataset_name, model_file, head_predicate_idx):
-    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=-1)
+def test(dataset_name, num_sample, model_file, head_predicate_idx, worker_num):
+    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=num_sample)
     testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
     with open("./model/"+model_file, "rb") as f:
         model = pickle.load(f)
-        model.static_pred_set = list()
-        model.instant_pred_set = list()
+    model.worker_num = worker_num
     model.generate_target(head_predicate_idx=head_predicate_idx, dataset=testing_dataset, num_repeat=100)
 
 if __name__ == "__main__":
@@ -1421,7 +1420,7 @@ if __name__ == "__main__":
 
     print("Start time is", datetime.datetime.now(),flush=1)
     
-    #test(dataset_name="data-16", model_file="model-16.pkl", head_predicate_idx=5)
+    test(dataset_name="data-18", num_sample=-1, model_file="model-fit-gt-18.pkl", head_predicate_idx=1, worker_num=12)
     #generate(model_idx=8, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=8)
 
@@ -1454,9 +1453,9 @@ if __name__ == "__main__":
     #generate(model_idx=17, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=17)
 
-    generate(model_idx=18, num_sample=2400, time_horizon=168, worker_num=12)
+    #generate(model_idx=18, num_sample=2400, time_horizon=168, worker_num=12)
     #fit_mp(model_idx=18, num_sample=1200, time_horizon=168, num_iter = 12, worker_num = 12 )
 
-    #data = load_data(file_name="data-17.npy")
+    #data = load_data(file_name="data-18.npy")
     #print(data[0])
     
