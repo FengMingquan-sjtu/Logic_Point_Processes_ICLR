@@ -17,7 +17,8 @@ def get_model(model_name, dataset_name):
         model.predicate_notation = ["SPRING", "SUMMER", "AUTUMN", "WINTER", "WEEKDAY", "WEEKEND", "MORNING", "AFTERNOON", "EVENING", "NIGHT",  'A','B', 'C', 'D']
         model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
         #model.body_pred_set =  model.predicate_set
-        model.body_pred_set = [10, 11, 12, 13]
+        #model.body_pred_set = [10, 11, 12, 13]
+        model.body_pred_set = [13]
         model.static_pred_set = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         model.instant_pred_set = [10, 11, 12, 13]
         
@@ -46,11 +47,11 @@ def get_model(model_name, dataset_name):
     
     elif dataset_name.endswith("week_scaled"):
         scale = 10/(24*7)
-        model.time_window = 24 * 2 * scale
+        model.time_window = 24 * 7 * scale
         model.Time_tolerance = 12 * scale
-        model.decay_rate = 0.1
+        model.decay_rate = 0.01
         model.batch_size = 64
-        model.integral_resolution = 0.5 * scale
+        model.integral_resolution = 0.1 * scale
     
     
     
@@ -270,9 +271,9 @@ def refreq_data(input_file, output_file, freq):
     
 def rescale_data(input_file, output_file, scale):
     data = np.load("./data/"+input_file, allow_pickle='TRUE').item()
-    for sample in data.values():
-        for d in sample.values():
-            d["time"] = list(np.array(d["time"]) * scale)
+    for sample_ID, sample in data.items():
+        for pid, d in sample.items():
+            data[sample_ID][pid]["time"] = list(np.array(d["time"]) * scale)
     np.save("./data/"+output_file, data)
 
 
@@ -334,10 +335,11 @@ if __name__ == "__main__":
     #rescale_data("crime_all_day.npy", "crime_all_day_scaled.npy", scale=10/24)
     #rescale_data("crime_all_week.npy", "crime_all_week_scaled.npy", scale=10/(24*7))
 
-    #data = np.load("./data/crime_all_day_scaled.npy", allow_pickle='TRUE').item()
+    #data = np.load("./data/crime_all_week_scaled.npy", allow_pickle='TRUE').item()
     #print(len(data.keys()))
     #for k,v in data.items():
     #    print(v)
+    #    break
     #dataset_stat(dataset=args.dataset)
 
     #test(dataset_name="crime_all_week", model_file="model-BFS_crime_all_week_2021-05-18 09:17:22.136497.pkl")

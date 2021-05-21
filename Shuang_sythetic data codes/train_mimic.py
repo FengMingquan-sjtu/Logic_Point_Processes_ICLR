@@ -24,6 +24,10 @@ def get_model(model_name, dataset_name):
         model.predicate_notation = ['sysbp_low', 'spo2_sao2_low', 'cvp_low', 'svr_low', 'potassium_meql_low', 'sodium_low', 'chloride_low', 'bun_low', 'creatinine_low', 'crp_low', 'rbc_count_low', 'wbc_count_low', 'arterial_ph_low', 'arterial_be_low', 'arterial_lactate_low', 'hco3_low', 'svo2_scvo2_low', 'sysbp_high', 'spo2_sao2_high', 'cvp_high', 'svr_high', 'potassium_meql_high', 'sodium_high', 'chloride_high', 'bun_high', 'creatinine_high', 'crp_high', 'rbc_count_high', 'wbc_count_high', 'arterial_ph_high', 'arterial_be_high', 'arterial_lactate_high', 'hco3_high', 'svo2_scvo2_high', 'real_time_urine_output_low', 'or_colloid', 'or_crystalloid', 'oral_water', 'norepinephrine_norad_levophed', 'epinephrine_adrenaline', 'dobutamine', 'dopamine', 'phenylephrine_neosynephrine', 'milrinone', 'survival']
         model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
         model.body_pred_set = lab_preds + input_preds + drug_preds #only learn lab-->urine
+        #rule template
+        model.body_pred_set_first_part = lab_preds + input_preds
+        model.body_pred_set_second_part = drug_preds
+
         model.instant_pred_set = input_preds + drug_preds #input/drugs are instant.
         model.max_rule_body_length = 2
         model.max_num_rule = 20
@@ -32,12 +36,17 @@ def get_model(model_name, dataset_name):
         model.gain_threshold = 0.1
         model.low_grad_threshold = 0.05
         
-
-        model.time_window = 24 * 5
-        model.Time_tolerance = 10
-        model.decay_rate = 0.01
+        if dataset_name.endswith("scaled"):
+            scale = 10/600
+            model.decay_rate = 0.1
+        else:
+            scale = 1
+            model.decay_rate = 0.01
+            
+        model.time_window = 24 * 5 * scale
+        model.Time_tolerance = 10 * scale
         model.batch_size = 64
-        model.integral_resolution = 10
+        model.integral_resolution = 10 * scale
     
     
     return model
@@ -207,7 +216,7 @@ def get_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default="mimic")
-    parser.add_argument('--dataset', type=str, default="mimic_1")
+    parser.add_argument('--dataset', type=str, default="mimic_1_scaled")
     parser.add_argument('--worker', type=int, default=12)
     parser.add_argument('--print_log', action="store_true")
     
@@ -241,18 +250,28 @@ def test(dataset_name, model_file):
         model.instant_pred_set = list()
     model.generate_target(head_predicate_idx=34, dataset=dataset)
 
+def rescale_data(input_file, output_file, scale):
+    data = np.load("./data/"+input_file, allow_pickle='TRUE').item()
+    for sample in data.values():
+        for d in sample.values():
+            d["time"] = list(np.array(d["time"]) * scale)
+    np.save("./data/"+output_file, data)
+
+
 
 if __name__ == "__main__":
     #run_preprocess()
     #process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_0.npy")
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
-    #args = get_args()
-    #if not args.print_log:
-    #    redirect_log_file()
-    #run_expriment_group(args)
+    args = get_args()
+    if not args.print_log:
+        redirect_log_file()
+    run_expriment_group(args)
     #dataset_stat(dataset=args.dataset)
     #FS_mimic_1.pkl")
     #data, num_sample = get_data(dataset_name=args.dataset, num_sample=100)
     #for k,v in data.items():
     #    print(v)
+
+    #rescale_data("mimic_1.npy", "mimic_1_scaled.npy", scale=10/600)

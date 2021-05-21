@@ -272,6 +272,7 @@ if __name__ == "__main__":
     data = np.load(osp.join(args.input_dir, "{}.npz".format(args.dataset)), allow_pickle=True)
     n_types = int(data["n_types"])
     train_event_seqs = data["train_event_seqs"]
+    print(train_event_seqs[0])
     test_event_seqs =  data["test_event_seqs"]
     event_seqs = np.concatenate((train_event_seqs,test_event_seqs))
     
@@ -320,6 +321,12 @@ if __name__ == "__main__":
                 for seq in tqdm(train_event_seqs)
             ]
             model.fit(train_cps)
+
+            if args.model in ["HExp"]:
+                print(model.n_nodes)
+                print(model.baseline)
+                print(model.adjacency)
+                #raise ValueError
             # TODO: many tick models can't be easily pickled. Probabily need to
             # write a wrapper class.
             try:

@@ -537,5 +537,10 @@ MAE: 21.493143598091343
 
 111. re-sacle data into 10, to constraint gradients.
     gradient is linear to scale, if sacle is too large, then prone to explode
+
+112. add rule template to mimic. sym + drug --> sym
+
+113. [bug Fixed] f = exp(-decay * diff) * decay. The outside decay is critical to MAE !!!
+    with this formula, in crime, single variable, our model mae=0.2, comparable with HawkesExp
     
 

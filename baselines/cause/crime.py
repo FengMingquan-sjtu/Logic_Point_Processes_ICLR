@@ -24,22 +24,29 @@ def load_crime(dataset_name, start_idx, end_idx):
     data = get_data(dataset_name, start_idx, end_idx)
     event_seqs = list()
     pred_list = data[0].keys()
-    
+    T_max = 10
     for sample_idx in range(end_idx-start_idx):
         sample = list()
         for pred in pred_list:
             pred_events = list()
+            if pred != 13:
+                continue
+            pred_idx = 0
             for idx,t in enumerate(data[sample_idx][pred]["time"]):
                 if data[sample_idx][pred]["state"][idx]-1 == 0:
-                    pred_events.append((t, pred))
+                    pred_events.append((t, pred_idx))
             if len(pred_events) ==0: #use dummy event to fill empty pred.
-                pred_events.append((168, pred))
+                pred_events.append((T_max, pred_idx))
             sample.extend(pred_events)
             
         sample.sort(key=lambda x:x[0]) #sort by time
         event_seqs.append(sample)
     event_seqs = np.array(event_seqs,dtype=object)
-    n_types = len(pred_list)
+    
+    #n_types = len(pred_list)
+    print("debug mode: n_types=1")
+    n_types = 1
+    
     return event_seqs, n_types
 
 def preprocess(args):
@@ -77,6 +84,7 @@ def load_mae(args):
     print(args.dataset, args.model_name)
     print(len(test_event_seqs))
     print(test_event_seqs[0])
+    print(event_seqs_pred[0])
     calc_mean_absolute_error(test_event_seqs, event_seqs_pred)
     calc_acc(test_event_seqs, event_seqs_pred)
 
@@ -86,14 +94,18 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
         event_seqs_true (List[List[Tuple]]):
         event_seqs_pred (List[List[Tuple]]):
     """
-    target_dict = {'VANDALISM':10, 'THEFT FROM MV':11, 'ASSAULT':12, 'SHOPLIFTING':13}
+    #target_dict = {'VANDALISM':10, 'THEFT FROM MV':11, 'ASSAULT':12, 'SHOPLIFTING':13}
+    target_dict = {'SHOPLIFTING':0}
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
 
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
         for t, t_idx in target_dict.items():
+            print(seq_true,seq_pred)
             l = [abs(event_true[0]-event_pred[0]) for event_true,event_pred in zip(seq_true,seq_pred) if event_true[1] ==  t_idx]
+            print(t, t_idx, l)
             if l:
                 result_dict[t].update(np.mean(l), len(l))
+        #raise ValueError
     
     target = list(target_dict.keys())
     mae = [result_dict[t].avg for t in target]

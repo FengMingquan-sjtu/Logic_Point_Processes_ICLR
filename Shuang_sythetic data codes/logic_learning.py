@@ -45,6 +45,8 @@ class Logic_Learning_Model():
         self.static_pred_set = []
         self.instant_pred_set = []
         self.body_pred_set = []
+        self.body_pred_set_first_part = []
+        self.body_pred_set_second_part = []
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
         self.BEFORE = 'BEFORE'
@@ -87,15 +89,19 @@ class Logic_Learning_Model():
         self.best_N = 1
         self.static_pred_coef = 1 #coef to balance static preds.
         self.debug_mode = False
-        self.use_exp_kernel = True
+        self.use_exp_kernel = False
         #claim parameters and rule set
         self.model_parameter = {}
         self.logic_template = {}
 
-        
+        if self.use_exp_kernel:
+            init_base = -0.1
+        else:
+            init_base = 0.1
+
         for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
-            self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.1).double(), requires_grad=True)
+            self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
             #self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_cp'] = cp.Variable(1)
@@ -225,7 +231,7 @@ class Logic_Learning_Model():
         if self.use_exp_kernel:
             intensity = torch.exp(intensity)
         else:
-            intensity = torch.nn.functional.relu(intensity)
+            intensity = torch.nn.functional.relu(intensity) + 1e-10
         
 
         return intensity
@@ -304,7 +310,7 @@ class Logic_Learning_Model():
                 elif template['temporal_relation_type'][idx] == self.STATIC:
                     temporal_kernel *= self.static_pred_coef
                     #static relation are treated as 1, without decay. 
-            feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
+            feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64) * self.decay_rate
         if self.debug_mode:
             print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
             print("feature at t={} is {}".format( cur_time,feature), flush=1)
@@ -609,32 +615,41 @@ class Logic_Learning_Model():
             return opt_log_likelihood / len(sample_ID_batch)
 
     ### the following 2 functions are to compute sub-problem objective function
-    def intensity_log_gradient(self, head_predicate_idx, data_sample):
-        # intensity_transition = []
-        # for t in data_sample[head_predicate_idx]['time'][1:]:
-        #     cur_intensity = self.intensity(t, head_predicate_idx, data_sample)
-        #     intensity_transition.append(cur_intensity)
-        # if len(intensity_transition) == 0:  # only survival term, not event happens
-        #     log_gradient = torch.tensor([0], dtype=torch.float64)
-        # else:
-        #     log_gradient = torch.cat(intensity_transition, dim=0).pow(-1)
-        # return log_gradient
-        return torch.tensor([1.0],dtype=torch.float64) #intensity_log_gradient of exp kernel is always 1.
+    def intensity_log_gradient(self, head_predicate_idx, dataset, sample_ID):
+        # 
+        if self.use_exp_kernel:
+            return torch.tensor([1.0],dtype=torch.float64) #intensity_log_gradient of exp kernel is always 1.
+        else:
+            intensity_transition = []
+            for t in dataset[sample_ID][head_predicate_idx]['time'][:]:
+                cur_intensity = self.intensity(t, head_predicate_idx, dataset, sample_ID)
+                cur_intensity = cur_intensity.detach() #detach, since multiprocessing needs requires_grad=False
+                intensity_transition.append(cur_intensity)
+            if len(intensity_transition) == 0:  # only survival term, not event happens
+                log_gradient = torch.tensor([0], dtype=torch.float64)
+            else:
+                log_gradient = torch.cat(intensity_transition, dim=0).pow(-1)
+            return log_gradient
+
 
     
     def intensity_integral_gradient(self, head_predicate_idx, dataset, sample_ID):
-        start_time = 0
-        T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
-        end_time = T_max
-        intensity_gradient_grid = []
-        for t in np.arange(start_time, end_time, self.integral_resolution):
-            cur_intensity = self.intensity(t, head_predicate_idx, dataset, sample_ID)
-            cur_intensity = cur_intensity.detach() #detach, since multiprocessing needs requires_grad=False
-            intensity_gradient_grid.append(cur_intensity)   # due to that the derivative of exp(x) is still exp(x)
-        if len(intensity_gradient_grid)==0:
-            return torch.tensor([0],dtype=torch.float64)
-        integral_gradient_grid = torch.cat(intensity_gradient_grid, dim=0) * self.integral_resolution
-        return integral_gradient_grid
+
+        if self.use_exp_kernel:
+            start_time = 0
+            T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
+            end_time = T_max
+            intensity_gradient_grid = []
+            for t in np.arange(start_time, end_time, self.integral_resolution):
+                cur_intensity = self.intensity(t, head_predicate_idx, dataset, sample_ID)
+                cur_intensity = cur_intensity.detach() #detach, since multiprocessing needs requires_grad=False
+                intensity_gradient_grid.append(cur_intensity)   # due to that the derivative of exp(x) is still exp(x)
+            if len(intensity_gradient_grid)==0:
+                return torch.tensor([0],dtype=torch.float64)
+            integral_gradient_grid = torch.cat(intensity_gradient_grid, dim=0) * self.integral_resolution
+            return integral_gradient_grid
+        else:
+            return torch.tensor([1],dtype=torch.float64) * self.integral_resolution
 
 
     def log_likelihood_gradient(self, head_predicate_idx, dataset,  intensity_log_gradient, intensity_integral_gradient_grid, new_rule_template):
@@ -741,7 +756,11 @@ class Logic_Learning_Model():
                 # instant pred should not be negative
                 continue
             for body_predicate_sign in [1, ]: # consider head_predicate_sign = 1/0
-                for body_predicate_idx in self.body_pred_set:  
+                if self.body_pred_set_first_part:
+                    candidate_body_pred_set = self.body_pred_set_first_part
+                else:
+                    candidate_body_pred_set = self.body_pred_set
+                for body_predicate_idx in candidate_body_pred_set:  
                     if body_predicate_idx in self.instant_pred_set and body_predicate_sign == 0:
                         # instant pred should not be negative
                         continue
@@ -775,6 +794,11 @@ class Logic_Learning_Model():
         print("----- exit generate_rule_via_column_generation -----",flush=1)
         return is_update_weight, is_continue, added_rule_str_list
             
+    def get_intensity_and_integral_grad_worker(self, head_predicate_idx, dataset, sample_ID):
+        intensity_log_gradient = self.intensity_log_gradient(head_predicate_idx, dataset, sample_ID)
+        intensity_integral_gradient = self.intensity_integral_gradient(head_predicate_idx, dataset, sample_ID)
+        return intensity_log_gradient, intensity_integral_gradient
+
     def get_intensity_and_integral_grad(self, head_predicate_idx, dataset):
         print("---start calculate intensity grad and integral grad.---", flush=1)
         with Timer("calculate intensity grad and integral grad") as t:
@@ -783,7 +807,6 @@ class Logic_Learning_Model():
             intensity_integral_gradient_grid = dict()
             arg_list = list()  #args for parallel intensity_integral_gradient_grid()
             for sample_ID in sample_ID_batch:
-                intensity_log_gradient[sample_ID] = self.intensity_log_gradient(head_predicate_idx, data_sample = dataset[sample_ID])
                 arg_list.append((head_predicate_idx, dataset, sample_ID)) #args for parallel intensity_integral_gradient_grid()
             
             worker_num = min(self.worker_num, cpu_count())
@@ -791,12 +814,13 @@ class Logic_Learning_Model():
             print("use {} workers, run {} data".format(worker_num,len(arg_list)), flush=1 )
             if worker_num > 1:
                 with Pool(worker_num) as p:
-                    integral_grad_list = p.starmap(self.intensity_integral_gradient, arg_list) 
+                    ret = p.starmap(self.get_intensity_and_integral_grad_worker, arg_list) 
             else:
-                integral_grad_list = [self.intensity_integral_gradient(*arg) for arg in arg_list]
+                ret = [self.get_intensity_and_integral_grad_worker(*arg) for arg in arg_list]
 
             for idx, sample_ID in enumerate(sample_ID_batch):
-                intensity_integral_gradient_grid[sample_ID] = integral_grad_list[idx]
+                intensity_log_gradient[sample_ID] = ret[idx][0]
+                intensity_integral_gradient_grid[sample_ID] = ret[idx][1]
         print("---exit calculate intensity grad and integral grad.---", flush=1)
         return intensity_log_gradient, intensity_integral_gradient_grid
 
@@ -826,7 +850,11 @@ class Logic_Learning_Model():
         print("start enumerating candidate rules.", flush=1)
         
         for body_predicate_sign in [1, ]:
-            for body_predicate_idx in self.body_pred_set:
+            if self.body_pred_set_first_part:
+                candidate_body_pred_set = self.body_pred_set_second_part
+            else:
+                candidate_body_pred_set = self.body_pred_set
+            for body_predicate_idx in candidate_body_pred_set:
                 if body_predicate_idx in existing_rule_template['body_predicate_idx']: 
                     # repeated predicates are not allowed.
                     continue 
@@ -1072,12 +1100,16 @@ class Logic_Learning_Model():
 
     def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag):
         self.print_info()
+
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
         print("----- start BFS -----", flush=1)
         #Begin Breadth(width) First Search
         #generate new rule from scratch
+
+        
+
         is_continue = True
         while self.num_formula < self.max_num_rule and is_continue:
             is_update_weight, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, training_dataset)
@@ -1111,7 +1143,7 @@ class Logic_Learning_Model():
                 #extend the selected rule.
                 rule_str = self.get_rule_str(template_to_extend, head_predicate_idx)
                 print("start to extend this rule:", rule_str)
-                is_update_weight , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, template_to_extend)
+                is_update_weight , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, training_dataset, template_to_extend)
                 if not is_continue: # this rule is fully explored, don't re-visit it.
                     extended_rules.add(rule_str) 
                 if is_update_weight:
