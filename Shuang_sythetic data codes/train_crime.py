@@ -16,13 +16,13 @@ def get_model(model_name, dataset_name):
         
         model.predicate_notation = ["SPRING", "SUMMER", "AUTUMN", "WINTER", "WEEKDAY", "WEEKEND", "MORNING", "AFTERNOON", "EVENING", "NIGHT",  'A','B', 'C', 'D']
         model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
-        #model.body_pred_set =  model.predicate_set
+        model.body_pred_set =  model.predicate_set
         #model.body_pred_set = [10, 11, 12, 13]
-        model.body_pred_set = [13]
+        #model.body_pred_set = [13]
         model.static_pred_set = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         model.instant_pred_set = [10, 11, 12, 13]
         
-        model.max_rule_body_length = 1
+        model.max_rule_body_length = 2
         model.max_num_rule = 20
         model.weight_threshold = 0.001
         model.strict_weight_threshold= 0.002
@@ -46,12 +46,12 @@ def get_model(model_name, dataset_name):
         model.integral_resolution = 0.5
     
     elif dataset_name.endswith("week_scaled"):
-        scale = 10/(24*7)
-        model.time_window = 24 * 7 * scale
-        model.Time_tolerance = 12 * scale
+        model.scale = 10/(24*7)
+        model.time_window = 24 * 7 *  model.scale
+        model.Time_tolerance = 12 *  model.scale
         model.decay_rate = 0.01
         model.batch_size = 64
-        model.integral_resolution = 0.1 * scale
+        model.integral_resolution = 0.1 *  model.scale
     
     
     
@@ -323,8 +323,8 @@ if __name__ == "__main__":
     args = get_args()
     if not args.print_log:
         redirect_log_file()
-    run_expriment_group(args)
-
+    #run_expriment_group(args)
+    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
     
     
     #process_raw_data("crime_all.csv","crime_all_day.npy" )

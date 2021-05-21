@@ -5,6 +5,7 @@ setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16
 setsid python3 train_crime.py --dataset crime_all_week_scaled --worker 4
 setsid python3 train_crime.py --dataset crime_all_week_scaled --worker 4
 setsid python3 train_crime.py --dataset crime_all_week_scaled --worker 16
+python3 train_crime.py --dataset crime_all_week_scaled --worker 5 --print_log
 
 setsid python3 train_mimic.py --dataset mimic_1_scaled --worker 8
 ps -ef |grep logic |awk '{print $2}'|xargs kill -9

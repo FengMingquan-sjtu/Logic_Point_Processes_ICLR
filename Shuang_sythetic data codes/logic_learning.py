@@ -90,6 +90,9 @@ class Logic_Learning_Model():
         self.static_pred_coef = 1 #coef to balance static preds.
         self.debug_mode = False
         self.use_exp_kernel = False
+        self.scale = 1
+
+
         #claim parameters and rule set
         self.model_parameter = {}
         self.logic_template = {}
@@ -308,9 +311,15 @@ class Logic_Learning_Model():
                 elif template['temporal_relation_type'][idx] == self.EQUAL:
                     temporal_kernel *= (- self.Time_tolerance <= time_difference) * (time_difference < 0) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
                 elif template['temporal_relation_type'][idx] == self.STATIC:
-                    temporal_kernel *= self.static_pred_coef
+                    static_pred_idx = temporal_relation_idx[0]
+                    if static_pred_idx in [0,1,2,3,4,5,]: #hard code for crime dataset.
+                        # these are daily updating static variables.
+                        static_time_tolerance = 24 * self.scale
+                    else: # the others are hourly updating static variables.
+                        static_time_tolerance = 1 * self.scale
+                    temporal_kernel *= (- static_time_tolerance <= time_difference) * (time_difference < 0) 
                     #static relation are treated as 1, without decay. 
-            feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64) * self.decay_rate
+            feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64) * self.decay_rate #this decay is important for convergence, see bug#113
         if self.debug_mode:
             print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
             print("feature at t={} is {}".format( cur_time,feature), flush=1)
@@ -865,14 +874,17 @@ class Logic_Learning_Model():
                 
                 
                 if body_predicate_idx in self.static_pred_set:
-                    # static pred only interact with head.
                     time_relation_list = [self.STATIC]
-                    candidate_predicate_list = [head_predicate_idx]
+                     # if pred_0 is static, then pred_1 should be non-static. Also, pred_1 should not be head.
+                    existing_predicate_idx_list = existing_rule_template['body_predicate_idx']
+                    candidate_predicate_list = [pred for pred in existing_predicate_idx_list if pred not in self.static_pred_set] 
                 else:
+                    # if pred_0 is non-static, then pred_1 should also be non-static
                     time_relation_list = [self.BEFORE, self.EQUAL]
-                    # non-static preds can only interact with non-static preds
                     existing_predicate_idx_list = [head_predicate_idx] + existing_rule_template['body_predicate_idx']
                     candidate_predicate_list = [pred for pred in existing_predicate_idx_list if pred not in self.static_pred_set] 
+                
+                
                 for temporal_relation_type in time_relation_list:
                     for candidate_predicate_idx in candidate_predicate_list:
                         
