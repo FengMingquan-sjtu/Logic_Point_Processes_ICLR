@@ -87,14 +87,15 @@ class Logic_Learning_Model():
         self.best_N = 1
         self.static_pred_coef = 1 #coef to balance static preds.
         self.debug_mode = False
-        
+        self.use_exp_kernel = True
         #claim parameters and rule set
         self.model_parameter = {}
         self.logic_template = {}
 
+        
         for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
-            self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -1).double(), requires_grad=True)
+            self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * -0.1).double(), requires_grad=True)
             #self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
             #self.model_parameter[idx]['base_cp'] = cp.Variable(1)
@@ -221,7 +222,10 @@ class Logic_Learning_Model():
 
         base = self.model_parameter[head_predicate_idx]['base']
         intensity = base + torch.sum(intensity)
-        intensity = torch.exp(intensity)
+        if self.use_exp_kernel:
+            intensity = torch.exp(intensity)
+        else:
+            intensity = torch.nn.functional.relu(intensity)
         
 
         return intensity
@@ -347,7 +351,12 @@ class Logic_Learning_Model():
             T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0 for p in self.predicate_set])
             intensity_log_sum = self.intensity_log_sum(head_predicate_idx, dataset, sample_ID)
             intensity_integral = self.intensity_integral(head_predicate_idx, dataset, sample_ID)
+            if self.debug_mode:
+                print("intensity_log_sum=", intensity_log_sum)
+                print("intensity_integral=", intensity_integral)
             log_likelihood += (intensity_log_sum - intensity_integral)
+        if self.debug_mode:
+            print("log_likelihood=",log_likelihood)
         return log_likelihood
     
     def log_likelihood_cp(self, head_predicate_idx, dataset, sample_ID_batch):
@@ -493,17 +502,23 @@ class Logic_Learning_Model():
 
     def _optimize_log_likelihood_mp_worker(self, head_predicate_idx, dataset, sample_ID_batch_list):
         params = self.get_model_parameters(head_predicate_idx)
-        #optimizer = optim.Adam(params, lr=self.learning_rate)
-        print("[Debug mode] Use SGD")
-        optimizer = optim.SGD(params, lr=self.learning_rate)
+        
+        if self.debug_mode:
+            print("[Debug mode] Use SGD")
+            optimizer = optim.SGD(params, lr=self.learning_rate)
+        else:
+            #s
+            #optimizer = optim.SGD(params, lr=self.learning_rate)
+            optimizer = optim.SGD(params, lr=self.learning_rate)
 
         for batch_idx, sample_ID_batch in enumerate(sample_ID_batch_list):
             # update weitghs
             optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
-            print("Before batch_idx=", batch_idx)
-            for idx,p in enumerate(params):
-                print("param-{}={}".format(idx, p.data))
-                print("grad-{}=".format(idx), p.grad,flush=1)
+            if self.debug_mode:
+                print("Before batch_idx=", batch_idx)
+                for idx,p in enumerate(params):
+                    print("param-{}={}".format(idx, p.data))
+                    print("grad-{}=".format(idx), p.grad,flush=1)
             log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
             #print("log_likelihood = ", log_likelihood)
             loss = - log_likelihood
@@ -511,10 +526,15 @@ class Logic_Learning_Model():
             loss.backward()
             optimizer.step()
 
-            print("After batch_idx=", batch_idx)
-            for idx,p in enumerate(params):
-                print("param-{}={}".format(idx, p.data))
-                print("grad-{}={}".format(idx, p.grad.data),flush=1)
+            if self.debug_mode:
+                print("After batch_idx=", batch_idx)
+                for idx,p in enumerate(params):
+                    print("param-{}={}".format(idx, p.data))
+                    print("grad-{}={}".format(idx, p.grad.data),flush=1)
+        
+        for idx,p in enumerate(params):
+            print("param-{}={}".format(idx, p.data))
+            print("grad-{}={}".format(idx, p.grad.data),flush=1)
         return log_likelihood.detach().numpy()
 
 
@@ -588,7 +608,7 @@ class Logic_Learning_Model():
             self.synchronize_torch_weight_with_cp(head_predicate_idx)
             return opt_log_likelihood / len(sample_ID_batch)
 
-
+    ### the following 2 functions are to compute sub-problem objective function
     def intensity_log_gradient(self, head_predicate_idx, data_sample):
         # intensity_transition = []
         # for t in data_sample[head_predicate_idx]['time'][1:]:
@@ -601,7 +621,7 @@ class Logic_Learning_Model():
         # return log_gradient
         return torch.tensor([1.0],dtype=torch.float64) #intensity_log_gradient of exp kernel is always 1.
 
-    ### the following functions are to compute sub-problem objective function
+    
     def intensity_integral_gradient(self, head_predicate_idx, dataset, sample_ID):
         start_time = 0
         T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
@@ -1297,6 +1317,8 @@ class Logic_Learning_Model():
     def generate_target(self, head_predicate_idx, dataset, num_repeat=100):
         #print(self.instant_pred_set)
         print("----- start generation -----", flush=1)
+        if self.debug_mode:
+            num_repeat = 1
         arg_list = list()
         for sample_ID, data_sample in dataset.items():
             arg_list.append((head_predicate_idx, data_sample, num_repeat))

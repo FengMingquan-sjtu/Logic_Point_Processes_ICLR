@@ -26,1023 +26,214 @@ worker_num=10
 best_N=1
 static_pred_coef=1
 debug_mode=True
+use_exp_kernel=True
 ----
 ---- start optimize_log_likelihood multi-process----
 Rule set is:
-Head:A, base=-1.0000,
+Head:A, base=-0.1000,
 use 1 workers for 1 batches
 [Debug mode] Use SGD
-param-0=tensor([-0.9939], dtype=torch.float64)
-grad-0=tensor([-6.0803], dtype=torch.float64)
+Before batch_idx= 0
+param-0=tensor([-0.1000], dtype=torch.float64)
+grad-0= None
+intensity_log_sum= tensor(-0.6000, dtype=torch.float64, grad_fn=<SumBackward0>)
+intensity_integral= tensor(2.2621, dtype=torch.float64, grad_fn=<SumBackward0>)
+log_likelihood= tensor([-2.8621], dtype=torch.float64, grad_fn=<AddBackward0>)
+After batch_idx= 0
+param-0=tensor([-0.0963], dtype=torch.float64)
+grad-0=tensor([-3.7379], dtype=torch.float64)
+param-0=tensor([-0.0963], dtype=torch.float64)
+grad-0=tensor([-3.7379], dtype=torch.float64)
 optimized rule weights are:
-Head:A, base=-0.9939,
+Head:A, base=-0.0963,
 ---- exit optimize_log_likelihood multi-process----
-log-likelihood= -6.919698602928606
-[initial optimize] Elapsed: 0.2227 sec.
+log-likelihood= -2.8620935506598135
+[initial optimize] Elapsed: 0.1197 sec.
 ----- start BFS -----
 ----- start generate_rule_via_column_generation -----
 ---start calculate intensity grad and integral grad.---
 use 1 workers, run 1 data
-[calculate intensity grad and integral grad] Elapsed: 0.0823 sec.
+[calculate intensity grad and integral grad] Elapsed: 0.0043 sec.
 ---exit calculate intensity grad and integral grad.---
 start enumerating candidate rules.
 ----- start select_and_add_new_rule -----
 -------start multiprocess------
 cpu num = 48, use 2 workers, process 2 candidate rules.
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.1 is tensor([0.], dtype=torch.float64)
-early filter
+rule is :  A --> A , A EQUAL A
+feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
 rule is :  A --> A , A BEFORE A
 feature at t=1.9 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.1 is tensor([1.9702], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0 is tensor([0.8958], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.9 is tensor([2.7419], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1 is tensor([1.7828], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1 is tensor([2.8751], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=2.0 is tensor([0.8958], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-[multiprocess log-grad] Elapsed: 0.1124 sec.
+rule is :  A --> A , A BEFORE A
+feature at t=2.1 is tensor([1.7828], dtype=torch.float64)
+rule is :  A --> A , A EQUAL A
+feature at t=2.1 is tensor([2.8751], dtype=torch.float64)
+rule is :  A --> A , A EQUAL A
+feature at t=0.0 is tensor([0.], dtype=torch.float64)
+rule is :  A --> A , A BEFORE A
+feature at t=0.0 is tensor([0.], dtype=torch.float64)
+rule is :  A --> A , A EQUAL A
+feature at t=0.5 is tensor([0.], dtype=torch.float64)
+rule is :  A --> A , A BEFORE A
+feature at t=0.5 is tensor([0.], dtype=torch.float64)
+rule is :  A --> A , A BEFORE A
+feature at t=1.0 is tensor([0.], dtype=torch.float64)
+rule is :  A --> A , A EQUAL A
+feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
+rule is :  A --> A , A BEFORE A
+feature at t=1.5 is tensor([0.], dtype=torch.float64)
+rule is :  A --> A , A EQUAL A
+feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
+rule is :  A --> A , A BEFORE A
+feature at t=2.0 is tensor([0.8958], dtype=torch.float64)
+rule is :  A --> A , A EQUAL A
+feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
+[multiprocess log-grad] Elapsed: 0.1099 sec.
 -------end multiprocess------
 ------Select N best rule-------
-log-likelihood-grad(all-data) mean= 10.15494, std=nan, Rule = A --> A , A EQUAL A
+log-likelihood-grad(all-data) mean= 8.36503, std=nan, Rule = A --> A , A EQUAL A
 -------------
-log-likelihood-grad(all-data) mean= 2.51280, std=nan, Rule = A --> A , A BEFORE A
+log-likelihood-grad(all-data) mean= 2.27178, std=nan, Rule = A --> A , A BEFORE A
 -------------
 Best rule is: A --> A , A EQUAL A
-Best log-likelihood-grad(all-data) = 10.154937712765634
+Best log-likelihood-grad(all-data) = 8.36503223410804
 new rule added.
 ---- start optimize_log_likelihood multi-process----
 Rule set is:
-Head:A, base=-0.9939,
+Head:A, base=-0.0963,
 Rule0: A --> A , A EQUAL A, weight=0.0100,
 use 1 workers for 1 batches
 [Debug mode] Use SGD
-early filter
+Before batch_idx= 0
+param-0=tensor([-0.0963], dtype=torch.float64)
+grad-0= None
+param-1=tensor([0.0100], dtype=torch.float64)
+grad-1= None
 rule is :  A --> A , A EQUAL A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.1 is tensor([1.9702], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.9 is tensor([2.7419], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.1 is tensor([2.8751], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-param-0=tensor([-0.9879], dtype=torch.float64)
-grad-0=tensor([-6.0622], dtype=torch.float64)
-param-1=tensor([0.0191], dtype=torch.float64)
-grad-1=tensor([-9.1230], dtype=torch.float64)
+intensity_log_sum= tensor(-0.4637, dtype=torch.float64, grad_fn=<SumBackward0>)
+intensity_integral= tensor(2.3012, dtype=torch.float64, grad_fn=<SumBackward0>)
+log_likelihood= tensor([-2.7649], dtype=torch.float64, grad_fn=<AddBackward0>)
+After batch_idx= 0
+param-0=tensor([-0.0926], dtype=torch.float64)
+grad-0=tensor([-3.6988], dtype=torch.float64)
+param-1=tensor([0.0183], dtype=torch.float64)
+grad-1=tensor([-8.2867], dtype=torch.float64)
+param-0=tensor([-0.0926], dtype=torch.float64)
+grad-0=tensor([-3.6988], dtype=torch.float64)
+param-1=tensor([0.0183], dtype=torch.float64)
+grad-1=tensor([-8.2867], dtype=torch.float64)
 optimized rule weights are:
-Head:A, base=-0.9879,
-Rule0: A --> A , A EQUAL A, weight=0.0191,
+Head:A, base=-0.0926,
+Rule0: A --> A , A EQUAL A, weight=0.0183,
 ---- exit optimize_log_likelihood multi-process----
-[optimize log-likelihood (torch)] Elapsed: 0.1167 sec.
-Update Log-likelihood (torch)=  -6.787435369308209
+[optimize log-likelihood (torch)] Elapsed: 0.2178 sec.
+Update Log-likelihood (torch)=  -2.7648769504301107
 Added rule and re-fitted weights. Current rule set is:
-Head:A, base(torch) = -0.9879,
-Rule0: A --> A , A EQUAL A, weight(torch)=0.0191,
+Head:A, base(torch) = -0.0926,
+Rule0: A --> A , A EQUAL A, weight(torch)=0.0183,
 ----- exit select_and_add_new_rule -----
 ----- exit generate_rule_via_column_generation -----
 ----- start generation -----
 cpu num = 48, use 1 workers, generate 1 samples.
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=3.0 is tensor([1.8188], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
-feature at t=2.131644305098101 is tensor([0.], dtype=torch.float64)
-early filter
+feature at t=0.9392854178670583 is tensor([0.9961], dtype=torch.float64)
 rule is :  A --> A , A EQUAL A
-feature at t=1.8086729119443423 is tensor([0.9131], dtype=torch.float64)
-early filter
+feature at t=1.1224027649038204 is tensor([1.9658], dtype=torch.float64)
 rule is :  A --> A , A EQUAL A
-feature at t=3.0278052264613384 is tensor([0.], dtype=torch.float64)
-early filter
+feature at t=1.3668741027349727 is tensor([2.8920], dtype=torch.float64)
 rule is :  A --> A , A EQUAL A
-feature at t=1.0480420423010146 is tensor([0.9853], dtype=torch.float64)
-early filter
+feature at t=2.205720158922947 is tensor([0.9699], dtype=torch.float64)
 rule is :  A --> A , A EQUAL A
-feature at t=1.2672641927320893 is tensor([0.9639], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6024940645236483 is tensor([0.9322], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9188595126676047 is tensor([0.9981], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1087739608298564 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3888113288716095 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.568456685643406 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2106195409366318 is tensor([0.9694], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8308291821007816 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9283915383051505 is tensor([0.9972], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5471703413526026 is tensor([0.9373], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8338958782736101 is tensor([0.9108], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8390483969358866 is tensor([0.9104], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2157335628554797 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.049598372403596 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0842415852698724 is tensor([0.9817], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9138956108886975 is tensor([0.9986], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5883548204802835 is tensor([0.9335], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0143977912876307 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.166192629336301 is tensor([0.9737], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4484249806234768 is tensor([0.9466], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1140373649639885 is tensor([0.9788], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4200799268354296 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.764567622394002 is tensor([0.9172], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.792694460372831 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.930149258814783 is tensor([0.9970], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3114874823746234 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1382130067702452 is tensor([0.9765], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1338250262894305 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1779934173395246 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7936811196852704 is tensor([0.9145], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8784239221225667 is tensor([0.9068], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8733651125735267 is tensor([0.9073], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9277158810181025 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1358787951462093 is tensor([0.9767], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1997634092704907 is tensor([0.9705], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2081493004196993 is tensor([0.9697], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.135728559602515 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0352529329592342 is tensor([0.9866], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.490680573017925 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9401439078866275 is tensor([0.9960], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.098320678466465 is tensor([0.9804], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.010531310669119 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3525657369949347 is tensor([0.9558], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.936616841385232 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7165299793730369 is tensor([0.9216], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9451864836609237 is tensor([0.9955], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.470085620790423 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4836204020759602 is tensor([0.9433], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.440744037297545 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3738024540790432 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0182658432160272 is tensor([0.9882], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8452393231886757 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4101032813504801 is tensor([0.9503], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2204137405132176 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.993289565627828 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.34896704214457 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2956990555114416 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.135810162153016 is tensor([1.9632], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.194780124606589 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0740777623180624 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1293187411330523 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6176319356100908 is tensor([1.8709], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.311726610403419 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.396983765499784 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7574233315758792 is tensor([1.8449], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3163328531117777 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2016090990511996 is tensor([1.9503], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6309792742039617 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.858275601260523 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9037305089419174 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5271357055651307 is tensor([1.8879], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7747128147146864 is tensor([1.8417], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4577907046068703 is tensor([1.9010], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.044436754916652 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5188841247495626 is tensor([1.8894], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.036370761674563 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8297536425436594 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3674985610263977 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3031510059516846 is tensor([1.9306], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7810052896579947 is tensor([1.8405], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3578481211469695 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3796977525129597 is tensor([1.9159], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4355539441820024 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4640934625924205 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2896220352103356 is tensor([1.9332], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.194455065762997 is tensor([1.9517], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6511490989038315 is tensor([1.8646], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.147107217660425 is tensor([1.9610], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2855937295998743 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2637815683807359 is tensor([1.9382], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6343447173205616 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2550101864606813 is tensor([1.9399], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9257556499655113 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7248088469549578 is tensor([1.8509], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8682252118715112 is tensor([1.8246], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0215484661502017 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7720038396178146 is tensor([1.8422], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.625596903059277 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.710638149561433 is tensor([1.8535], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.009237029699853 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.721259197798242 is tensor([1.8516], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9292616200628214 is tensor([0.9113], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1474807139065386 is tensor([1.9609], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2700454793358666 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.241189057184649 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7360696747796958 is tensor([1.8488], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2368380038475832 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6253551490609095 is tensor([1.8694], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1106392124921467 is tensor([1.9682], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.472824398141958 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3211960173402335 is tensor([1.9271], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7452201734119848 is tensor([1.8471], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4252130708937405 is tensor([1.9072], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5822916989264746 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1075901024132433 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7931587947816277 is tensor([1.8383], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1908748613880837 is tensor([2.9434], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.549630171247231 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3714829330970435 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4506987315178583 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4084836404291912 is tensor([2.8800], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4597896447265146 is tensor([2.8653], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.27466494949138 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3557606023378561 is tensor([2.8952], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6624036402961875 is tensor([2.8078], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8600270852039507 is tensor([2.7529], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1743471555253135 is tensor([2.9482], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.809264535436866 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2973992699323047 is tensor([2.9122], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8544194116308959 is tensor([2.7544], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8400456741694704 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0029849479584314 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.934272216856767 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.262168940219044 is tensor([2.9225], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1663211635410322 is tensor([2.9506], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6193435933841416 is tensor([2.8199], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3055860175330816 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.380625420288421 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3296117628279447 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6936514605011446 is tensor([2.7991], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0065254089991544 is tensor([0.9133], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5294281945449733 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2953735859844002 is tensor([2.9128], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3320604299983594 is tensor([2.9021], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4848124281554675 is tensor([2.8581], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.451042381590879 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0094471530014135 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3994359197228903 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9338727417924504 is tensor([1.8308], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3937226912756033 is tensor([2.8843], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0061806942558302 is tensor([0.9134], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.688202230690948 is tensor([2.8006], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.509726553933337 is tensor([2.8510], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6623339126814027 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.026155984149092 is tensor([0.9115], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2372100169224183 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.128134252362999 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3964552725359187 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.356257694635995 is tensor([2.8951], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9021609899848708 is tensor([1.8367], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.216676513593736 is tensor([2.9358], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7530815928377947 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5018594979633813 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.873914943165323 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9514299297508086 is tensor([1.8276], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.507710975067547 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6414336786230734 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0490600265651007 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4853914247682485 is tensor([2.8580], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2212192815211793 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.273619071443986 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.803855671619883 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5316402886706317 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.107327930251184 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1227126298035859 is tensor([2.9635], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7468012746223893 is tensor([0.9188], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.692581054826787 is tensor([0.9238], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3989275474875718 is tensor([0.9513], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2106979949519534 is tensor([0.9694], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6682553934487556 is tensor([0.9261], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.452345666993458 is tensor([0.9463], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9208503692284091 is tensor([2.8311], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6183872654995652 is tensor([0.9307], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9697616417786596 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7347634311746036 is tensor([0.9199], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8391458186689595 is tensor([0.9104], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.049583155989443 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.35142337310773 is tensor([0.9559], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3612803370938966 is tensor([0.9549], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0868474336916956 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2255657340058494 is tensor([0.9680], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0202316372478655 is tensor([1.9001], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3198854677984846 is tensor([0.9589], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.679025059248067 is tensor([0.9251], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7881691522590306 is tensor([0.9150], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.148819043119196 is tensor([0.9754], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.051527834559947 is tensor([1.8942], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0608155262940957 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.319220402892002 is tensor([0.9589], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.211671692150599 is tensor([0.9693], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.589305766859544 is tensor([0.9334], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2358151438720086 is tensor([0.9670], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0092857652258966 is tensor([1.9022], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.019748928929538 is tensor([1.9002], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4452636094932374 is tensor([0.9469], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9565523301676986 is tensor([2.8210], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.863563147696456 is tensor([0.9081], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3035855446688704 is tensor([0.9604], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5286917449045463 is tensor([0.9391], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0931196246623953 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.089349641403348 is tensor([1.8870], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9715820390682346 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.966148599703826 is tensor([2.8183], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9642470296885635 is tensor([2.8189], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.880760089961887 is tensor([0.9066], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.998809489687738 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0566914311853526 is tensor([1.8932], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.045403550046811 is tensor([2.8908], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4487778826458246 is tensor([1.9027], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.232215228210565 is tensor([1.9444], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0589128754949586 is tensor([2.8869], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.163164743258134 is tensor([1.9578], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.151295058684759 is tensor([1.9602], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8076527808654155 is tensor([1.8356], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2862299592381268 is tensor([1.9339], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7860780763579474 is tensor([1.8396], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0336017152470482 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4681347326241387 is tensor([1.8990], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8278148830260172 is tensor([1.8319], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.847645850657449 is tensor([1.8283], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2773326585996947 is tensor([1.9356], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3156384006092345 is tensor([1.9282], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4451446264098564 is tensor([1.9034], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.752475294454641 is tensor([1.8458], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8246080564565235 is tensor([1.8325], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.309695661823202 is tensor([1.9294], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.240001176408307 is tensor([1.9429], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.17800239350351 is tensor([1.9549], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9718514105766327 is tensor([0.9074], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9787044088306276 is tensor([0.9068], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.574052158486939 is tensor([1.8790], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5961351499868117 is tensor([1.8749], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.634880318079145 is tensor([1.8676], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4150678576898965 is tensor([1.9091], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.14954809574232 is tensor([1.9605], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0868410899568905 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5555022701207895 is tensor([1.8825], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2611562632104434 is tensor([1.9388], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.330161977698874 is tensor([1.9254], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.0853126520235357 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5746658241337617 is tensor([1.8789], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.230402998446605 is tensor([1.9447], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.028751230316794 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.091091363862749 is tensor([2.8776], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2362707576516905 is tensor([1.9436], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2365741040039913 is tensor([1.9435], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.901975156011647 is tensor([0.9138], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4666335790167646 is tensor([1.8993], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=3.064867098665135 is tensor([0.], dtype=torch.float64)
-[multiprocess generation] Elapsed: 0.3850 sec.
-MAE = 0.8133064578935899
+feature at t=2.3788138474534657 is tensor([1.9161], dtype=torch.float64)
+[multiprocess generation] Elapsed: 0.0127 sec.
+MAE = 0.1834628751130337
 ----- exit generation -----
 ----- start generate_rule_via_column_generation -----
 ---start calculate intensity grad and integral grad.---
 use 1 workers, run 1 data
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-[calculate intensity grad and integral grad] Elapsed: 0.0030 sec.
+[calculate intensity grad and integral grad] Elapsed: 0.0029 sec.
 ---exit calculate intensity grad and integral grad.---
 start enumerating candidate rules.
 ----- start select_and_add_new_rule -----
 -------start multiprocess------
 cpu num = 48, use 1 workers, process 1 candidate rules.
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.1 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=2.0 is tensor([0.8958], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.5 is tensor([0.], dtype=torch.float64)
-[multiprocess log-grad] Elapsed: 0.0042 sec.
+[multiprocess log-grad] Elapsed: 0.0041 sec.
 -------end multiprocess------
 ------Select N best rule-------
 log-likelihood-grad(all-data) mean= 0.89583, std=nan, Rule = A --> A , A BEFORE A
@@ -1052,1344 +243,137 @@ Best log-likelihood-grad(all-data) = 0.8958341352965282
 new rule added.
 ---- start optimize_log_likelihood multi-process----
 Rule set is:
-Head:A, base=-0.9879,
-Rule0: A --> A , A EQUAL A, weight=0.0191,
+Head:A, base=-0.0926,
+Rule0: A --> A , A EQUAL A, weight=0.0183,
 Rule1: A --> A , A BEFORE A, weight=0.0100,
 use 1 workers for 1 batches
 [Debug mode] Use SGD
-early filter
+Before batch_idx= 0
+param-0=tensor([-0.0926], dtype=torch.float64)
+grad-0= None
+param-1=tensor([0.0183], dtype=torch.float64)
+grad-1= None
+param-2=tensor([0.0100], dtype=torch.float64)
+grad-2= None
 rule is :  A --> A , A EQUAL A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.1 is tensor([1.9702], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.1 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.9 is tensor([2.7419], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=2.0 is tensor([0.8958], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.5 is tensor([0.], dtype=torch.float64)
-param-0=tensor([-0.9826], dtype=torch.float64)
-grad-0=tensor([-5.2413], dtype=torch.float64)
-param-1=tensor([0.0259], dtype=torch.float64)
-grad-1=tensor([-6.7620], dtype=torch.float64)
-param-2=tensor([0.0099], dtype=torch.float64)
-grad-2=tensor([0.1042], dtype=torch.float64)
+intensity_log_sum= tensor(-0.2982, dtype=torch.float64, grad_fn=<SumBackward0>)
+intensity_integral= tensor(1.8559, dtype=torch.float64, grad_fn=<SumBackward0>)
+log_likelihood= tensor([-2.1541], dtype=torch.float64, grad_fn=<AddBackward0>)
+After batch_idx= 0
+param-0=tensor([-0.0894], dtype=torch.float64)
+grad-0=tensor([-3.1441], dtype=torch.float64)
+param-1=tensor([0.0250], dtype=torch.float64)
+grad-1=tensor([-6.6811], dtype=torch.float64)
+param-2=tensor([0.0109], dtype=torch.float64)
+grad-2=tensor([-0.8958], dtype=torch.float64)
+param-0=tensor([-0.0894], dtype=torch.float64)
+grad-0=tensor([-3.1441], dtype=torch.float64)
+param-1=tensor([0.0250], dtype=torch.float64)
+grad-1=tensor([-6.6811], dtype=torch.float64)
+param-2=tensor([0.0109], dtype=torch.float64)
+grad-2=tensor([-0.8958], dtype=torch.float64)
 optimized rule weights are:
-Head:A, base=-0.9826,
-Rule0: A --> A , A EQUAL A, weight=0.0259,
-Rule1: A --> A , A BEFORE A, weight=0.0099,
+Head:A, base=-0.0894,
+Rule0: A --> A , A EQUAL A, weight=0.0250,
+Rule1: A --> A , A BEFORE A, weight=0.0109,
 ---- exit optimize_log_likelihood multi-process----
-[optimize log-likelihood (torch)] Elapsed: 0.1313 sec.
-Update Log-likelihood (torch)=  -5.526322048416333
+[optimize log-likelihood (torch)] Elapsed: 0.1133 sec.
+Update Log-likelihood (torch)=  -2.154147960652524
 Added rule and re-fitted weights. Current rule set is:
-Head:A, base(torch) = -0.9826,
-Rule0: A --> A , A EQUAL A, weight(torch)=0.0259,
-Rule1: A --> A , A BEFORE A, weight(torch)=0.0099,
+Head:A, base(torch) = -0.0894,
+Rule0: A --> A , A EQUAL A, weight(torch)=0.0250,
+Rule1: A --> A , A BEFORE A, weight(torch)=0.0109,
 ----- exit select_and_add_new_rule -----
 ----- exit generate_rule_via_column_generation -----
 ----- start generation -----
 cpu num = 48, use 1 workers, generate 1 samples.
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=2.0 is tensor([0.8958], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.5 is tensor([1.8930], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=2.5 is tensor([2.5822], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
-feature at t=1.7724776621494276 is tensor([0.9165], dtype=torch.float64)
-early filter
+feature at t=1.5493379713577105 is tensor([1.8837], dtype=torch.float64)
 rule is :  A --> A , A BEFORE A
-feature at t=1.7724776621494276 is tensor([0.], dtype=torch.float64)
-early filter
+feature at t=1.5493379713577105 is tensor([0.], dtype=torch.float64)
 rule is :  A --> A , A EQUAL A
-feature at t=2.4992209038532556 is tensor([0.], dtype=torch.float64)
-early filter
+feature at t=2.7871093108452296 is tensor([0.9151], dtype=torch.float64)
 rule is :  A --> A , A BEFORE A
-feature at t=2.4992209038532556 is tensor([0.8522], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9911354305715925 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.9911354305715925 is tensor([0.8113], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7209850303606729 is tensor([0.9212], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7209850303606729 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9135331355350003 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9135331355350003 is tensor([0.9036], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.088730326714703 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.088730326714703 is tensor([0.8879], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7739737909690927 is tensor([0.9163], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7739737909690927 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2497256824703067 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2497256824703067 is tensor([0.8737], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.709783269791875 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.709783269791875 is tensor([0.8345], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1297736343676084 is tensor([0.9773], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1297736343676084 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.840667495131826 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.840667495131826 is tensor([0.8236], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9242734042083163 is tensor([0.9976], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=0.9242734042083163 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0399377073551697 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0399377073551697 is tensor([0.8923], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3198287881579975 is tensor([0.9589], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3198287881579975 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.417452833286215 is tensor([0.9496], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.417452833286215 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8962592987513633 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8962592987513633 is tensor([0.8190], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.971646289845499 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.971646289845499 is tensor([0.8129], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7851083668881134 is tensor([0.9153], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7851083668881134 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0370994526331367 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0370994526331367 is tensor([0.8925], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4822841418016184 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.4822841418016184 is tensor([0.8537], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7439462896788 is tensor([0.9191], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7439462896788 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.893131922281535 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.893131922281535 is tensor([0.8193], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6058275146611543 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6058275146611543 is tensor([0.8432], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9320691018048659 is tensor([0.9968], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=0.9320691018048659 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.125505436104494 is tensor([0.9777], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.125505436104494 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2033797564875948 is tensor([0.9701], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2033797564875948 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1244647954764622 is tensor([0.9778], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1244647954764622 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.824501345359525 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.824501345359525 is tensor([0.8249], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.238674049679738 is tensor([0.9667], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.238674049679738 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0610211444772863 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0610211444772863 is tensor([0.8904], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.643677083049314 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.643677083049314 is tensor([0.8400], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5850449248976952 is tensor([0.9338], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5850449248976952 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6611633519547506 is tensor([0.9267], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6611633519547506 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2810029241747307 is tensor([0.9626], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2810029241747307 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6989865661681485 is tensor([0.9232], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6989865661681485 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5359408273276487 is tensor([0.9384], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5359408273276487 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1123286665369525 is tensor([0.9790], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1123286665369525 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.306029341798901 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.306029341798901 is tensor([0.8688], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3253404139193266 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3253404139193266 is tensor([0.8672], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.248737673035755 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.248737673035755 is tensor([0.8738], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8549219467365075 is tensor([0.9089], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8549219467365075 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7383570675977453 is tensor([0.9196], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7383570675977453 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0611114074366923 is tensor([0.9840], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.0611114074366923 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3463540071722755 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3463540071722755 is tensor([0.8653], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.465847723000429 is tensor([0.9450], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.465847723000429 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7093147630608723 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.7093147630608723 is tensor([0.8345], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4726701990846096 is tensor([0.9443], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4726701990846096 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6055319950579032 is tensor([0.9319], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6055319950579032 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1616467093224025 is tensor([0.9742], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1616467093224025 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.385076851866113 is tensor([0.9527], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.385076851866113 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1658549740415802 is tensor([0.9738], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1658549740415802 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3973143813886317 is tensor([0.9515], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3973143813886317 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.73763484442317 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.73763484442317 is tensor([0.8321], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9740801794070277 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9740801794070277 is tensor([0.8982], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9904912297515787 is tensor([0.9910], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=0.9904912297515787 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9452535486877618 is tensor([0.9098], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9452535486877618 is tensor([0.9008], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9172666323211143 is tensor([0.9124], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9172666323211143 is tensor([0.9033], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1713685320341995 is tensor([1.9562], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1713685320341995 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.210716055398528 is tensor([1.9486], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.210716055398528 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1760720602127686 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1760720602127686 is tensor([1.7692], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7762512580228416 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.7762512580228416 is tensor([1.6662], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.137799310013761 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.137799310013761 is tensor([1.7760], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.066314251664418 is tensor([1.9769], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.066314251664418 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9795355898724694 is tensor([0.9067], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9795355898724694 is tensor([0.8977], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0291712794510453 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0291712794510453 is tensor([1.7954], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1274860109810483 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1274860109810483 is tensor([1.7779], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2321599258596185 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2321599258596185 is tensor([1.7593], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.050170945575161 is tensor([1.9801], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.050170945575161 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4571720552622904 is tensor([1.9011], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4571720552622904 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7665418535567343 is tensor([1.8432], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7665418535567343 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.380330261800157 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.380330261800157 is tensor([1.7335], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.813239624427135 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.813239624427135 is tensor([1.6600], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.466734511943704 is tensor([1.8993], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.466734511943704 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.057940774567589 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.057940774567589 is tensor([1.7903], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5457413209170854 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5457413209170854 is tensor([1.7050], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8721582192150246 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8721582192150246 is tensor([1.6503], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2988313168057646 is tensor([1.9315], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2988313168057646 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9387840239179872 is tensor([0.9104], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9387840239179872 is tensor([0.9013], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3547638361903884 is tensor([1.9207], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3547638361903884 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1101448369520257 is tensor([1.9683], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1101448369520257 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4944823544550214 is tensor([1.8940], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4944823544550214 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2490695883198002 is tensor([1.9411], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2490695883198002 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8040556622897101 is tensor([1.8363], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8040556622897101 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5297140979391493 is tensor([1.8874], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5297140979391493 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6847206795921692 is tensor([1.8583], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6847206795921692 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.757486745754718 is tensor([1.8449], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.757486745754718 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2774870574416246 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2774870574416246 is tensor([1.7514], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.336735687751923 is tensor([1.9242], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.336735687751923 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.307517985718048 is tensor([1.9298], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.307517985718048 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0092230665520174 is tensor([1.9882], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.0092230665520174 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.420271778785935 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.420271778785935 is tensor([1.7266], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.182618389025616 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.182618389025616 is tensor([1.7681], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4532825215626788 is tensor([1.9019], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4532825215626788 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.183261242204307 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.183261242204307 is tensor([1.7680], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8212164527563481 is tensor([1.8332], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8212164527563481 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8030863883119546 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8030863883119546 is tensor([1.6617], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1972614108878405 is tensor([1.9512], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1972614108878405 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.77605388343802 is tensor([1.8415], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.77605388343802 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6535939715367935 is tensor([1.8641], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6535939715367935 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.057469601018497 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.057469601018497 is tensor([1.7904], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9187417614857556 is tensor([0.9122], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9187417614857556 is tensor([0.9031], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5176032800144492 is tensor([1.8897], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5176032800144492 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4941639810946075 is tensor([1.8941], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4941639810946075 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4082553609345778 is tensor([1.9104], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4082553609345778 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6755099409500316 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6755099409500316 is tensor([1.6831], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.682707920057047 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.682707920057047 is tensor([1.6818], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3101998111797166 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3101998111797166 is tensor([1.7457], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2908752243332298 is tensor([1.9330], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2908752243332298 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.512436264587453 is tensor([1.8906], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.512436264587453 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2711156226162745 is tensor([1.9368], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2711156226162745 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1039539813296344 is tensor([1.9695], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1039539813296344 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8633312893588192 is tensor([1.8255], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8633312893588192 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.64631309795588 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.64631309795588 is tensor([1.6880], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9664647533592934 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.9664647533592934 is tensor([1.6348], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2560231558635495 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2560231558635495 is tensor([1.7552], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4924030688417576 is tensor([1.8944], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4924030688417576 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4057857542902676 is tensor([1.9109], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4057857542902676 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9158931456358772 is tensor([0.9125], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9158931456358772 is tensor([0.9034], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2694318539690856 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2694318539690856 is tensor([2.6424], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.396913492565303 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.396913492565303 is tensor([2.6090], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8217226735858705 is tensor([2.7634], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8217226735858705 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8420026017383995 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8420026017383995 is tensor([2.4954], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.702080874643424 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.702080874643424 is tensor([2.5306], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.352842763170189 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.352842763170189 is tensor([2.6205], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5088138894163974 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5088138894163974 is tensor([2.5799], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8682742342367304 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8682742342367304 is tensor([2.4888], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7426848340866283 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.7426848340866283 is tensor([2.5203], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2019216687869543 is tensor([2.9401], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2019216687869543 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1457044758535675 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1457044758535675 is tensor([2.6753], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8213047536646005 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8213047536646005 is tensor([2.5006], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.430419046391954 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.430419046391954 is tensor([2.6002], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5460970309302464 is tensor([2.8407], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5460970309302464 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5946167154727773 is tensor([2.8269], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5946167154727773 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2316682579767764 is tensor([2.9314], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2316682579767764 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.875333346863198 is tensor([2.7487], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.875333346863198 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.411636018634772 is tensor([2.8791], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.411636018634772 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1097964193114622 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1097964193114622 is tensor([2.6850], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7305256918993042 is tensor([2.7887], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7305256918993042 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.769649427707285 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.769649427707285 is tensor([2.5135], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.679096484124269 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.679096484124269 is tensor([2.5364], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0386005021409095 is tensor([0.9104], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0386005021409095 is tensor([1.7937], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9663503840683547 is tensor([1.8249], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9663503840683547 is tensor([0.8989], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5545284592032136 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5545284592032136 is tensor([2.5682], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4578147524182798 is tensor([2.8658], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4578147524182798 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6810453652331105 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6810453652331105 is tensor([2.5359], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.023680034134301 is tensor([0.9118], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.023680034134301 is tensor([1.7964], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.605765912049173 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.605765912049173 is tensor([2.5550], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.269385544487878 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.269385544487878 is tensor([2.6425], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.956254134434161 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.956254134434161 is tensor([2.4670], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.28808460437043 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.28808460437043 is tensor([2.6375], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3147588524604823 is tensor([2.9071], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3147588524604823 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3005946208625638 is tensor([2.9113], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3005946208625638 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4209946506693278 is tensor([2.8764], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4209946506693278 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3388453147302575 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3388453147302575 is tensor([2.6242], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6427372026196856 is tensor([2.8133], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6427372026196856 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.322569368360072 is tensor([2.9049], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.322569368360072 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.515128666308307 is tensor([2.8495], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.515128666308307 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5878057316788827 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5878057316788827 is tensor([2.5596], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9521199843542625 is tensor([1.8275], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9521199843542625 is tensor([0.9001], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.303984437356911 is tensor([2.9103], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.303984437356911 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.243174270472962 is tensor([2.9280], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.243174270472962 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6921667578312585 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6921667578312585 is tensor([2.5331], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6375005291397065 is tensor([2.8148], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6375005291397065 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.919704758350193 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.919704758350193 is tensor([2.4761], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1124981997991337 is tensor([0.9790], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1124981997991337 is tensor([2.6842], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.247923643613658 is tensor([0.9658], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.247923643613658 is tensor([2.6481], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.172130692496342 is tensor([0.9732], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.172130692496342 is tensor([2.6683], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5823233974226296 is tensor([0.9340], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5823233974226296 is tensor([2.5610], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.739049003110045 is tensor([0.9195], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.739049003110045 is tensor([2.5212], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1974266894853227 is tensor([0.9707], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1974266894853227 is tensor([2.6615], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.938439129425249 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.938439129425249 is tensor([3.3728], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3432855227842726 is tensor([0.9566], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3432855227842726 is tensor([2.6230], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.834094393042024 is tensor([0.9108], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.834094393042024 is tensor([2.4974], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.183959713967652 is tensor([0.9720], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.183959713967652 is tensor([2.6651], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.465353001952226 is tensor([0.9450], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.465353001952226 is tensor([2.5912], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.881434877133206 is tensor([0.9065], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.881434877133206 is tensor([2.4856], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.985965973834597 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.985965973834597 is tensor([3.3568], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.500487201411961 is tensor([0.9417], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.500487201411961 is tensor([2.5821], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.795096833127924 is tensor([0.9144], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.795096833127924 is tensor([2.5071], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5896155092978588 is tensor([0.9334], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5896155092978588 is tensor([2.5592], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.9361728722604203 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.9361728722604203 is tensor([3.3736], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.886685010271931 is tensor([0.9060], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.886685010271931 is tensor([2.4843], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4754414506174935 is tensor([0.9441], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.4754414506174935 is tensor([2.5886], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.884461485738338 is tensor([0.9062], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.884461485738338 is tensor([2.4848], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7005812211330413 is tensor([0.9231], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.7005812211330413 is tensor([2.5309], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.077346864480613 is tensor([1.8893], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.077346864480613 is tensor([1.7868], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1517742851046577 is tensor([0.9751], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1517742851046577 is tensor([2.6737], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6376428928662157 is tensor([0.9289], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6376428928662157 is tensor([2.5469], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.54091115723028 is tensor([0.9379], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.54091115723028 is tensor([2.5717], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.877272726540199 is tensor([0.9069], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.877272726540199 is tensor([2.4866], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.267100326756496 is tensor([0.9640], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.267100326756496 is tensor([2.6431], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9424982466439467 is tensor([2.8250], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9424982466439467 is tensor([0.9010], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5502294932942355 is tensor([0.9370], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5502294932942355 is tensor([2.5693], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5436870910630853 is tensor([0.9377], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5436870910630853 is tensor([2.5710], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4595450698077794 is tensor([0.9456], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.4595450698077794 is tensor([2.5927], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.279323126915332 is tensor([0.9628], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.279323126915332 is tensor([2.6398], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5309857054665716 is tensor([0.9389], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5309857054665716 is tensor([2.5742], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2444992225853406 is tensor([0.9661], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2444992225853406 is tensor([2.6490], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9783298912534364 is tensor([2.8149], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9783298912534364 is tensor([0.8978], dtype=torch.float64)
-[multiprocess generation] Elapsed: 0.5000 sec.
-MAE = 0.8160275766789816
+feature at t=2.7871093108452296 is tensor([2.5091], dtype=torch.float64)
+[multiprocess generation] Elapsed: 0.0622 sec.
+MAE = 0.867289456440588
 ----- exit generation -----
 ----- start generate_rule_via_column_generation -----
 ---start calculate intensity grad and integral grad.---
 use 1 workers, run 1 data
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.5 is tensor([0.], dtype=torch.float64)
 [calculate intensity grad and integral grad] Elapsed: 0.0041 sec.
@@ -2400,1104 +384,121 @@ No candidate rule generated.
 ----- exit select_and_add_new_rule -----
 ----- exit generate_rule_via_column_generation -----
 BFS finished, rule set is:
-Head:A, base(torch) = -0.9826,
-Rule0: A --> A , A EQUAL A, weight(torch)=0.0259,
-Rule1: A --> A , A BEFORE A, weight(torch)=0.0099,
+Head:A, base(torch) = -0.0894,
+Rule0: A --> A , A EQUAL A, weight(torch)=0.0250,
+Rule1: A --> A , A BEFORE A, weight(torch)=0.0109,
 ----- start final_tune -----
 ---- start optimize_log_likelihood multi-process----
 Rule set is:
-Head:A, base=-0.9826,
-Rule0: A --> A , A EQUAL A, weight=0.0259,
-Rule1: A --> A , A BEFORE A, weight=0.0099,
+Head:A, base=-0.0894,
+Rule0: A --> A , A EQUAL A, weight=0.0250,
+Rule1: A --> A , A BEFORE A, weight=0.0109,
 use 1 workers for 1 batches
 [Debug mode] Use SGD
-early filter
+Before batch_idx= 0
+param-0=tensor([-0.0894], dtype=torch.float64)
+grad-0= None
+param-1=tensor([0.0250], dtype=torch.float64)
+grad-1= None
+param-2=tensor([0.0109], dtype=torch.float64)
+grad-2= None
 rule is :  A --> A , A EQUAL A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.1 is tensor([1.9702], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.1 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.9 is tensor([2.7419], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.9 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.5 is tensor([0.], dtype=torch.float64)
-param-0=tensor([-0.9784], dtype=torch.float64)
-grad-0=tensor([-4.2321], dtype=torch.float64)
-param-1=tensor([0.0298], dtype=torch.float64)
-grad-1=tensor([-3.9370], dtype=torch.float64)
-param-2=tensor([0.0089], dtype=torch.float64)
-grad-2=tensor([1.], dtype=torch.float64)
+intensity_log_sum= tensor(-0.2153, dtype=torch.float64, grad_fn=<SumBackward0>)
+intensity_integral= tensor(1.8741, dtype=torch.float64, grad_fn=<SumBackward0>)
+log_likelihood= tensor([-2.0894], dtype=torch.float64, grad_fn=<AddBackward0>)
+After batch_idx= 0
+param-0=tensor([-0.0873], dtype=torch.float64)
+grad-0=tensor([-2.1259], dtype=torch.float64)
+param-1=tensor([0.0288], dtype=torch.float64)
+grad-1=tensor([-3.8370], dtype=torch.float64)
+param-2=tensor([0.0109], dtype=torch.float64)
+grad-2=tensor([0.], dtype=torch.float64)
+param-0=tensor([-0.0873], dtype=torch.float64)
+grad-0=tensor([-2.1259], dtype=torch.float64)
+param-1=tensor([0.0288], dtype=torch.float64)
+grad-1=tensor([-3.8370], dtype=torch.float64)
+param-2=tensor([0.0109], dtype=torch.float64)
+grad-2=tensor([0.], dtype=torch.float64)
 optimized rule weights are:
-Head:A, base=-0.9784,
-Rule0: A --> A , A EQUAL A, weight=0.0298,
-Rule1: A --> A , A BEFORE A, weight=0.0089,
+Head:A, base=-0.0873,
+Rule0: A --> A , A EQUAL A, weight=0.0288,
+Rule1: A --> A , A BEFORE A, weight=0.0109,
 ---- exit optimize_log_likelihood multi-process----
 final_tune finished, rule set is:
-Head:A, base(torch) = -0.9784,
-Rule0: A --> A , A EQUAL A, weight(torch)=0.0298,
-Rule1: A --> A , A BEFORE A, weight(torch)=0.0089,
+Head:A, base(torch) = -0.0873,
+Rule0: A --> A , A EQUAL A, weight(torch)=0.0288,
+Rule1: A --> A , A BEFORE A, weight(torch)=0.0109,
 ----- exit final_tune -----
 ----- start generation -----
 cpu num = 48, use 1 workers, generate 1 samples.
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=0.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.0 is tensor([0.9900], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.0 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=1.5 is tensor([2.8538], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=1.5 is tensor([0.], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.0 is tensor([2.8088], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=2.0 is tensor([0.8958], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
 feature at t=2.5 is tensor([0.9418], dtype=torch.float64)
-early filter
 rule is :  A --> A , A BEFORE A
 feature at t=2.5 is tensor([2.5822], dtype=torch.float64)
-early filter
 rule is :  A --> A , A EQUAL A
-feature at t=1.4489081763627483 is tensor([0.9466], dtype=torch.float64)
-early filter
+feature at t=1.8756638342644267 is tensor([0.9070], dtype=torch.float64)
 rule is :  A --> A , A BEFORE A
-feature at t=1.4489081763627483 is tensor([0.], dtype=torch.float64)
-early filter
+feature at t=1.8756638342644267 is tensor([0.], dtype=torch.float64)
 rule is :  A --> A , A EQUAL A
-feature at t=1.1873583015878295 is tensor([0.9717], dtype=torch.float64)
-early filter
+feature at t=1.3461843220068856 is tensor([1.9223], dtype=torch.float64)
 rule is :  A --> A , A BEFORE A
-feature at t=1.1873583015878295 is tensor([0.], dtype=torch.float64)
-early filter
+feature at t=1.3461843220068856 is tensor([0.], dtype=torch.float64)
 rule is :  A --> A , A EQUAL A
-feature at t=0.9651150034380802 is tensor([0.9935], dtype=torch.float64)
-early filter
+feature at t=1.3773691964541717 is tensor([2.8890], dtype=torch.float64)
 rule is :  A --> A , A BEFORE A
-feature at t=0.9651150034380802 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.506647462985093 is tensor([0.9411], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.506647462985093 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6937617475504765 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6937617475504765 is tensor([0.8358], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4660403248156777 is tensor([0.9450], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4660403248156777 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.444810338814147 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.444810338814147 is tensor([0.8569], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9125697425791807 is tensor([0.9987], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=0.9125697425791807 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4546288154090403 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.4546288154090403 is tensor([0.8560], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2008085681024432 is tensor([0.9704], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2008085681024432 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1083772519819357 is tensor([0.9794], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1083772519819357 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1476365550448637 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1476365550448637 is tensor([0.8827], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3517949073507967 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3517949073507967 is tensor([0.8649], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3284418946399923 is tensor([0.9581], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3284418946399923 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.359273360233379 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.359273360233379 is tensor([0.8642], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3494957623000339 is tensor([0.9560], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3494957623000339 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.583373269209 is tensor([0.9339], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.583373269209 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0261751208397867 is tensor([0.9875], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.0261751208397867 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.143205384340044 is tensor([0.9760], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.143205384340044 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5802622633460053 is tensor([0.9342], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5802622633460053 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=0.9878480084923175 is tensor([0.9913], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=0.9878480084923175 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1420434937572876 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1420434937572876 is tensor([0.8832], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.089300159854598 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.089300159854598 is tensor([0.8879], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3455839269433088 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3455839269433088 is tensor([0.8654], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3397100845790222 is tensor([0.9570], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3397100845790222 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.144450434684757 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.144450434684757 is tensor([0.8830], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.286691353358414 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.286691353358414 is tensor([0.8705], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6151346237959348 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6151346237959348 is tensor([0.8424], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4943889472072662 is tensor([0.9423], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4943889472072662 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.314513122020799 is tensor([0.9594], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.314513122020799 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8505462607377732 is tensor([0.9093], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8505462607377732 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9961553961031928 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9961553961031928 is tensor([0.8962], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7366120366651796 is tensor([0.9197], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7366120366651796 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.75394415012892 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.75394415012892 is tensor([0.8308], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7778767514649432 is tensor([0.9160], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7778767514649432 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4180735040020904 is tensor([0.9495], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4180735040020904 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.876417441247758 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.876417441247758 is tensor([0.8207], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.182755318818375 is tensor([0.9721], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.182755318818375 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9486725231152313 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9486725231152313 is tensor([0.9004], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4751599630200516 is tensor([0.9441], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4751599630200516 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3417423582477017 is tensor([0.9568], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3417423582477017 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3638934402711067 is tensor([0.9547], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3638934402711067 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4444385304313823 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.4444385304313823 is tensor([0.8569], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.238886940215414 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.238886940215414 is tensor([0.8747], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5555733582554745 is tensor([0.9365], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5555733582554745 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0319367712935845 is tensor([0.9869], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.0319367712935845 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9633829423107287 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9633829423107287 is tensor([0.8991], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5086250538207455 is tensor([0.9410], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5086250538207455 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1963977636538734 is tensor([0.9708], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1963977636538734 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.364931083694977 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.364931083694977 is tensor([0.8637], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2126425934546314 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2126425934546314 is tensor([0.8770], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.625136125711125 is tensor([0.9301], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.625136125711125 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5602652106006958 is tensor([0.9361], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5602652106006958 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.528419120424826 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.528419120424826 is tensor([1.7080], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4130581512983524 is tensor([1.9095], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4130581512983524 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4309168925051172 is tensor([1.9061], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4309168925051172 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.718447193946008 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.718447193946008 is tensor([1.6758], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1712126315990448 is tensor([1.9563], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1712126315990448 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8514481485263676 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8514481485263676 is tensor([1.6537], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8739192847276334 is tensor([1.8235], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8739192847276334 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.585191203884406 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.585191203884406 is tensor([1.6983], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3884438493884885 is tensor([1.9142], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3884438493884885 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.8272587598866434 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.8272587598866434 is tensor([1.6577], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5844822223287505 is tensor([1.8771], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5844822223287505 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6607531648922942 is tensor([1.8628], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6607531648922942 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6117886878737 is tensor([1.8720], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6117886878737 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.126924465576987 is tensor([1.9650], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.126924465576987 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2163870207143432 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2163870207143432 is tensor([1.7621], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9281567299909896 is tensor([0.9114], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9281567299909896 is tensor([0.9023], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.088041141206541 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.088041141206541 is tensor([1.7849], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5084832103586394 is tensor([1.8914], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5084832103586394 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.5855811135572297 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.5855811135572297 is tensor([1.6983], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1388835766443985 is tensor([1.9626], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1388835766443985 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.7110142366133063 is tensor([1.8535], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.7110142366133063 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4759817749177737 is tensor([1.8975], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4759817749177737 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.820765338507443 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.820765338507443 is tensor([1.6588], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5230597609275556 is tensor([1.8886], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5230597609275556 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.456145378583777 is tensor([1.9013], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.456145378583777 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.7828225446483414 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.7828225446483414 is tensor([1.6651], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1029739862145687 is tensor([1.9697], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1029739862145687 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6441122263078864 is tensor([1.8659], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6441122263078864 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1575174595909308 is tensor([1.9589], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1575174595909308 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8587502669881955 is tensor([1.8263], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8587502669881955 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2485639309641154 is tensor([1.9412], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2485639309641154 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2420200623326911 is tensor([1.9425], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2420200623326911 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1160375364081194 is tensor([1.9671], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1160375364081194 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1914508738679432 is tensor([1.9523], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1914508738679432 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8880183792989613 is tensor([1.8209], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8880183792989613 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.180773888824641 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.180773888824641 is tensor([1.7684], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9103480872192482 is tensor([0.9130], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9103480872192482 is tensor([0.9039], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3811140565672195 is tensor([1.9156], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3811140565672195 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6901130873458499 is tensor([1.8573], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6901130873458499 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5269054589654663 is tensor([1.8879], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5269054589654663 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4874218132381452 is tensor([1.8954], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4874218132381452 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6241458723195281 is tensor([1.8696], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6241458723195281 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5753025236619185 is tensor([1.8788], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5753025236619185 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.0737568044892498 is tensor([1.9754], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.0737568044892498 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6853335709593384 is tensor([1.8582], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6853335709593384 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2944558304633633 is tensor([1.9323], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2944558304633633 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.023510162084965 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.023510162084965 is tensor([1.7964], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.384096948065154 is tensor([1.9151], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.384096948065154 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.586270041692686 is tensor([1.8767], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.586270041692686 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0737811190557864 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0737811190557864 is tensor([1.7874], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6439838891690153 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6439838891690153 is tensor([1.6884], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6137436041526287 is tensor([1.8716], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6137436041526287 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.194946860200977 is tensor([1.9516], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.194946860200977 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3845993839403932 is tensor([1.9150], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3845993839403932 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6291119253510162 is tensor([1.8687], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6291119253510162 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4230152235725857 is tensor([1.9076], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4230152235725857 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1076984419125444 is tensor([1.9687], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1076984419125444 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2578068743191488 is tensor([2.9237], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2578068743191488 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3729319499088595 is tensor([2.8903], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3729319499088595 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2748559333136702 is tensor([2.9188], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2748559333136702 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1396205102504533 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1396205102504533 is tensor([2.6770], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2983219619366153 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2983219619366153 is tensor([2.6348], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1182121694468086 is tensor([2.9648], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1182121694468086 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5878658241959718 is tensor([2.8288], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5878658241959718 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5493642229953444 is tensor([2.8397], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5493642229953444 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.0561960581206775 is tensor([0.9088], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.0561960581206775 is tensor([1.7906], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.796732067928716 is tensor([2.7703], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.796732067928716 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8882170734437995 is tensor([2.7451], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8882170734437995 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.19824943071365 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.19824943071365 is tensor([2.6613], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.326142535586709 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.326142535586709 is tensor([2.6275], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9779650539200782 is tensor([1.8228], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9779650539200782 is tensor([0.8978], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.6511835461848485 is tensor([2.8110], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.6511835461848485 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1005470127456087 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1005470127456087 is tensor([2.6874], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.3039898340363054 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.3039898340363054 is tensor([2.6333], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.081238099033237 is tensor([0.9065], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.081238099033237 is tensor([1.7861], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5049395204513891 is tensor([2.8524], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5049395204513891 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5997103046890295 is tensor([2.8255], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5997103046890295 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.525094605253111 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.525094605253111 is tensor([2.5757], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8222678741873115 is tensor([2.7633], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8222678741873115 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5445921087728938 is tensor([2.8411], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5445921087728938 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6893781158330796 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6893781158330796 is tensor([2.5338], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5219778168637843 is tensor([2.8475], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5219778168637843 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.547456843342296 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.547456843342296 is tensor([2.5700], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1703414887469816 is tensor([2.9494], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1703414887469816 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5014828907881723 is tensor([2.8534], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5014828907881723 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.892258827431669 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.892258827431669 is tensor([2.4829], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.614370102256072 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.614370102256072 is tensor([2.5528], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.004643694576894 is tensor([0.9135], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.004643694576894 is tensor([1.7998], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2069151280844237 is tensor([2.9387], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2069151280844237 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.257960956710827 is tensor([2.9237], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.257960956710827 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5923230769980818 is tensor([2.8276], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5923230769980818 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.4005723460531294 is tensor([2.8823], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.4005723460531294 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3923820605783839 is tensor([2.8847], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3923820605783839 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.1660474884380574 is tensor([2.9507], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.1660474884380574 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9636883949697164 is tensor([1.8254], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9636883949697164 is tensor([0.8991], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.1635427720491203 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.1635427720491203 is tensor([2.6706], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.459984258475567 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.459984258475567 is tensor([2.5926], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.411308303447779 is tensor([2.8792], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.411308303447779 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.3991074996336454 is tensor([2.8827], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.3991074996336454 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5998602788815246 is tensor([2.8254], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5998602788815246 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.437700142077844 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.437700142077844 is tensor([2.5983], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.174153948404351 is tensor([2.9483], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.174153948404351 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.6275168615643425 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.6275168615643425 is tensor([2.5495], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.4709863119544337 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.4709863119544337 is tensor([2.5897], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.2432326753578176 is tensor([2.9280], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.2432326753578176 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.9478186435928637 is tensor([1.8283], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.9478186435928637 is tensor([0.9005], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2111077509757084 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2111077509757084 is tensor([2.6579], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.8199294819388672 is tensor([2.7639], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.8199294819388672 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.699064700297293 is tensor([2.7975], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.699064700297293 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=2.2443953508209122 is tensor([0.], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=2.2443953508209122 is tensor([2.6491], dtype=torch.float64)
-early filter
-rule is :  A --> A , A EQUAL A
-feature at t=1.5121030680695229 is tensor([2.8503], dtype=torch.float64)
-early filter
-rule is :  A --> A , A BEFORE A
-feature at t=1.5121030680695229 is tensor([0.], dtype=torch.float64)
-[multiprocess generation] Elapsed: 0.2762 sec.
-MAE = 0.7275838659944786
+feature at t=1.3773691964541717 is tensor([0.], dtype=torch.float64)
+[multiprocess generation] Elapsed: 0.0101 sec.
+MAE = 0.41111973995428513
 ----- exit generation -----
 ----- exit BFS -----

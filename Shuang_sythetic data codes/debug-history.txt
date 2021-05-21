@@ -521,9 +521,12 @@ MAE: 21.493143598091343
     while HExp MAE is 0.8612458448834678
 
 107. torch multiprocessing: all params are defaultly not shared, including variables, grad, optimizer.
-    Solution: Tensor.share_memory_() to assign tensor as shared.(Note: the tensor.data is shared, but tensor.grad is not.)
+    [Solution]: Tensor.share_memory_() to assign tensor as shared.(Note: the tensor.data is shared, but tensor.grad is not.)
     Also, for pool method, e.g. 3 workers do 12 tasks, worker 0 does task 0,3,6,9. But when it does task 3, it forgets state of task 0. In our exp, this state refers to optimizer state 
-    Solution: merge 12 tasks into 3 large-tasks, then each work does 1 large-tasks.
+    [Solution]: merge 12 tasks into 3 large-tasks, then each work does 1 large-tasks.
+    Bug: parallely update weights leads to model collapse! In the worset case, the actual batch-size = batch-size * worker-num.
+    [Solution]: set a SMALL batch-size
+    Only effective for learning base, but still NAN for the first rule.
 
 108. inspect one-sample. hand-calculate updates to check bug.
 
@@ -531,5 +534,8 @@ MAE: 21.493143598091343
 
 110. good initialization?
     hand calculate the new optimial single weight, then optimize globally.
+
+111. re-sacle data into 10, to constraint gradients.
+    gradient is linear to scale, if sacle is too large, then prone to explode
     
 

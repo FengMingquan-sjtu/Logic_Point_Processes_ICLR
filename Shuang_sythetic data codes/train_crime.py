@@ -27,19 +27,12 @@ def get_model(model_name, dataset_name):
         model.strict_weight_threshold= 0.002
         model.gain_threshold = 0.001
         model.low_grad_threshold = 0.001
-        model.learning_rate = 0.001
+        model.learning_rate = 0.0001
+        
         
 
     if dataset_name.endswith("day"):
         model.time_window = 20
-        model.Time_tolerance = 1
-        model.decay_rate = 0.1
-        model.batch_size = 64
-        model.integral_resolution = 0.1
-        
-
-    elif dataset_name.endswith("twodays"):
-        model.time_window = 24 * 2
         model.Time_tolerance = 1
         model.decay_rate = 0.1
         model.batch_size = 64
@@ -49,24 +42,19 @@ def get_model(model_name, dataset_name):
         model.time_window = 24 * 2
         model.Time_tolerance = 12
         model.decay_rate = 0.01
-        model.batch_size = 64
         model.integral_resolution = 0.5
     
-    elif dataset_name.endswith("month"):
-        model.time_window = 7 * 24
-        model.Time_tolerance = 12
-        model.decay_rate = 0.01
-        model.batch_size = 2
-        model.integral_resolution = 1
+    elif dataset_name.endswith("week_scaled"):
+        scale = 10/(24*7)
+        model.time_window = 24 * 2 * scale
+        model.Time_tolerance = 12 * scale
+        model.decay_rate = 0.1
+        model.batch_size = 64
+        model.integral_resolution = 0.5 * scale
     
-    elif dataset_name.endswith("year"):
-        model.time_window = 7 * 24
-        model.Time_tolerance = 12
-        model.decay_rate = 0.01
-        model.batch_size = 1
-        model.integral_resolution = 1
     
-    model.static_pred_coef = model.time_window/24
+    
+    #model.static_pred_coef = model.time_window/24
     
     return model
 
@@ -97,6 +85,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
     model.num_iter = num_iter
     model.use_cp = use_cp
     model.worker_num = worker_num
+    model.batch_size //= worker_num # use small batch-size, due to #bug107
     
 
     if algorithm == "DFS":
@@ -114,7 +103,7 @@ def run_expriment_group(args):
     #DFS
     #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #BFS
-    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=12, algorithm="BFS")
+    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
 
 
 def process(crime_selected):
@@ -279,6 +268,13 @@ def refreq_data(input_file, output_file, freq):
     data = refreq(date_data, freq)
     np.save("./data/"+output_file, data)
     
+def rescale_data(input_file, output_file, scale):
+    data = np.load("./data/"+input_file, allow_pickle='TRUE').item()
+    for sample in data.values():
+        for d in sample.values():
+            d["time"] = list(np.array(d["time"]) * scale)
+    np.save("./data/"+output_file, data)
+
 
 def dataset_stat(dataset):
     dataset,num_sample =  get_data(dataset_name=dataset, num_sample=-1)
@@ -333,10 +329,12 @@ if __name__ == "__main__":
     #process_raw_data("crime_all.csv","crime_all_day.npy" )
     
     #refreq_data("crime_all_day.npy", "crime_all_week.npy", freq=7)
-    
     #refreq_data("crime_all_day.npy", "crime_all_month.npy", freq=30)
 
-    #data = np.load("./data/crime_all_week.npy", allow_pickle='TRUE').item()
+    #rescale_data("crime_all_day.npy", "crime_all_day_scaled.npy", scale=10/24)
+    #rescale_data("crime_all_week.npy", "crime_all_week_scaled.npy", scale=10/(24*7))
+
+    #data = np.load("./data/crime_all_day_scaled.npy", allow_pickle='TRUE').item()
     #print(len(data.keys()))
     #for k,v in data.items():
     #    print(v)
