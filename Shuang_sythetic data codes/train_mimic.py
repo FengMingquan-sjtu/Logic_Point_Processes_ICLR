@@ -31,22 +31,26 @@ def get_model(model_name, dataset_name):
         model.instant_pred_set = input_preds + drug_preds #input/drugs are instant.
         model.max_rule_body_length = 2
         model.max_num_rule = 20
-        model.weight_threshold = 0.2
-        model.strict_weight_threshold= 0.5
-        model.gain_threshold = 0.1
-        model.low_grad_threshold = 0.05
+        model.weight_threshold = 0.1
+        model.strict_weight_threshold= 0.2
+        model.gain_threshold = 0.005
+        model.low_grad_threshold = 0.005
+        model.learning_rate = 0.0001
+        model.use_decay = True
+        
         
         if dataset_name.endswith("scaled"):
-            scale = 10/600
-            model.decay_rate = 0.1
+            scale = 10/500
         else:
             scale = 1
-            model.decay_rate = 0.01
-            
-        model.time_window = 24 * 5 * scale
+
+        model.decay_rate = 0.01
+        model.scale = scale
+        model.time_window = 500 * scale
         model.Time_tolerance = 10 * scale
         model.batch_size = 64
         model.integral_resolution = 10 * scale
+        model.decay_rate = 0.05
     
     
     return model
@@ -225,22 +229,28 @@ def get_args():
 
 def dataset_stat(dataset):
     dataset,num_sample =  get_data(dataset_name=dataset, num_sample=-1)
-    #print("num sample=", num_sample)
     seq_len = list()
     seq_size= list()
+    seq_tot_size = list()
     for sample in dataset.values():
         l = 0
         s = 0
+        tot_s = 0
         for data in sample.values():
             if data["time"]:
                 l = max(l, data["time"][-1])
+
                 s = max(s, len(data["time"]))
+                tot_s += len(data["time"])
         seq_len.append(l)
         seq_size.append(s)
+        seq_tot_size.append(tot_s)
     seq_len = np.array(seq_len)
     seq_size = np.array(seq_size)
+    seq_tot_size = np.array(seq_tot_size)
     print("seq length mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_len), np.std(seq_len)))
     print("seq size mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_size), np.std(seq_size)))
+    print("seq total size mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_tot_size), np.std(seq_tot_size)))
 
 
 def test(dataset_name, model_file):
@@ -261,17 +271,23 @@ def rescale_data(input_file, output_file, scale):
 
 if __name__ == "__main__":
     #run_preprocess()
-    #process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_0.npy")
-
+    
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     args = get_args()
     if not args.print_log:
         redirect_log_file()
-    run_expriment_group(args)
+    fit(model_name=args.model, dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=72, algorithm="DFS")
+    #run_expriment_group(args)
     #dataset_stat(dataset=args.dataset)
-    #FS_mimic_1.pkl")
+    
     #data, num_sample = get_data(dataset_name=args.dataset, num_sample=100)
     #for k,v in data.items():
     #    print(v)
+        
 
-    #rescale_data("mimic_1.npy", "mimic_1_scaled.npy", scale=10/600)
+    #process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_1.npy")
+    #process_raw_data(input_file="second_mimic_dataset_v3.csv", output_file="mimic_2.npy")
+    #dataset_stat("mimic_2")
+    #dataset_stat("mimic_1")
+    #rescale_data("mimic_1.npy", "mimic_1_scaled.npy", scale=10/500)
+    #dataset_stat("mimic_1_scaled")

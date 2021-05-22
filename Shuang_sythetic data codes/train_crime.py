@@ -24,15 +24,23 @@ def get_model(model_name, dataset_name):
         
         model.max_rule_body_length = 2
         model.max_num_rule = 20
-        model.weight_threshold = 0.001
-        model.strict_weight_threshold= 0.002
-        model.gain_threshold = 0.001
-        model.low_grad_threshold = 0.001
+        model.weight_threshold = 0.1
+        model.strict_weight_threshold= 0.2
+        model.gain_threshold = 0.01
+        model.low_grad_threshold = 0.005
         model.learning_rate = 0.0001
         
         
 
-    if dataset_name.endswith("day"):
+    if dataset_name.endswith("day_scaled"):
+        model.scale = 10/24
+        model.time_window = 20 * model.scale
+        model.Time_tolerance = 1 * model.scale
+        model.decay_rate = 0.1
+        model.batch_size = 64
+        model.integral_resolution = 0.1 * model.scale
+    
+    elif dataset_name.endswith("day"):
         model.time_window = 20
         model.Time_tolerance = 1
         model.decay_rate = 0.1
@@ -51,7 +59,7 @@ def get_model(model_name, dataset_name):
         model.Time_tolerance = 12 *  model.scale
         model.decay_rate = 0.01
         model.batch_size = 64
-        model.integral_resolution = 0.1 *  model.scale
+        model.integral_resolution = 0.5 *  model.scale
     
     
     
@@ -279,18 +287,28 @@ def rescale_data(input_file, output_file, scale):
 
 def dataset_stat(dataset):
     dataset,num_sample =  get_data(dataset_name=dataset, num_sample=-1)
-    #print("num sample=", num_sample)
     seq_len = list()
+    seq_size= list()
+    seq_tot_size = list()
     for sample in dataset.values():
-        t = 0
+        l = 0
+        s = 0
+        tot_s = 0
         for data in sample.values():
             if data["time"]:
-                t = max(t, data["time"][-1])
-        seq_len.append(t)
+                l = max(l, data["time"][-1])
+
+                s = max(s, len(data["time"]))
+                tot_s += len(data["time"])
+        seq_len.append(l)
+        seq_size.append(s)
+        seq_tot_size.append(tot_s)
     seq_len = np.array(seq_len)
-    mean = np.mean(seq_len)
-    std = np.std(seq_len)
-    print("seq length mean = {:.4f}, std = {:.4f}.".format(mean, std))
+    seq_size = np.array(seq_size)
+    seq_tot_size = np.array(seq_tot_size)
+    print("seq length mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_len), np.std(seq_len)))
+    print("seq size mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_size), np.std(seq_size)))
+    print("seq total size mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_tot_size), np.std(seq_tot_size)))
 
 def get_args():
     """Get argument parser.
@@ -323,8 +341,10 @@ if __name__ == "__main__":
     args = get_args()
     if not args.print_log:
         redirect_log_file()
-    #run_expriment_group(args)
-    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
+    
+
+    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
+    #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=4, algorithm="BFS")
     
     
     #process_raw_data("crime_all.csv","crime_all_day.npy" )

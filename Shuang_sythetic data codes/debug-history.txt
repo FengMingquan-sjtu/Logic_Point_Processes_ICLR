@@ -544,3 +544,10 @@ MAE: 21.493143598091343
     with this formula, in crime, single variable, our model mae=0.2, comparable with HawkesExp
     
 
+114. decay is important!! without it, abs value of features may be too large, then it is unstable for linear kernel, since intensity prones to reach 0.
+
+115. lr of base may be smaller than lr of weights. 
+    if lr of base is too large, then it is unstable, may goes to negative. 
+
+116. mimic- #pred large, freq low.  --> use large resolution, random sampling candidate rule, to accelerate.
+    crime, #pred small, freq high.  --> too slow since get_feature() is slow, change to crime_day, to lower freq.

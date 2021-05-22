@@ -91,6 +91,7 @@ class Logic_Learning_Model():
         self.debug_mode = False
         self.use_exp_kernel = False
         self.scale = 1
+        self.use_decay = True
 
 
         #claim parameters and rule set
@@ -100,7 +101,7 @@ class Logic_Learning_Model():
         if self.use_exp_kernel:
             init_base = -0.1
         else:
-            init_base = 0.1
+            init_base = 0.2
 
         for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
@@ -234,7 +235,7 @@ class Logic_Learning_Model():
         if self.use_exp_kernel:
             intensity = torch.exp(intensity)
         else:
-            intensity = torch.nn.functional.relu(intensity) + 1e-10
+            intensity = torch.nn.functional.relu(intensity) + 1e-3
         
 
         return intensity
@@ -307,9 +308,13 @@ class Logic_Learning_Model():
                     time_1 = time_combination_dic[temporal_relation_idx[1]]
                 time_difference = time_0 - time_1
                 if template['temporal_relation_type'][idx] == self.BEFORE:
-                    temporal_kernel *= (time_difference < - self.Time_tolerance)  * np.exp(-self.decay_rate *(cur_time - time_combination_dic[temporal_relation_idx[0]]))
+                    temporal_kernel *= (time_difference < - self.Time_tolerance) 
+                    if self.use_decay:
+                        temporal_kernel *= np.exp(-self.decay_rate *(cur_time - time_combination_dic[temporal_relation_idx[0]]))
                 elif template['temporal_relation_type'][idx] == self.EQUAL:
-                    temporal_kernel *= (- self.Time_tolerance <= time_difference) * (time_difference < 0) * np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
+                    temporal_kernel *= (- self.Time_tolerance <= time_difference) * (time_difference < 0)
+                    if self.use_decay:
+                        temporal_kernel *=  np.exp(-self.decay_rate*(cur_time - time_combination_dic[temporal_relation_idx[0]]))
                 elif template['temporal_relation_type'][idx] == self.STATIC:
                     static_pred_idx = temporal_relation_idx[0]
                     if static_pred_idx in [0,1,2,3,4,5,]: #hard code for crime dataset.
@@ -319,7 +324,9 @@ class Logic_Learning_Model():
                         static_time_tolerance = 1 * self.scale
                     temporal_kernel *= (- static_time_tolerance <= time_difference) * (time_difference < 0) 
                     #static relation are treated as 1, without decay. 
-            feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64) * self.decay_rate #this decay is important for convergence, see bug#113
+            feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
+            if self.use_decay:
+                feature *= self.decay_rate #this decay is important for convergence, see bug#113
         if self.debug_mode:
             print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
             print("feature at t={} is {}".format( cur_time,feature), flush=1)
@@ -524,7 +531,9 @@ class Logic_Learning_Model():
         else:
             #s
             #optimizer = optim.SGD(params, lr=self.learning_rate)
-            optimizer = optim.SGD(params, lr=self.learning_rate)
+            
+            params_dicts = [{"params": params[0], "lr":0.0001}, {"params": params[1:], "lr":0.001}] 
+            optimizer = optim.SGD(params_dicts, lr=self.learning_rate, weight_decay=0.1)
 
         for batch_idx, sample_ID_batch in enumerate(sample_ID_batch_list):
             # update weitghs
@@ -546,10 +555,10 @@ class Logic_Learning_Model():
                 for idx,p in enumerate(params):
                     print("param-{}={}".format(idx, p.data))
                     print("grad-{}={}".format(idx, p.grad.data),flush=1)
-        
-        for idx,p in enumerate(params):
-            print("param-{}={}".format(idx, p.data))
-            print("grad-{}={}".format(idx, p.grad.data),flush=1)
+        if self.debug_mode:
+            for idx,p in enumerate(params):
+                print("param-{}={}".format(idx, p.data))
+                print("grad-{}={}".format(idx, p.grad.data),flush=1)
         return log_likelihood.detach().numpy()
 
 
@@ -760,7 +769,7 @@ class Logic_Learning_Model():
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
-        for head_predicate_sign in [1, 0]:
+        for head_predicate_sign in [1, ]:
             if head_predicate_idx in self.instant_pred_set and head_predicate_sign == 0:
                 # instant pred should not be negative
                 continue
@@ -1116,6 +1125,7 @@ class Logic_Learning_Model():
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
+        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
         print("----- start BFS -----", flush=1)
         #Begin Breadth(width) First Search
         #generate new rule from scratch
@@ -1126,7 +1136,7 @@ class Logic_Learning_Model():
         while self.num_formula < self.max_num_rule and is_continue:
             is_update_weight, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, training_dataset)
             if is_update_weight:
-                self.generate_target( head_predicate_idx, testing_dataset)
+                self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
         
             
             
@@ -1159,14 +1169,14 @@ class Logic_Learning_Model():
                 if not is_continue: # this rule is fully explored, don't re-visit it.
                     extended_rules.add(rule_str) 
                 if is_update_weight:
-                    self.generate_target( head_predicate_idx, testing_dataset)
+                    self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
 
 
         print("BFS finished, rule set is:")
         self.print_rule_cp()
 
         self.final_tune(head_predicate_idx, training_dataset)
-        self.generate_target( head_predicate_idx, testing_dataset)
+        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=100)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit BFS -----", flush=1)
@@ -1269,6 +1279,7 @@ class Logic_Learning_Model():
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
+        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
         print("----- start DFS -----", flush=1)
         rule_to_extend_str_stack = list() #use stack to implement DFS
         while self.num_formula < self.max_num_rule:
@@ -1299,10 +1310,10 @@ class Logic_Learning_Model():
                         rule_to_extend_str_stack.append(added_rule_str)
             if is_update_weight:
                 #test
-                self.generate_target( head_predicate_idx, testing_dataset)
+                self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
 
         self.final_tune(head_predicate_idx, training_dataset)
-        self.generate_target( head_predicate_idx, testing_dataset)
+        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=100)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit DFS -----", flush=1)
@@ -1312,7 +1323,8 @@ class Logic_Learning_Model():
         target_sample_length = len(data_sample[head_predicate_idx]["time"])
 
         if target_sample_length <= 1:
-            return input_target_sample["time"]
+            return 0
+            #return input_target_sample["time"]
         
         # obtain the maximal intensity
         T_max = data_sample[head_predicate_idx]["time"][-1] + self.Time_tolerance

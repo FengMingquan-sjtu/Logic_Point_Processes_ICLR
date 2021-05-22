@@ -182,4 +182,24 @@ mimic{
     first try: 2021-05-14 19:15:42.871314
     second try, after fixing bug#96-97: 2021-05-15 00:06:26.243448
     aftre tuning params : 2021-05-15 09:09:39.836282
+
+    dataset_path is  ./data/mimic_1.npy
+    sample num is  2023
+    num pred is 62
+    seq length mean = 506.7102, std = 467.8244.
+    seq size mean = 2.0005, std = 0.0222.
+
+    dataset_path is  ./data/mimic_1_scaled.npy
+    sample num is  2023
+    num pred is 62
+    seq length mean = 10.1342, std = 9.3565.
+    seq size mean = 2.0005, std = 0.0222.
+    seq total size mean = 80.9768, std = 5.0755.
+
+    dataset_path is  ./data/mimic_2.npy
+    sample num is  2275
+    num pred is 62
+    seq length mean = 315.6981, std = 307.5989.
+    seq size mean = 1.9996, std = 0.0210.
+
 }
