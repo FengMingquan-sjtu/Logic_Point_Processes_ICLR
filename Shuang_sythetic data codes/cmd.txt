@@ -1,13 +1,20 @@
 setsid python3 logic_learning.py 
 setsid python3 generate_synthetic_data.py
 python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --print_log
-setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16
-setsid python3 train_crime.py --dataset crime_all_week_scaled --worker 4
-setsid python3 train_crime.py --dataset crime_all_week_scaled --worker 4
-setsid python3 train_crime.py --dataset crime_all_week_scaled --worker 16
+python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 10 --print_log 
+setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 10
+setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 11
+setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 12
+setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 13
 python3 train_crime.py --dataset crime_all_week_scaled --worker 5 --print_log
 
 setsid python3 train_mimic.py --dataset mimic_1_scaled --worker 16
+setsid python3 train_mimic.py --dataset mimic_1_scaled --worker 16 --head_predicate_idx 61
+setsid python3 train_mimic.py --dataset mimic_1_scaled --worker 16 --head_predicate_idx 51
+python3 train_mimic.py --dataset mimic_1_scaled --worker 16 --print_log
+python3 train_mimic.py --dataset mimic_1_scaled --worker 16 --head_predicate_idx 61 --print_log
+
+
 ps -ef |grep logic |awk '{print $2}'|xargs kill -9
 ps -ef |grep synthetic |awk '{print $2}'|xargs kill -9
 ps -ef |grep crime |awk '{print $2}'|xargs kill -9

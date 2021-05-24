@@ -44,6 +44,7 @@ class Logic_Learning_Model():
         self.predicate_notation = ['A','B', 'C', 'D']
         self.static_pred_set = []
         self.instant_pred_set = []
+        self.survival_pred_set = []
         self.body_pred_set = []
         self.body_pred_set_first_part = []
         self.body_pred_set_second_part = []
@@ -92,8 +93,10 @@ class Logic_Learning_Model():
         self.use_exp_kernel = False
         self.scale = 1
         self.use_decay = True
+        self.use_2_bases = True
+        self.init_params()
 
-
+    def init_params(self):
         #claim parameters and rule set
         self.model_parameter = {}
         self.logic_template = {}
@@ -105,25 +108,30 @@ class Logic_Learning_Model():
 
         for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
-            self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
-            #self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
-            #self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)
+            if self.use_2_bases:
+                self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
+                self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
+            else:
+                self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
+            #
             #self.model_parameter[idx]['base_cp'] = cp.Variable(1)
             self.logic_template[idx] = {}
 
     def print_info(self):
         print("-----key model information----")
         for valuename, value in vars(self).items():
-            if isinstance(value, float) or isinstance(value, int):
+            if isinstance(value, float) or isinstance(value, int) or isinstance(value, list):
                 print("{}={}".format(valuename, value))
         print("----",flush=1)
 
     def get_model_parameters(self, head_predicate_idx):
         # collect all parameters in a list, used as input of Adam optimizer.
         parameters = list()
-        parameters.append(self.model_parameter[head_predicate_idx]['base'])
-        #parameters.append(self.model_parameter[head_predicate_idx]['base_0_1'])
-        #parameters.append(self.model_parameter[head_predicate_idx]['base_1_0'])
+        if self.use_2_bases:
+            parameters.append(self.model_parameter[head_predicate_idx]['base_0_1'])
+            parameters.append(self.model_parameter[head_predicate_idx]['base_1_0'])
+        else:
+            parameters.append(self.model_parameter[head_predicate_idx]['base'])
         for formula_idx in range(self.num_formula): #TODO:potential bug
             parameters.append(self.model_parameter[head_predicate_idx][formula_idx]['weight'])
         return parameters
@@ -156,12 +164,14 @@ class Logic_Learning_Model():
     def set_model_parameters(self, head_predicate_idx, param_array):
         # set model params
         parameters = list()
-        #base_0_1 = param_array[0]
-        #base_1_0 = param_array[1]
-        #self.model_parameter[head_predicate_idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * base_0_1).double(), requires_grad=True)
-        #self.model_parameter[head_predicate_idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * base_1_0).double(), requires_grad=True)
-        base = param_array[0]
-        self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * base).double(), requires_grad=True)
+        if self.use_2_bases:
+            base_0_1 = param_array[0]
+            base_1_0 = param_array[1]
+            self.model_parameter[head_predicate_idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * base_0_1).double(), requires_grad=True)
+            self.model_parameter[head_predicate_idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * base_1_0).double(), requires_grad=True)
+        else:
+            base = param_array[0]
+            self.model_parameter[head_predicate_idx]['base'] = torch.autograd.Variable((torch.ones(1) * base).double(), requires_grad=True)
         for formula_idx in range(self.num_formula):
             weight = param_array[formula_idx+1]
             self.model_parameter[head_predicate_idx][formula_idx]['weight'] = torch.autograd.Variable((torch.ones(1) * weight).double(), requires_grad=True)
@@ -189,9 +199,13 @@ class Logic_Learning_Model():
         # delete weight and logic-template
         tmp_logic_template = dict()
         tmp_model_parameter = dict()
-        tmp_model_parameter['base'] = self.model_parameter[head_predicate_idx]['base']
-        #tmp_model_parameter['base_0_1'] = self.model_parameter[head_predicate_idx]['base_0_1']
-        #tmp_model_parameter['base_1_0'] = self.model_parameter[head_predicate_idx]['base_1_0']
+        
+        
+        if self.use_2_bases:
+            tmp_model_parameter['base_0_1'] = self.model_parameter[head_predicate_idx]['base_0_1']
+            tmp_model_parameter['base_1_0'] = self.model_parameter[head_predicate_idx]['base_1_0']
+        else:
+            tmp_model_parameter['base'] = self.model_parameter[head_predicate_idx]['base']
         #tmp_model_parameter['base_cp'] = self.model_parameter[head_predicate_idx]['base_cp']
         
         new_formula_idx = 0
@@ -230,7 +244,15 @@ class Logic_Learning_Model():
         else:
             intensity = torch.zeros(1)
 
-        base = self.model_parameter[head_predicate_idx]['base']
+        if self.use_2_bases:
+            state = self.get_state(cur_time, head_predicate_idx, dataset[sample_ID])
+            if state - 1 == 0:
+                base = self.model_parameter[head_predicate_idx]['base_1_0']
+            else:
+                base = self.model_parameter[head_predicate_idx]['base_0_1']
+
+        else:
+            base = self.model_parameter[head_predicate_idx]['base']
         intensity = base + torch.sum(intensity)
         if self.use_exp_kernel:
             intensity = torch.exp(intensity)
@@ -332,10 +354,7 @@ class Logic_Learning_Model():
             print("feature at t={} is {}".format( cur_time,feature), flush=1)
         return feature
 
-
-    def get_formula_effect(self, cur_time, head_predicate_idx, history, template):
-        ## Note this part is very important!! For generator, this should be np.sum(cur_time > head_transition_time) - 1
-        ## Since at the transition times, choose the intensity function right before the transition time
+    def get_state(self, cur_time, head_predicate_idx, history):
         head_transition_time = np.array(history[head_predicate_idx]['time'])
         head_transition_state = np.array(history[head_predicate_idx]['state'])
         if head_predicate_idx in self.instant_pred_set:
@@ -351,6 +370,12 @@ class Logic_Learning_Model():
                     cur_state = 0
                 else:
                     cur_state = head_transition_state[idx]
+        return cur_state
+
+    def get_formula_effect(self, cur_time, head_predicate_idx, history, template):
+        ## Note this part is very important!! For generator, this should be np.sum(cur_time > head_transition_time) - 1
+        ## Since at the transition times, choose the intensity function right before the transition time
+        cur_state = self.get_state(cur_time, head_predicate_idx, history)
 
         counter_state = 1 - cur_state
         #print("counter_state=", counter_state)
@@ -531,8 +556,14 @@ class Logic_Learning_Model():
         else:
             #s
             #optimizer = optim.SGD(params, lr=self.learning_rate)
-            
-            params_dicts = [{"params": params[0], "lr":0.0001}, {"params": params[1:], "lr":0.001}] 
+            if self.use_2_bases:
+                base_params = {"params": params[0], "lr":0.0001}
+                base_params = {"params": params[1], "lr":0.00001}
+                weight_params = {"params": params[2:], "lr":0.001}
+            else:
+                base_params = {"params": params[:1], "lr":0.0001}
+                weight_params = {"params": params[1:], "lr":0.001}
+            params_dicts = [base_params, weight_params] 
             optimizer = optim.SGD(params_dicts, lr=self.learning_rate, weight_decay=0.1)
 
         for batch_idx, sample_ID_batch in enumerate(sample_ID_batch_list):
@@ -769,7 +800,7 @@ class Logic_Learning_Model():
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
-        for head_predicate_sign in [1, ]:
+        for head_predicate_sign in [1, 0]:
             if head_predicate_idx in self.instant_pred_set and head_predicate_sign == 0:
                 # instant pred should not be negative
                 continue
@@ -1121,7 +1152,7 @@ class Logic_Learning_Model():
 
     def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag):
         self.print_info()
-
+        self.init_params()
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
@@ -1200,8 +1231,10 @@ class Logic_Learning_Model():
     def print_rule(self):
         for head_predicate_idx, rules in self.logic_template.items():
             
-            #print("Head:{}, base_0_1={:.4f}, base_1_0={:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base_0_1'].data[0], self.model_parameter[head_predicate_idx]['base_1_0'].data[0]))
-            print("Head:{}, base={:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
+            if self.use_2_bases:
+                print("Head:{}, base_0_1={:.4f}, base_1_0={:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base_0_1'].data[0], self.model_parameter[head_predicate_idx]['base_1_0'].data[0]))
+            else:
+                print("Head:{}, base={:.4f},".format(self.predicate_notation[head_predicate_idx], self.model_parameter[head_predicate_idx]['base'].data[0]))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
@@ -1216,11 +1249,13 @@ class Logic_Learning_Model():
                 base_cp = self.model_parameter[head_predicate_idx]['base_cp'].value
                 print("Head:{}, base(cp)={:.4f},".format(self.predicate_notation[head_predicate_idx], base_cp[0]))
             else:
-                #base_0_1 = self.model_parameter[head_predicate_idx]['base_0_1'].item()
-                #base_1_0 = self.model_parameter[head_predicate_idx]['base_1_0'].item()
-                #print("Head:{}, base_0_1(torch) = {:.4f}, base_1_0(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base_0_1, base_1_0))
-                base = self.model_parameter[head_predicate_idx]['base'].item()
-                print("Head:{}, base(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base))
+                if self.use_2_bases:
+                    base_0_1 = self.model_parameter[head_predicate_idx]['base_0_1'].item()
+                    base_1_0 = self.model_parameter[head_predicate_idx]['base_1_0'].item()
+                    print("Head:{}, base_0_1(torch) = {:.4f}, base_1_0(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base_0_1, base_1_0))
+                else:
+                    base = self.model_parameter[head_predicate_idx]['base'].item()
+                    print("Head:{}, base(torch) = {:.4f},".format(self.predicate_notation[head_predicate_idx], base))
             for rule_id, rule in rules.items():
                 rule_str = "Rule{}: ".format(rule_id)
                 rule_str += self.get_rule_str(rule, head_predicate_idx)
@@ -1276,6 +1311,7 @@ class Logic_Learning_Model():
 
     def DFS(self,head_predicate_idx, training_dataset, testing_dataset, tag):
         self.print_info()
+        self.init_params()
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
@@ -1288,7 +1324,7 @@ class Logic_Learning_Model():
                 is_update_weight, is_continue, added_rule_str_list = self.generate_rule_via_column_generation(head_predicate_idx, training_dataset)
                 for added_rule_str in added_rule_str_list:
                     rule_to_extend_str_stack.append(added_rule_str)
-                if len(rule_to_extend_str_stack) == 0: #no new rule added, DFS terminates.
+                if not is_continue: #no new rule added, DFS terminates.
                     break
 
             else: #extend existing rule
@@ -1304,7 +1340,7 @@ class Logic_Learning_Model():
                     print("--- extend this rule:", rule_to_extend_str)
                     rule_template = self.logic_template[head_predicate_idx][rule_to_extend_idx]
                     is_update_weight, is_continue, added_rule_str_list = self.add_one_predicate_to_existing_rule(head_predicate_idx, training_dataset, rule_template)
-                    if (not is_continue) or len(added_rule_str_list) == 0: #don't re-visit this rule.
+                    if not is_continue: #don't re-visit this rule.
                         rule_to_extend_str_stack.pop()
                     for added_rule_str in added_rule_str_list:
                         rule_to_extend_str_stack.append(added_rule_str)
@@ -1321,54 +1357,67 @@ class Logic_Learning_Model():
     def generate_target_one_sample(self, head_predicate_idx, data_sample, num_repeat):
         input_target_sample = {"time": data_sample[head_predicate_idx]["time"].copy(), "state": data_sample[head_predicate_idx]["state"].copy()}
         target_sample_length = len(data_sample[head_predicate_idx]["time"])
-
-        if target_sample_length <= 1:
-            return 0
-            #return input_target_sample["time"]
         
-        # obtain the maximal intensity
-        T_max = data_sample[head_predicate_idx]["time"][-1] + self.Time_tolerance
-        local_sample_ID = 0
-        local_data = {local_sample_ID: data_sample}
-        intensity_potential = []
-        for t in np.arange(0, T_max, self.integral_resolution):
-            t = t.item() #convert np scalar to float
-            intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
-            intensity_potential.append(intensity)
-        if len(intensity_potential) == 0:
-            return input_target_sample["time"]
-        intensity_max = max(intensity_potential)
-        #print("intensity_max=", intensity_max,flush=1)
+        if head_predicate_idx in self.survival_pred_set:
+            # survival pred, calculate ACC
+            
+            local_sample_ID = 0
+            local_data = {local_sample_ID: data_sample}
+            integral = self.intensity_integral(head_predicate_idx, local_data, local_sample_ID)
+            integral = integral.detach().numpy()
+            survival_rate = np.exp(-integral)
+            is_survival = int(survival_rate > 0.61)
+            return abs(is_survival - input_target_sample["state"][-1])
 
-        generated_sample_time = [data_sample[head_predicate_idx]["time"][0] ,]
-        for i in range(target_sample_length-1):
-            T_min = input_target_sample["time"][i]
-            generated_time = list()
-            data_sample[head_predicate_idx] = {"time": input_target_sample["time"][:i+1], "state":input_target_sample["state"][:i+1]} 
-            for r in range(num_repeat):
-                t = T_min
-                #print("run idx=",r,flush=1)
-                while t < T_max:
-                    time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
-                    t = t + time_to_event
-                    #print("t=",t,flush=1)
-                    if t >= T_max:
-                        t=T_max
-                        break
-                    intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
-                    ratio = min(intensity / intensity_max, 1)
-                    flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
-                    if flag-1 == 0: # accept
-                        break
-                generated_time.append(t)
-            t = sum(generated_time)/len(generated_time)
-            generated_sample_time.append(t)
-        
-        gt = np.array(input_target_sample["time"])
-        generated = np.array(generated_sample_time)
-        mae = np.abs(gt- generated).mean()
-        #print("generated 1 sample, mae=",mae,flush=1)
-        return mae
+        else:
+            # other preds, calculate MAE
+            if target_sample_length <= 1:
+                return 0
+                #return input_target_sample["time"]
+            
+            # obtain the maximal intensity
+            T_max = data_sample[head_predicate_idx]["time"][-1] + self.Time_tolerance
+            local_sample_ID = 0
+            local_data = {local_sample_ID: data_sample}
+            intensity_potential = []
+            for t in np.arange(0, T_max, self.integral_resolution):
+                t = t.item() #convert np scalar to float
+                intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
+                intensity_potential.append(intensity)
+            if len(intensity_potential) == 0:
+                return input_target_sample["time"]
+            intensity_max = max(intensity_potential)
+            #print("intensity_max=", intensity_max,flush=1)
+
+            generated_sample_time = [data_sample[head_predicate_idx]["time"][0] ,]
+            for i in range(target_sample_length-1):
+                T_min = input_target_sample["time"][i]
+                generated_time = list()
+                data_sample[head_predicate_idx] = {"time": input_target_sample["time"][:i+1], "state":input_target_sample["state"][:i+1]} 
+                for r in range(num_repeat):
+                    t = T_min
+                    #print("run idx=",r,flush=1)
+                    while t < T_max:
+                        time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
+                        t = t + time_to_event
+                        #print("t=",t,flush=1)
+                        if t >= T_max:
+                            t=T_max
+                            break
+                        intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
+                        ratio = min(intensity / intensity_max, 1)
+                        flag = np.random.binomial(1, ratio)     # if flag = 1, accept, if flag = 0, regenerate
+                        if flag-1 == 0: # accept
+                            break
+                    generated_time.append(t)
+                t = sum(generated_time)/len(generated_time)
+                generated_sample_time.append(t)
+            
+            gt = np.array(input_target_sample["time"])
+            generated = np.array(generated_sample_time)
+            mae = np.abs(gt- generated).mean()
+            #print("generated 1 sample, mae=",mae,flush=1)
+            return mae
 
     def generate_target(self, head_predicate_idx, dataset, num_repeat=100):
         #print(self.instant_pred_set)
@@ -1386,12 +1435,15 @@ class Logic_Learning_Model():
         with Timer("multiprocess generation") as t:
             if worker_num > 1: #multiprocessing
                 with Pool(worker_num) as pool:
-                    mae = pool.starmap(self.generate_target_one_sample, arg_list)
+                    res = pool.starmap(self.generate_target_one_sample, arg_list)
             else: #single process, not use pool.
-                mae = [self.generate_target_one_sample(*arg) for arg in arg_list]
+                res = [self.generate_target_one_sample(*arg) for arg in arg_list]
         
-        mae = np.array(mae).mean()
-        print("MAE =", mae)
+        res = np.array(res).mean()
+        if head_predicate_idx in self.survival_pred_set:
+            print("ACC =", res)
+        else:
+            print("MAE =", res)
         print("----- exit generation -----", flush=1)
 
         

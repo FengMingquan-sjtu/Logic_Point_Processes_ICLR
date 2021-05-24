@@ -195,6 +195,7 @@ mimic{
     seq length mean = 10.1342, std = 9.3565.
     seq size mean = 2.0005, std = 0.0222.
     seq total size mean = 80.9768, std = 5.0755.
+    61% survival.
 
     dataset_path is  ./data/mimic_2.npy
     sample num is  2275

@@ -10,9 +10,9 @@ import pandas
 from logic_learning import Logic_Learning_Model
 from utils import redirect_log_file, Timer, get_data
 
-def get_model(model_name, dataset_name):
+def get_model(model_name, dataset_name, head_predicate_idx):
     if model_name == "crime":
-        model = Logic_Learning_Model(head_predicate_idx=[13])
+        model = Logic_Learning_Model(head_predicate_idx=[head_predicate_idx,])
         
         model.predicate_notation = ["SPRING", "SUMMER", "AUTUMN", "WINTER", "WEEKDAY", "WEEKEND", "MORNING", "AFTERNOON", "EVENING", "NIGHT",  'A','B', 'C', 'D']
         model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
@@ -24,13 +24,18 @@ def get_model(model_name, dataset_name):
         
         model.max_rule_body_length = 2
         model.max_num_rule = 20
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.2
+        
         model.gain_threshold = 0.01
         model.low_grad_threshold = 0.005
         model.learning_rate = 0.0001
+        model.use_2_bases = False
         
-        
+    if head_predicate_idx in [10,13]:
+        model.weight_threshold = 0.1
+        model.strict_weight_threshold= 0.2
+    else:
+        model.weight_threshold = 0.01
+        model.strict_weight_threshold= 0.02
 
     if dataset_name.endswith("day_scaled"):
         model.scale = 10/24
@@ -67,7 +72,7 @@ def get_model(model_name, dataset_name):
     
     return model
 
-def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
+def fit(model_name, dataset_name, head_predicate_idx, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
     time_ = str(datetime.datetime.now())
     print("Start time is", time_, flush=1)
 
@@ -75,7 +80,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
         os.makedirs("./model")
     
     #get model
-    model = get_model(model_name, dataset_name)
+    model = get_model(model_name, dataset_name, head_predicate_idx)
     
     #set initial rules if required
     if rule_set_str:
@@ -319,6 +324,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default="crime")
     parser.add_argument('--dataset', type=str, default="crime_all_day")
+    
+    parser.add_argument('--head_predicate_idx', type=int, default=13, help="A-10,B-11,C-12,D-13")
     parser.add_argument('--worker', type=int, default=16)
     parser.add_argument('--print_log', action="store_true", help="to print out training log. Defaultly, log is saved in a file named with date-time, in ./log folder.")
     
@@ -343,7 +350,7 @@ if __name__ == "__main__":
         redirect_log_file()
     
 
-    fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
+    fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=4, algorithm="BFS")
     
     

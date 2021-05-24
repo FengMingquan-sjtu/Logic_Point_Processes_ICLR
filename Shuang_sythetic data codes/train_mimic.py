@@ -10,33 +10,43 @@ import pandas
 from logic_learning import Logic_Learning_Model
 from utils import redirect_log_file, Timer, get_data
 
-def get_model(model_name, dataset_name):
-    lab_preds = list(range(34)) #[0-33] 
-    output_preds = [34]
-    input_preds = [35,36,37]
-    drug_preds = [38,39,40,41,42,43]
-    survival = [44]
+def get_model(model_name, dataset_name, head_predicate_idx):
+    lab_preds = list(range(51)) #[0-50] 
+    output_preds = [51]
+    input_preds = [52,53,54]
+    drug_preds = list(range(55,61))
+    survival = [61]
     
     if model_name == "mimic":
-        head_predicate_idx = output_preds[0] #urine 
         model = Logic_Learning_Model(head_predicate_idx=[head_predicate_idx,])
         
-        model.predicate_notation = ['sysbp_low', 'spo2_sao2_low', 'cvp_low', 'svr_low', 'potassium_meql_low', 'sodium_low', 'chloride_low', 'bun_low', 'creatinine_low', 'crp_low', 'rbc_count_low', 'wbc_count_low', 'arterial_ph_low', 'arterial_be_low', 'arterial_lactate_low', 'hco3_low', 'svo2_scvo2_low', 'sysbp_high', 'spo2_sao2_high', 'cvp_high', 'svr_high', 'potassium_meql_high', 'sodium_high', 'chloride_high', 'bun_high', 'creatinine_high', 'crp_high', 'rbc_count_high', 'wbc_count_high', 'arterial_ph_high', 'arterial_be_high', 'arterial_lactate_high', 'hco3_high', 'svo2_scvo2_high', 'real_time_urine_output_low', 'or_colloid', 'or_crystalloid', 'oral_water', 'norepinephrine_norad_levophed', 'epinephrine_adrenaline', 'dobutamine', 'dopamine', 'phenylephrine_neosynephrine', 'milrinone', 'survival']
+        model.predicate_notation = ['sysbp_low', 'spo2_sao2_low', 'cvp_low', 'svr_low', 'potassium_meql_low', 'sodium_low', 'chloride_low', 'bun_low', 'creatinine_low', 'crp_low', 'rbc_count_low', 'wbc_count_low', 'arterial_ph_low', 'arterial_be_low', 'arterial_lactate_low', 'hco3_low', 'svo2_scvo2_low', 'sysbp_normal', 'spo2_sao2_normal', 'cvp_normal', 'svr_normal', 'potassium_meql_normal', 'sodium_normal', 'chloride_normal', 'bun_normal', 'creatinine_normal', 'crp_normal', 'rbc_count_normal', 'wbc_count_normal', 'arterial_ph_normal', 'arterial_be_normal', 'arterial_lactate_normal', 'hco3_normal', 'svo2_scvo2_normal', 'sysbp_high', 'spo2_sao2_high', 'cvp_high', 'svr_high', 'potassium_meql_high', 'sodium_high', 'chloride_high', 'bun_high', 'creatinine_high', 'crp_high', 'rbc_count_high', 'wbc_count_high', 'arterial_ph_high', 'arterial_be_high', 'arterial_lactate_high', 'hco3_high', 'svo2_scvo2_high', 'real_time_urine_output_low', 'or_colloid', 'or_crystalloid', 'oral_water', 'norepinephrine_norad_levophed', 'epinephrine_adrenaline', 'dobutamine', 'dopamine', 'phenylephrine_neosynephrine', 'milrinone', 'survival']
         model.predicate_set= list(range(len(model.predicate_notation))) # the set of all meaningful predicates
-        model.body_pred_set = lab_preds + input_preds + drug_preds #only learn lab-->urine
-        #rule template
-        model.body_pred_set_first_part = lab_preds + input_preds
-        model.body_pred_set_second_part = drug_preds
+        model.survival_pred_set = [61,]
+        if head_predicate_idx == 51:
+            model.body_pred_set = lab_preds + input_preds + drug_preds #only learn lab-->urine
+            #rule template
+            model.body_pred_set_first_part = lab_preds
+            model.body_pred_set_second_part = input_preds + drug_preds
+        elif head_predicate_idx == 61:
+            model.body_pred_set = lab_preds + output_preds + input_preds + drug_preds 
+            #rule template
+            model.body_pred_set_first_part = lab_preds + output_preds
+            model.body_pred_set_second_part = input_preds + drug_preds
+        else:
+            raise ValueError
+
 
         model.instant_pred_set = input_preds + drug_preds #input/drugs are instant.
         model.max_rule_body_length = 2
         model.max_num_rule = 20
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.2
+        model.weight_threshold = 0.01
+        model.strict_weight_threshold= 0.5
         model.gain_threshold = 0.005
         model.low_grad_threshold = 0.005
         model.learning_rate = 0.0001
         model.use_decay = True
+        model.use_2_bases = True
         
         
         if dataset_name.endswith("scaled"):
@@ -131,8 +141,10 @@ def convert_from_df_to_dict(pred_list, instant_list, treat_list, selected_df):
                 time = [0, ]
                 state = [1, ]
                 if len(patient_df['hour'])>0:
-                    time.append(patient_df['hour'].tolist()[-1])
-                    state.append(int(patient_df["survival"].tolist()[-1]))
+                    is_survival = int(patient_df["survival"].tolist()[-1])
+                    if not is_survival:
+                        time.append(patient_df['hour'].tolist()[-1])
+                        state.append(is_survival)
             else:
                 state_ = patient_df['item_state'][patient_df[pred]==True].tolist()
                 time_ = patient_df['hour'][patient_df[pred]==True].tolist()
@@ -162,7 +174,7 @@ def convert_from_df_to_dict(pred_list, instant_list, treat_list, selected_df):
 
 
 
-def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
+def fit(model_name, dataset_name, head_predicate_idx, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
     time_ = str(datetime.datetime.now())
     print("Start time is", time_, flush=1)
 
@@ -170,7 +182,7 @@ def fit(model_name, dataset_name, num_sample, worker_num=8, num_iter=5, use_cp=F
         os.makedirs("./model")
     
     #get model
-    model = get_model(model_name, dataset_name)
+    model = get_model(model_name, dataset_name, head_predicate_idx)
 
     #set initial rules if required
     if rule_set_str:
@@ -221,6 +233,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default="mimic")
     parser.add_argument('--dataset', type=str, default="mimic_1_scaled")
+    
+    parser.add_argument('--head_predicate_idx', type=int, default=51, help="51-urine, 61-survival")
     parser.add_argument('--worker', type=int, default=12)
     parser.add_argument('--print_log', action="store_true")
     
@@ -276,13 +290,16 @@ if __name__ == "__main__":
     args = get_args()
     if not args.print_log:
         redirect_log_file()
-    fit(model_name=args.model, dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=72, algorithm="DFS")
+    
+    fit(model_name=args.model, dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=72, algorithm="DFS")
     #run_expriment_group(args)
     #dataset_stat(dataset=args.dataset)
     
     #data, num_sample = get_data(dataset_name=args.dataset, num_sample=100)
+    #l = list()
     #for k,v in data.items():
-    #    print(v)
+    #    l.append(v[61]["state"][-1])
+    #print(np.array(l).mean())
         
 
     #process_raw_data(input_file="mimic_dataset_v3.csv", output_file="mimic_1.npy")

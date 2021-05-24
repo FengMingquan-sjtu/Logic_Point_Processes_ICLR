@@ -551,3 +551,11 @@ MAE: 21.493143598091343
 
 116. mimic- #pred large, freq low.  --> use large resolution, random sampling candidate rule, to accelerate.
     crime, #pred small, freq high.  --> too slow since get_feature() is slow, change to crime_day, to lower freq.
+
+117. DFS stopping rule bug:
+    if (not is_continue) or len(added_rule_str_list) == 0: 
+    should be:
+    if (not is_continue):
+    Since, the rule adding and deletting may be inaccurate.
+
+118. survival data bug, for survived sample, do not add a dummy survival event, since this is recognized as death by our model.
