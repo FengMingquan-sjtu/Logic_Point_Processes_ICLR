@@ -203,4 +203,69 @@ mimic{
     seq length mean = 315.6981, std = 307.5989.
     seq size mean = 1.9996, std = 0.0210.
 
+    dataset_path is  ./data/mimic_3.npy
+    sample num is  4298
+    num pred is 62
+    seq length mean = 392.6929, std = 394.4587.
+    seq size mean = 1.9991, std = 0.0374.
+    target length mean = 36.0332, std = 121.1968.
+    target size mean = 1.8443, std = 0.3625.
+    seq total size mean = 79.0333, std = 4.9776.
+    
+
+    double_sample: 192
+    dataset_path is  ./data/mimic_1_clip.npy
+    sample num is  2215
+    num pred is 62
+    seq length mean = 88.8136, std = 22.1944.
+    seq size mean = 1.9986, std = 0.0475.
+    target length mean = 16.0226, std = 21.1197.
+    target size mean = 1.8203, std = 0.3839.
+    seq total size mean = 74.2068, std = 5.3452.
+
+    dataset_path is  ./data/mimic_1_clip.npy
+    sample num is  1868
+    num pred is 62
+    seq length mean = 76.6589, std = 14.8638.
+    seq size mean = 1.9304, std = 0.2566.
+    target length mean = 0.7632, std = 3.3134.
+    target size mean = 1.2827, std = 0.4503.
+    seq total size mean = 72.2848, std = 5.7360.
+
+    dataset_path is  ./data/mimic_3_clip.npy
+    sample num is  3730
+    num pred is 62
+    seq length mean = 55.8476, std = 11.4941.
+    seq size mean = 1.9113, std = 0.2853.
+    target length mean = 0.6858, std = 2.5781.
+    target size mean = 1.2877, std = 0.4527.
+    seq total size mean = 70.8609, std = 5.4866.
+
+    dataset_path is  ./data/mimic_3_clip_scaled.npy
+    sample num is  3730
+    num pred is 62
+    seq length mean = 10.1541, std = 2.0898.
+    seq size mean = 1.9113, std = 0.2853.
+    target length mean = 0.1247, std = 0.4687.
+    target size mean = 1.2877, std = 0.4527.
+    seq total size mean = 70.8609, std = 5.4866.
+
+
+    dataset_path is  ./data/mimic_3_clip.npy
+    sample num is  3730
+    num pred is 62
+    seq length mean = 55.1837, std = 11.6957.
+    seq size mean = 1.9113, std = 0.2853.
+    target length mean = 0.6858, std = 2.5781.
+    target size mean = 1.2877, std = 0.4527.
+    seq total size mean = 70.8609, std = 5.4866.
+    dataset_path is  ./data/mimic_3_clip_scaled.npy
+    sample num is  3730
+    num pred is 62
+    seq length mean = 10.0334, std = 2.1265.
+    seq size mean = 1.9113, std = 0.2853.
+    target length mean = 0.1247, std = 0.4687.
+    target size mean = 1.2877, std = 0.4527.
+    seq total size mean = 70.8609, std = 5.4866.
+
 }

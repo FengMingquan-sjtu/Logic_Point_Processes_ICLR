@@ -10,6 +10,7 @@ import datetime
 import warnings
 warnings.filterwarnings("ignore")
 import pickle
+import copy
 
 import numpy as np
 import torch
@@ -48,6 +49,7 @@ class Logic_Learning_Model():
         self.body_pred_set = []
         self.body_pred_set_first_part = []
         self.body_pred_set_second_part = []
+        self.prior_preds = []
         self.head_predicate_set = head_predicate_idx.copy()  # the index set of only one head predicates
 
         self.BEFORE = 'BEFORE'
@@ -78,6 +80,8 @@ class Logic_Learning_Model():
         self.weight_threshold = 0.01
         self.strict_weight_threshold = 0.1
         self.learning_rate = 0.001
+        self.base_lr = 0.00005
+        self.weight_lr = 0.005
         self.max_rule_body_length = 3 #
         self.max_num_rule = 20
         self.batch_size_cp = 500 # batch size used in cp. If too large, may out of memory.
@@ -87,6 +91,7 @@ class Logic_Learning_Model():
         #self.explore_batch_size_ucb = 500
         self.use_cp = False
         self.worker_num = 8
+        self.opt_worker_num = 1
         self.best_N = 1
         self.static_pred_coef = 1 #coef to balance static preds.
         self.debug_mode = False
@@ -94,6 +99,7 @@ class Logic_Learning_Model():
         self.scale = 1
         self.use_decay = True
         self.use_2_bases = True
+        self.init_base = 0.1
         self.init_params()
 
     def init_params(self):
@@ -102,9 +108,9 @@ class Logic_Learning_Model():
         self.logic_template = {}
 
         if self.use_exp_kernel:
-            init_base = -0.1
+            init_base = -abs(self.init_base)
         else:
-            init_base = 0.2
+            init_base = self.init_base
 
         for idx in self.head_predicate_set:
             self.model_parameter[idx] = {}
@@ -246,10 +252,13 @@ class Logic_Learning_Model():
 
         if self.use_2_bases:
             state = self.get_state(cur_time, head_predicate_idx, dataset[sample_ID])
-            if state - 1 == 0:
+            if state == 1:
                 base = self.model_parameter[head_predicate_idx]['base_1_0']
-            else:
+            elif state == 0:
+                #print("state=0, use base_0_1")
                 base = self.model_parameter[head_predicate_idx]['base_0_1']
+            else:
+                raise ValueError
 
         else:
             base = self.model_parameter[head_predicate_idx]['base']
@@ -450,7 +459,7 @@ class Logic_Learning_Model():
             intensity_grid.append(cur_intensity)
         if len(intensity_grid) == 0:
             return torch.tensor([0], dtype=torch.float64)
-        integral = torch.sum(torch.cat(intensity_grid, dim=0) * self.integral_resolution)
+        integral = torch.sum(torch.cat(intensity_grid, dim=0)) * self.integral_resolution
         return integral
 
     def intensity_integral_cp(self, head_predicate_idx, data_sample):
@@ -557,13 +566,14 @@ class Logic_Learning_Model():
             #s
             #optimizer = optim.SGD(params, lr=self.learning_rate)
             if self.use_2_bases:
-                base_params = {"params": params[0], "lr":0.0001}
-                base_params = {"params": params[1], "lr":0.00001}
-                weight_params = {"params": params[2:], "lr":0.001}
+                base_0_1_params = {"params": params[0], "lr":self.base_lr}
+                base_1_0_params = {"params": params[1], "lr":self.base_lr}
+                weight_params = {"params": params[2:], "lr":self.weight_lr}
+                params_dicts = [base_0_1_params, base_1_0_params, weight_params] 
             else:
-                base_params = {"params": params[:1], "lr":0.0001}
-                weight_params = {"params": params[1:], "lr":0.001}
-            params_dicts = [base_params, weight_params] 
+                base_params = {"params": params[:1], "lr":self.base_lr}
+                weight_params = {"params": params[1:], "lr":self.weight_lr}
+                params_dicts = [base_params, weight_params] 
             optimizer = optim.SGD(params_dicts, lr=self.learning_rate, weight_decay=0.1)
 
         for batch_idx, sample_ID_batch in enumerate(sample_ID_batch_list):
@@ -589,7 +599,7 @@ class Logic_Learning_Model():
         if self.debug_mode:
             for idx,p in enumerate(params):
                 print("param-{}={}".format(idx, p.data))
-                print("grad-{}={}".format(idx, p.grad.data),flush=1)
+                print("grad-{}={}".format(idx, p.grad),flush=1)
         return log_likelihood.detach().numpy()
 
 
@@ -609,7 +619,7 @@ class Logic_Learning_Model():
                 sample_ID_batch = sample_ID_list[batch_idx*self.batch_size : (batch_idx+1)*self.batch_size]
                 batch_list.append(sample_ID_batch)
 
-        worker_num = min(self.worker_num, cpu_count())
+        worker_num = min(self.opt_worker_num, cpu_count())
         worker_num = min(worker_num, len(batch_list))
         print("use {} workers for {} batches".format(worker_num, len(batch_list)))
         arg_list = list()
@@ -618,13 +628,18 @@ class Logic_Learning_Model():
             sample_ID_batch_list = batch_list[w*batch_per_worker: (w+1)*batch_per_worker]
             arg_list.append((head_predicate_idx, dataset, sample_ID_batch_list))
         
-        self.share_memory(head_predicate_idx) #very important! share varibales across procs.
-
-        with Pool(worker_num) as p:
-            ret = p.starmap(self._optimize_log_likelihood_mp_worker, arg_list)
+        if worker_num > 1:
+            self.share_memory(head_predicate_idx) #very important! share varibales across procs.
+            with Pool(worker_num) as p:
+                ret = p.starmap(self._optimize_log_likelihood_mp_worker, arg_list)
+        else:
+            ret = [self._optimize_log_likelihood_mp_worker(*arg) for arg in arg_list]
   
         log_likelihood_list = ret
         log_likelihood = np.mean(log_likelihood_list)/self.batch_size
+        #params = self.get_model_parameters(head_predicate_idx)
+        #for idx,p in enumerate(params):
+        #    print("grad-{}={}".format(idx, p.grad),flush=1)
         print("optimized rule weights are:")
         self.print_rule()
         print("---- exit optimize_log_likelihood multi-process----", flush=1)
@@ -800,7 +815,7 @@ class Logic_Learning_Model():
         ## search for the new rule from by minimizing the gradient of the log-likelihood
         arg_list = list()
         print("start enumerating candidate rules.", flush=1)
-        for head_predicate_sign in [1, 0]:
+        for head_predicate_sign in [1,]:
             if head_predicate_idx in self.instant_pred_set and head_predicate_sign == 0:
                 # instant pred should not be negative
                 continue
@@ -899,7 +914,7 @@ class Logic_Learning_Model():
         print("start enumerating candidate rules.", flush=1)
         
         for body_predicate_sign in [1, ]:
-            if self.body_pred_set_first_part:
+            if self.body_pred_set_second_part:
                 candidate_body_pred_set = self.body_pred_set_second_part
             else:
                 candidate_body_pred_set = self.body_pred_set
@@ -923,6 +938,8 @@ class Logic_Learning_Model():
                     time_relation_list = [self.BEFORE, self.EQUAL]
                     existing_predicate_idx_list = [head_predicate_idx] + existing_rule_template['body_predicate_idx']
                     candidate_predicate_list = [pred for pred in existing_predicate_idx_list if pred not in self.static_pred_set] 
+                
+                candidate_predicate_list = list(set(candidate_predicate_list))
                 
                 
                 for temporal_relation_type in time_relation_list:
@@ -1001,6 +1018,10 @@ class Logic_Learning_Model():
         # choose the N-best rules that lead to the optimal log-likelihood
         #sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:x[1], reverse=True) # sort by mean gain, descending
         sorted_idx_gain_all_data = sorted(list(enumerate(mean_gain_all_data)), key=lambda x:abs(x[1]), reverse=True) # sort by mean absolute gain, descending
+        if self.prior_preds:
+            sorted_idx_gain_all_data = sorted(sorted_idx_gain_all_data, key=lambda x: sum([p in self.prior_preds for p in arg_list[x[0]][-1]['body_predicate_idx']]), reverse=True) # sort by prior preds, descending
+            #print(sorted_idx_gain_all_data)
+            #raise ValueError
         for idx, gain in sorted_idx_gain_all_data:
             rule_str = self.get_rule_str(arg_list[idx][-1], head_predicate_idx)
             std_gain = std_gain_all_data[idx]
@@ -1356,44 +1377,48 @@ class Logic_Learning_Model():
 
     def generate_target_one_sample(self, head_predicate_idx, data_sample, num_repeat):
         input_target_sample = {"time": data_sample[head_predicate_idx]["time"].copy(), "state": data_sample[head_predicate_idx]["state"].copy()}
-        target_sample_length = len(data_sample[head_predicate_idx]["time"])
+        local_sample = copy.deepcopy(data_sample)
+        target_sample_length = len(local_sample[head_predicate_idx]["time"])
         
         if head_predicate_idx in self.survival_pred_set:
             # survival pred, calculate ACC
             
             local_sample_ID = 0
-            local_data = {local_sample_ID: data_sample}
+            local_data = {local_sample_ID: local_sample}
             integral = self.intensity_integral(head_predicate_idx, local_data, local_sample_ID)
             integral = integral.detach().numpy()
             survival_rate = np.exp(-integral)
-            is_survival = int(survival_rate > 0.61)
+            is_survival = int(survival_rate > 0.5)
             return abs(is_survival - input_target_sample["state"][-1])
 
         else:
             # other preds, calculate MAE
-            if target_sample_length <= 1:
+            if target_sample_length <= 0:
                 return 0
                 #return input_target_sample["time"]
             
             # obtain the maximal intensity
-            T_max = data_sample[head_predicate_idx]["time"][-1] + self.Time_tolerance
+            T_max = local_sample[head_predicate_idx]["time"][-1] + self.Time_tolerance
             local_sample_ID = 0
-            local_data = {local_sample_ID: data_sample}
+            local_data = {local_sample_ID: local_sample}
             intensity_potential = []
             for t in np.arange(0, T_max, self.integral_resolution):
                 t = t.item() #convert np scalar to float
                 intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
                 intensity_potential.append(intensity)
             if len(intensity_potential) == 0:
-                return input_target_sample["time"]
+                return 0
             intensity_max = max(intensity_potential)
             #print("intensity_max=", intensity_max,flush=1)
 
-            generated_sample_time = [data_sample[head_predicate_idx]["time"][0] ,]
-            for i in range(target_sample_length-1):
-                T_min = input_target_sample["time"][i]
+            generated_sample_time = []
+            for i in range(target_sample_length):
+                if i == 0:
+                    T_min = 0
+                else:
+                    T_min = input_target_sample["time"][i-1]
                 generated_time = list()
-                data_sample[head_predicate_idx] = {"time": input_target_sample["time"][:i+1], "state":input_target_sample["state"][:i+1]} 
+                local_sample[head_predicate_idx] = {"time": input_target_sample["time"][:i], "state":input_target_sample["state"][:i]} 
                 for r in range(num_repeat):
                     t = T_min
                     #print("run idx=",r,flush=1)

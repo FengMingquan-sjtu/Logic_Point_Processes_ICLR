@@ -29,9 +29,6 @@ def load_crime(dataset_name, start_idx, end_idx):
         sample = list()
         for pred in pred_list:
             pred_events = list()
-            if pred != 13:
-                continue
-            pred_idx = 0
             for idx,t in enumerate(data[sample_idx][pred]["time"]):
                 if data[sample_idx][pred]["state"][idx]-1 == 0:
                     pred_events.append((t, pred_idx))
