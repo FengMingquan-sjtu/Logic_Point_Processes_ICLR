@@ -14,7 +14,7 @@ def add_base_arguments(parser):
     )
     parser.add_argument("--split_id", type=int, default=0, help="default: 0")
     parser.add_argument("--rand_seed", type=int, default=0, help="default: 0")
-    parser.add_argument("--cuda", action="store_false", help="default: true")
+    parser.add_argument("--cuda", action="store_true", help="default:false")
     parser.add_argument(
         "--skip_eval_infectivity", action="store_true", help="default: false"
     )
@@ -62,7 +62,7 @@ def add_subparser_arguments(model, subparsers):
             "--lr", type=float, default=0.001, help="default: 0.001"
         )
         sub_parser.add_argument(
-            "--epochs", type=int, default=200, help="default: 200"
+            "--epochs", type=int, default=50, help="default: 200"
         )
         sub_parser.add_argument(
             "--optimizer", type=str, default="Adam", help="default: Adam"
@@ -148,10 +148,10 @@ def add_subparser_arguments(model, subparsers):
         )
         add_base_arguments(sub_parser)
         sub_parser.add_argument(
-            "--embedding_dim", type=int, default=16, help="default: 64"
+            "--embedding_dim", type=int, default=64, help="default: 64"
         )
         sub_parser.add_argument(
-            "--hidden_size", type=int, default=16, help="default: 64"
+            "--hidden_size", type=int, default=64, help="default: 64"
         )
         sub_parser.add_argument(
             "--init_scale", type=float, default=10, help="default: 10"

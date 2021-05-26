@@ -143,8 +143,14 @@ class RecurrentPointProcessNet(nn.Module):
             if device:
                 batch = batch.to(device)
 
+            #print(batch.size())
+            #print(batch)
             seq_lengths = (batch.abs().sum(-1) > 0).sum(-1)
+            #print(seq_lengths.size())
+            #print(seq_lengths)
             mask = generate_sequence_mask(seq_lengths)
+            #print(mask.size())
+            #print(mask)
             intensity, excitation = self(batch, need_excitations=True)
 
             loss = nll = self._eval_nll(batch, intensity, excitation, mask)
@@ -166,6 +172,7 @@ class RecurrentPointProcessNet(nn.Module):
         metrics = defaultdict(AverageMeter)
         with torch.no_grad():
             for batch in dataloader:
+                #print("eval one batch",flush=1)
                 if device:
                     batch = batch.to(device)
 
@@ -175,6 +182,7 @@ class RecurrentPointProcessNet(nn.Module):
                 nll = self._eval_nll(batch, intensity, excitation, mask)
 
                 metrics["nll"].update(nll, batch.size(0))
+                #print("eval one batch finished",flush=1)
 
         return metrics
 

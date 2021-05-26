@@ -28,18 +28,24 @@ def get_model(model_name, dataset_name, head_predicate_idx):
         model.gain_threshold = 0.01
         model.low_grad_threshold = 0.005
         model.learning_rate = 0.0001
+        model.base_lr = 0.0001
+        model.weight_lr = 0.01
+        model.use_decay = True
         model.use_2_bases = False
+        model.init_base = 0.5
+        model.opt_worker_num = 16
+        model.best_N = 1
         
     if head_predicate_idx in [10,13]:
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.2
     else:
-        model.weight_threshold = 0.01
-        model.strict_weight_threshold= 0.02
+        model.weight_threshold = 0.1
+        model.strict_weight_threshold= 0.2
 
     if dataset_name.endswith("day_scaled"):
         model.scale = 10/24
-        model.time_window = 20 * model.scale
+        model.time_window = 24 * model.scale
         model.Time_tolerance = 1 * model.scale
         model.decay_rate = 0.1
         model.batch_size = 64
@@ -102,13 +108,17 @@ def fit(model_name, dataset_name, head_predicate_idx, num_sample, worker_num=8, 
     model.batch_size //= worker_num # use small batch-size, due to #bug107
     
 
-    if algorithm == "DFS":
-        with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="DFS_{}_{}".format(dataset_name, time_))
-    elif algorithm == "BFS":
-        with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="BFS_{}_{}".format(dataset_name, time_))
-    
+    with Timer(algorithm) as t:
+        if algorithm == "DFS":
+            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="{}_{}_{}".format(algorithm, dataset_name, time_))
+        elif algorithm == "BFS":
+            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="{}_{}_{}".format(algorithm, dataset_name, time_))
+        elif algorithm == "Hawkes":
+            
+            model.static_pred_set = []
+            model.instant_pred_set = list(range(14)) # treat all static as instant.
+            model.Hawkes(model.head_predicate_set[0], training_dataset, testing_dataset, tag="{}_{}_{}".format(algorithm, dataset_name, time_))
+        
     print("Finish time is", datetime.datetime.now())
  
 
@@ -290,30 +300,42 @@ def rescale_data(input_file, output_file, scale):
     np.save("./data/"+output_file, data)
 
 
-def dataset_stat(dataset):
+def dataset_stat(dataset, head_predicate_idx):
     dataset,num_sample =  get_data(dataset_name=dataset, num_sample=-1)
     seq_len = list()
     seq_size= list()
     seq_tot_size = list()
+    target_l_list = list()
+    target_s_list = list()
     for sample in dataset.values():
         l = 0
         s = 0
         tot_s = 0
-        for data in sample.values():
+        for pid, data in sample.items():
             if data["time"]:
                 l = max(l, data["time"][-1])
 
                 s = max(s, len(data["time"]))
                 tot_s += len(data["time"])
+                if pid == head_predicate_idx: #target: urine
+                    target_l = data["time"][-1] - data["time"][0]
+                    target_s = len(data["time"])
+                    target_l_list.append(target_l)
+                    target_s_list.append(target_s)
         seq_len.append(l)
         seq_size.append(s)
         seq_tot_size.append(tot_s)
+    target_l_arr = np.array(target_l_list)
+    target_s_arr = np.array(target_s_list)
     seq_len = np.array(seq_len)
     seq_size = np.array(seq_size)
     seq_tot_size = np.array(seq_tot_size)
+    print("head pred idx=",head_predicate_idx)
     print("seq length mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_len), np.std(seq_len)))
     print("seq size mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_size), np.std(seq_size)))
     print("seq total size mean = {:.4f}, std = {:.4f}.".format(np.mean(seq_tot_size), np.std(seq_tot_size)))
+    print("target length mean = {:.4f}, std = {:.4f}.".format(np.mean(target_l_arr), np.std(target_l_arr)))
+    print("target size mean = {:.4f}, std = {:.4f}.".format(np.mean(target_s_arr), np.std(target_s_arr)))
 
 def get_args():
     """Get argument parser.
@@ -350,8 +372,15 @@ if __name__ == "__main__":
         redirect_log_file()
     
 
-    fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
-    #fit(model_name="crime", dataset_name=args.dataset, num_sample=-1, worker_num=args.worker, num_iter=4, algorithm="BFS")
+    #fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
+    #fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
+    fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="Hawkes")
+    
+    #dataset_stat("crime_all_day_scaled", 10)
+    #dataset_stat("crime_all_day_scaled", 11)
+    #dataset_stat("crime_all_day_scaled", 12)
+    #dataset_stat("crime_all_day_scaled", 13)
+    
     
     
     #process_raw_data("crime_all.csv","crime_all_day.npy" )

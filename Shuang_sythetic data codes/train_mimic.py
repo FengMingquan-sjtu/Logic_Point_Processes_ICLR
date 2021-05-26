@@ -220,7 +220,16 @@ def fit(model_name, dataset_name, head_predicate_idx, num_sample, worker_num=8, 
     elif algorithm == "BFS":
         with Timer("BFS") as t:
             model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="BFS_{}_{}".format(dataset_name, time_))
-    
+    elif algorithm == "Hawkes":
+        model.Hawkes(model.head_predicate_set[0], training_dataset, testing_dataset, tag="{}_{}_{}".format(algorithm, dataset_name, time_))
+    elif algorithm == "Hawkes_Rev":
+        print(training_dataset[0][51])
+        for data in [training_dataset,testing_dataset]:
+            for sid,d in data.items():
+                data[sid][51]["state"] = list(1-np.array(data[sid][51]["state"])) 
+        print(training_dataset[0][51])
+
+        model.Hawkes(model.head_predicate_set[0], training_dataset, testing_dataset, tag="{}_{}_{}".format(algorithm, dataset_name, time_))
     print("Finish time is", datetime.datetime.now())
  
 
@@ -375,6 +384,43 @@ def clip_data(input_file, output_file, head_predicate_idx, horizon):
     np.save("./data/"+output_file, new_data)
     
 
+def retrain(model_file_name, delete_formula_idx_list, dataset_name, head_predicate_idx,  num_sample, worker_num, num_iter, algorithm):
+    time_ = str(datetime.datetime.now())
+    print("Start time is", time_, flush=1)
+    with open("./model/"+model_file_name, "rb") as f:
+        model = pickle.load(f)
+    model.deleted_rules = set() # clear banned rules.
+    model.weight_lr = 0.02
+    model.opt_worker_num = 16
+    model.base_lr = 0.00005
+    model.delete_rules(head_predicate_idx, delete_formula_idx_list)
+
+    #get data
+    dataset,num_sample =  get_data(dataset_name, num_sample)
+    training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
+
+    if algorithm == "DFS":
+        with Timer("DFS-Retrain") as t:
+            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="DFS_Retrain_{}_{}".format(dataset_name, time_), init_params=False)
+    elif algorithm == "BFS":
+        with Timer("BFS-Retrain") as t:
+            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="BFS_Retrain_{}_{}".format(dataset_name, time_), init_params=False)
+
+def test(model_file_name, dataset_name, head_predicate_idx,  num_sample):
+    #load model
+    with open("./model/"+model_file_name, "rb") as f:
+        model = pickle.load(f)
+
+    #get data
+    dataset,num_sample =  get_data(dataset_name, num_sample)
+    training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
+
+    model.generate_target(head_predicate_idx, dataset, num_repeat=100)
+
+
+
 
 if __name__ == "__main__":
     #run_preprocess()
@@ -383,8 +429,18 @@ if __name__ == "__main__":
     args = get_args()
     if not args.print_log:
         redirect_log_file()
+    mimic = "mimic_3_clip_scaled"
+    #fit(model_name=args.model, dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
+    #retrain(model_file_name="model-DFS_mimic_3_clip_scaled_2021-05-25 15:07:45.234259.pkl", delete_formula_idx_list=[1,2,5],dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
+    #retrain(model_file_name="model-DFS_mimic_1_scaled_2021-05-23 15:56:18.702553.pkl", delete_formula_idx_list=[],dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=1, algorithm="DFS")
+    #test(model_file_name='model-Hawkes_mimic_1_scaled_2021-05-26 17:19:42.109284.pkl', dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1)
+    #fit(model_name="mimic", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="Hawkes")
+    fit(model_name="mimic", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="Hawkes_Rev")
     
-    fit(model_name=args.model, dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
+    
+    #urine 1 ratio in mimic: 0.776597959608578
+        
+
     #run_expriment_group(args)
     #rescale_data("mimic_2.npy", "mimic_2_scaled.npy", scale=10/500)
     #dataset_stat(dataset=args.dataset)

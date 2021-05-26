@@ -168,6 +168,49 @@ crime{
     ./data/crime_all_day.npy
     sample num is  1879
     seq length mean = 22.9707, std = 0.6669.
+
+    dataset_path is  ./data/crime_all_day_scaled.npy
+    sample num is  1879
+    num pred is 14
+    head pred idx= 10
+    seq length mean = 9.5711, std = 0.2779.
+    seq size mean = 12.5487, std = 4.1559.
+    seq total size mean = 46.0378, std = 7.1968.
+    target length mean = 7.9954, std = 1.7845.
+    target size mean = 11.4872, std = 4.8090.
+    dataset_path is  ./data/crime_all_day_scaled.npy
+    sample num is  1879
+    num pred is 14
+
+
+    head pred idx= 11
+    seq length mean = 9.5711, std = 0.2779.
+    seq size mean = 12.5487, std = 4.1559.
+    seq total size mean = 46.0378, std = 7.1968.
+    target length mean = 6.7263, std = 2.4244.
+    target size mean = 7.2548, std = 3.4337.
+    dataset_path is  ./data/crime_all_day_scaled.npy
+    sample num is  1879
+    num pred is 14
+
+
+    head pred idx= 12
+    seq length mean = 9.5711, std = 0.2779.
+    seq size mean = 12.5487, std = 4.1559.
+    seq total size mean = 46.0378, std = 7.1968.
+    target length mean = 3.8122, std = 3.6146.
+    target size mean = 4.1286, std = 3.6967.
+    dataset_path is  ./data/crime_all_day_scaled.npy
+    sample num is  1879
+    num pred is 14
+
+    
+    head pred idx= 13
+    seq length mean = 9.5711, std = 0.2779.
+    seq size mean = 12.5487, std = 4.1559.
+    seq total size mean = 46.0378, std = 7.1968.
+    target length mean = 4.2653, std = 1.9828.
+    target size mean = 6.5495, std = 2.8362.
 }
 
 

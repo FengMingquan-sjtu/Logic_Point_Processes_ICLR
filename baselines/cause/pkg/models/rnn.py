@@ -26,11 +26,17 @@ class EventSeqDataset(Dataset):
     def __init__(self, event_seqs, min_length=1, sort_by_length=False):
 
         self.min_length = min_length
+        #print("min_length=",min_length)
+        #for seq in event_seqs:
+        #    print(seq)
+        #    print(type(seq))
+        #    print(seq.dtype)
         self._event_seqs = [
             torch.FloatTensor(seq)
             for seq in event_seqs
             if len(seq) >= min_length
         ]
+        
         if sort_by_length:
             self._event_seqs = sorted(self._event_seqs, key=lambda x: -len(x))
 
@@ -640,6 +646,7 @@ class ExplainableRecurrentPointProcess(nn.Module):
         event_seqs_pred = []
         with torch.no_grad():
             for batch in tqdm(dataloader):
+                print("start eval one batch", flush=1)
                 batch = batch.to(device)
 
                 seq_length = (batch.abs().sum(-1) > 0).sum(-1)
@@ -661,8 +668,14 @@ class ExplainableRecurrentPointProcess(nn.Module):
                 while len(idx) > 0:
                     # get the index for the corresponding basis_weights
                     idx1 = idx // n_samples
-                    M_idx = M[idx1]
+                    #M_idx = M[idx1]
+                    M_idx = 10 #fix endless loop bug
                     dt = torch.distributions.Exponential(rate=M_idx).sample()
+                    #while(dt.min()<0.1):
+                    #    dt *= 2
+                    #dt = 0.1
+                    
+                    
                     t[idx] += dt
                     U = torch.rand(len(idx), device=device)
 
@@ -674,6 +687,7 @@ class ExplainableRecurrentPointProcess(nn.Module):
                         dim=-1,
                     )
                     intensity = (basis_weights[idx1] * basis_values).sum(-1)
+                    #intensity = 0.05
                     flag = U < (intensity / M_idx)
                     idx = idx[~flag]
 

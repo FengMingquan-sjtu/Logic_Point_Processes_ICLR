@@ -285,6 +285,7 @@ if __name__ == "__main__":
     #    test_event_seqs = event_seqs[data["train_test_splits"][args.split_id][1]]
         
     # sorted test_event_seqs by their length
+    train_event_seqs = sorted(train_event_seqs, key=lambda seq: len(seq))
     test_event_seqs = sorted(test_event_seqs, key=lambda seq: len(seq))
 
     #if osp.exists(osp.join(input_path, "infectivity.txt")):

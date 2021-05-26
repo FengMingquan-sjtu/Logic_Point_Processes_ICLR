@@ -1171,9 +1171,10 @@ class Logic_Learning_Model():
         self.final_tune(head_predicate_idx, dataset)
         print("----- exit search_algorithm -----", flush=1)
 
-    def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag):
+    def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag, init_params=True):
         self.print_info()
-        self.init_params()
+        if init_params:
+            self.init_params()
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
@@ -1233,6 +1234,23 @@ class Logic_Learning_Model():
             pickle.dump(self, f)
         print("----- exit BFS -----", flush=1)
 
+    def Hawkes(self, head_predicate_idx, training_dataset, testing_dataset, tag):
+        print("----- start Hawkes -----", flush=1)
+        INF = 10000000
+        self.best_N = INF
+        self.max_num_rule = INF
+        self.max_rule_body_length = 1
+        self.weight_threshold = -1
+        self.strict_weight_threshold = -1
+        self.gain_threshold = -1
+        self.num_iter_final = 1
+        self.batch_size_grad = 1
+        self.body_pred_set_first_part = []
+        self.body_pred_set_second_part = []
+        self.static_pred_set = []
+        self.instant_pred_set = self.body_pred_set
+        self.BFS(head_predicate_idx, training_dataset, testing_dataset, tag)
+        print("----- end Hawkes ----", flush = 1)
     def final_tune(self, head_predicate_idx, dataset, ):
         print("----- start final_tune -----", flush=1)
         # final prune, with strict threshold of weight.
@@ -1330,9 +1348,10 @@ class Logic_Learning_Model():
                 return i #return matched formula_idx
         return -1 #if no such rule, return -1.
 
-    def DFS(self,head_predicate_idx, training_dataset, testing_dataset, tag):
+    def DFS(self,head_predicate_idx, training_dataset, testing_dataset, tag, init_params=True):
         self.print_info()
-        self.init_params()
+        if init_params:
+            self.init_params()
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
@@ -1378,6 +1397,17 @@ class Logic_Learning_Model():
     def generate_target_one_sample(self, head_predicate_idx, data_sample, num_repeat):
         input_target_sample = {"time": data_sample[head_predicate_idx]["time"].copy(), "state": data_sample[head_predicate_idx]["state"].copy()}
         local_sample = copy.deepcopy(data_sample)
+        if head_predicate_idx in self.instant_pred_set:
+            s = np.array(input_target_sample["state"])
+            t = np.array(input_target_sample["time"])
+            idx = (s == 1)
+            s = s[idx]
+            t = t[idx]
+            input_target_sample["time"] = list(t)
+            input_target_sample["state"] = list(s)
+            local_sample[head_predicate_idx]["time"] = list(t)
+            local_sample[head_predicate_idx]["state"] = list(s)
+
         target_sample_length = len(local_sample[head_predicate_idx]["time"])
         
         if head_predicate_idx in self.survival_pred_set:
@@ -1392,6 +1422,8 @@ class Logic_Learning_Model():
             return abs(is_survival - input_target_sample["state"][-1])
 
         else:
+            
+
             # other preds, calculate MAE
             if target_sample_length <= 0:
                 return 0
@@ -1463,8 +1495,8 @@ class Logic_Learning_Model():
                     res = pool.starmap(self.generate_target_one_sample, arg_list)
             else: #single process, not use pool.
                 res = [self.generate_target_one_sample(*arg) for arg in arg_list]
-        
-        res = np.array(res).mean()
+        res = np.array(res)
+        res = res[res>0].mean()
         if head_predicate_idx in self.survival_pred_set:
             print("ACC =", res)
         else:

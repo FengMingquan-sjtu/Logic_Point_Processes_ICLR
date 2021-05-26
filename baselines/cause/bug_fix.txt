@@ -9,6 +9,15 @@ then run each method with:
 './scripts/run_excitation.sh <method>'
 where <method> is one of {HExp, HSG, NPHC, RPPN, ERPP}
 
+3. 
+RuntimeError: index out of range: Tried to access index 5 out of table with 0 rows. at /opt/conda/conda-bld/pytorch_1565272271120/work/aten/src/TH/generic/THTensorEvenMoreMath.cpp:237
+还有报错mask维度不匹配等。
+都是因为有数据全部seq都在0时刻发生。这是不允许的。数据处理时t加上很小的常数，或者筛掉这些异常数据即可。
+
+4. 
+ERPP colapsed. 模型完全没学到，生成函数的max-intensity太高，导致无穷迭代。
+直接把Max-int改成常数。
+
 [ 2021-02-01 14:35:19,630][train.<module>] Namespace(cuda=True, dataset='mimic', decay=0.05, input_dir='/home/fengmingquan/data/sepsis_data_three_versions/sepsis_logic/', max_seqs=0, model='HExp', output_dir='/home/fengmingquan/data/cause/output', penalty=1000.0, rand_seed=0, skip_eval_infectivity=False, skip_pred_next_event=False, split_id=0, verbose=False)
 [Training model] Elapsed: 50.0522 sec.
 nll 50.67468959760087

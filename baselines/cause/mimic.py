@@ -23,29 +23,30 @@ def get_data(dataset_name, start_idx, end_idx):
 def load_mimic(dataset_name, start_idx, end_idx):
     data = get_data(dataset_name, start_idx, end_idx)
     event_seqs = list()
-    pred_list = data[0].keys()
+    n_types = 62
+    pred_list = list(range(n_types))
+    T_max = 10.0
     
     for sample_idx in range(end_idx-start_idx):
         sample = list()
         for pred in pred_list:
             pred_events = list()
             for idx,t in enumerate(data[sample_idx][pred]["time"]):
-                if data[sample_idx][pred]["state"][idx]-1 == 0:
-                    pred_events.append((t, pred))
+                if data[sample_idx][pred]["state"][idx]==1:
+                    pred_events.append((t+1e-5, float(pred)))
             if len(pred_events) ==0: #use dummy event to fill empty pred.
-                pred_events.append((600, pred))
+                pred_events.append((T_max, float(pred)))
             sample.extend(pred_events)
             
         sample.sort(key=lambda x:x[0]) #sort by time
         event_seqs.append(sample)
-    event_seqs = np.array(event_seqs,dtype=object)
-    n_types = len(pred_list)
+    event_seqs = np.array(event_seqs,dtype=float)
     return event_seqs, n_types
 
 def preprocess(args):
     print("preprocess start")
-    train_event_seqs, n_types = load_mimic(args.dataset, 0, 1600)
-    test_event_seqs, n_types = load_mimic(args.dataset, 1600, 2000)
+    train_event_seqs, n_types = load_mimic(args.dataset, 0, 3000)
+    test_event_seqs, n_types = load_mimic(args.dataset, 3000, 3700)
     np.savez_compressed(osp.join("./data", "{}.npz".format(args.dataset)),
         train_event_seqs=train_event_seqs,
         test_event_seqs=test_event_seqs,
@@ -78,6 +79,7 @@ def load_mae(args):
     calc_mean_absolute_error(test_event_seqs, event_seqs_pred)
     calc_acc(test_event_seqs, event_seqs_pred)
 
+
 def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
     """
     Args:
@@ -85,13 +87,26 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
         event_seqs_pred (List[List[Tuple]]):
     """
     target_dict = {'survival':61, 'real_time_urine_output_low':51}
+
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
 
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
-        for t, t_idx in target_dict.items():
-            l = [abs(event_true[0]-event_pred[0]) for event_true,event_pred in zip(seq_true,seq_pred) if event_true[1] ==  t_idx]
-            if l:
-                result_dict[t].update(np.mean(l), len(l))
+        for t_name, t_idx in target_dict.items():
+            gt_time = [event[0] for event in seq_true if event[1] == t_idx]
+            length = len(gt_time)
+            pred_time = [event[0] for event in seq_pred if event[1] == t_idx]
+            if len(pred_time) > length:
+                pred_time = pred_time[:length]
+            elif len(pred_time) < length:
+                gt_time = pred_time[:len(pred_time)]
+                #if len(pred_time) == 0:
+                #    pred_time.append(0)
+                #pred_time.extend([pred_time[0],] * (length-len(pred_time)))
+            mae = np.abs(np.array(gt_time) - np.array(pred_time)).mean()
+            length = len(gt_time)
+            if length > 0:
+                result_dict[t_name].update(mae, length)
+        #raise ValueError
     
     target = list(target_dict.keys())
     mae = [result_dict[t].avg for t in target]

@@ -23,33 +23,30 @@ def get_data(dataset_name, start_idx, end_idx):
 def load_crime(dataset_name, start_idx, end_idx):
     data = get_data(dataset_name, start_idx, end_idx)
     event_seqs = list()
-    pred_list = data[0].keys()
+    n_types = 14
+    pred_list = list(range(n_types))
     T_max = 10
+    
     for sample_idx in range(end_idx-start_idx):
         sample = list()
         for pred in pred_list:
             pred_events = list()
             for idx,t in enumerate(data[sample_idx][pred]["time"]):
-                if data[sample_idx][pred]["state"][idx]-1 == 0:
-                    pred_events.append((t, pred_idx))
+                if data[sample_idx][pred]["state"][idx]==1:
+                    pred_events.append((t+1e-5, pred))
             if len(pred_events) ==0: #use dummy event to fill empty pred.
-                pred_events.append((T_max, pred_idx))
+                pred_events.append((T_max, pred))
             sample.extend(pred_events)
             
         sample.sort(key=lambda x:x[0]) #sort by time
         event_seqs.append(sample)
-    event_seqs = np.array(event_seqs,dtype=object)
-    
-    #n_types = len(pred_list)
-    print("debug mode: n_types=1")
-    n_types = 1
-    
+    event_seqs = np.array(event_seqs,dtype=float)
     return event_seqs, n_types
 
 def preprocess(args):
     print("preprocess start")
     train_event_seqs, n_types = load_crime(args.dataset, 0, 1500)
-    test_event_seqs, n_types = load_crime(args.dataset, 1500, 1860)
+    test_event_seqs, n_types = load_crime(args.dataset, 1500, 1800)
     np.savez_compressed(osp.join("./data", "{}.npz".format(args.dataset)),
         train_event_seqs=train_event_seqs,
         test_event_seqs=test_event_seqs,
@@ -91,17 +88,31 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
         event_seqs_true (List[List[Tuple]]):
         event_seqs_pred (List[List[Tuple]]):
     """
-    #target_dict = {'VANDALISM':10, 'THEFT FROM MV':11, 'ASSAULT':12, 'SHOPLIFTING':13}
-    target_dict = {'SHOPLIFTING':0}
+    target_dict = {'VANDALISM':10, 'THEFT FROM MV':11, 'ASSAULT':12, 'SHOPLIFTING':13}
+    
     result_dict = {t:AverageMeter() for t in target_dict.keys() }
 
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
-        for t, t_idx in target_dict.items():
-            print(seq_true,seq_pred)
-            l = [abs(event_true[0]-event_pred[0]) for event_true,event_pred in zip(seq_true,seq_pred) if event_true[1] ==  t_idx]
-            print(t, t_idx, l)
-            if l:
-                result_dict[t].update(np.mean(l), len(l))
+        for t_name, t_idx in target_dict.items():
+            gt_time = [event[0] for event in seq_true if event[1] == t_idx]
+            length = len(gt_time)
+            pred_time = [event[0] for event in seq_pred if int(event[1]) == t_idx]
+            if len(pred_time) > length:
+                pred_time = pred_time[:length]
+            elif len(pred_time) < length:
+                #gt_time = pred_time[:len(pred_time)]
+                if len(pred_time) == 0:
+                    pred_time.append(0)
+                pred_time.extend([pred_time[0],] * (length-len(pred_time)))
+            length = len(gt_time)
+            if length == 0:
+                continue
+            if length > 1:
+                mae = np.abs(np.diff(np.array(gt_time)) - np.diff(np.array(pred_time))).mean()
+            else:
+                mae = np.abs(np.array(gt_time) - np.array(pred_time)).mean()
+            
+            result_dict[t_name].update(mae, length)
         #raise ValueError
     
     target = list(target_dict.keys())

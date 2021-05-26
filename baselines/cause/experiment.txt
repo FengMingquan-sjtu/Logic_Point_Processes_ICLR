@@ -1,9 +1,14 @@
-crime_downtown HExp
-MAE: ['VANDALISM', 'THEFT FROM MV', 'ASSAULT', 'SHOPLIFTING']
-&0.463 &0.376 &0.323 &0.283 
-ACC: ['VANDALISM', 'THEFT FROM MV', 'ASSAULT', 'SHOPLIFTING']
-&1.000 &1.000 &1.000 &1.000 
+cirme 
+    RPPN hidden_state=64, embedding_dim=64, epoch=100, lr=1e-3,  param_num= 27037
+    MAE: ['VANDALISM', 'THEFT FROM MV', 'ASSAULT', 'SHOPLIFTING']
+    &0.895 &1.161 &1.239 &0.828 
 
-crime_all_week_scaled HExp
-MAE: ['VANDALISM', 'THEFT FROM MV', 'ASSAULT', 'SHOPLIFTING']
-&0.032 &0.034 &0.032 &0.029 
+mimic
+    RPPN hidden_state=64, embedding_dim=64, epoch=100, lr=1e-3,  33277
+    RE-RUN test ///survival acc = 0.633
+    RE-RUN test ///urine mae = 1.707 
+
+    hidden_size=16,embedding_dim=16 param_num= 19312
+    [Model collapsed!]
+    RE-RUN test /// survival = 0.603
+    RE-RUN test /// urine mae = 1.747
