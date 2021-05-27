@@ -57,16 +57,23 @@ def get_model(model_name, dataset_name, head_predicate_idx):
         model.use_2_bases = True
         model.init_base = 0.1
         model.opt_worker_num = 16
-        model.best_N = 2
         
         
-        scale = 10/55
+        if dataset_name == "mimic_3_clip_scaled":
+            scale = 10/55
+            model.best_N = 2
+            model.integral_resolution = 1 * scale
+            model.time_window = 36 * scale
+            model.Time_tolerance = 4 * scale
+        elif dataset_name == "mimic_3_scaled":
+            scale = 10/400
+            model.best_N = 1
+            model.integral_resolution = 10 * scale
+            model.time_window = 200 * scale
+            model.Time_tolerance = 24 * scale
 
         model.scale = scale
-        model.time_window = 36 * scale
-        model.Time_tolerance = 4 * scale
         model.batch_size = 64
-        model.integral_resolution = 1 * scale
         model.decay_rate = 0.05
     
     
@@ -151,9 +158,9 @@ def convert_from_df_to_dict(pred_list, instant_list, treat_list, selected_df):
             if pred == "survival":
                 time = [0, ]
                 state = [1, ]
-                if len(patient_df['hour'])>0:
+                if len(patient_df["survival"])>1:
                     is_survival = int(patient_df["survival"].tolist()[-1])
-                    if not is_survival:
+                    if is_survival == 0:
                         time.append(patient_df['hour'].tolist()[-1])
                         state.append(is_survival)
             else:
@@ -417,7 +424,7 @@ def test(model_file_name, dataset_name, head_predicate_idx,  num_sample):
     training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
     testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
 
-    model.generate_target(head_predicate_idx, dataset, num_repeat=100)
+    model.generate_target(head_predicate_idx, testing_dataset, num_repeat=100)
 
 
 
@@ -429,13 +436,18 @@ if __name__ == "__main__":
     args = get_args()
     if not args.print_log:
         redirect_log_file()
-    mimic = "mimic_3_clip_scaled"
-    #fit(model_name=args.model, dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
+    if args.head_predicate_idx == 51:
+        mimic = "mimic_3_clip_scaled"
+    elif args.head_predicate_idx == 61:
+        mimic = "mimic_3_scaled"
+    else:
+        raise ValueError
+    #fit(model_name="mimic", dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
     #retrain(model_file_name="model-DFS_mimic_3_clip_scaled_2021-05-25 15:07:45.234259.pkl", delete_formula_idx_list=[1,2,5],dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
     #retrain(model_file_name="model-DFS_mimic_1_scaled_2021-05-23 15:56:18.702553.pkl", delete_formula_idx_list=[],dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=1, algorithm="DFS")
-    #test(model_file_name='model-Hawkes_mimic_1_scaled_2021-05-26 17:19:42.109284.pkl', dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1)
-    #fit(model_name="mimic", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="Hawkes")
-    fit(model_name="mimic", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="Hawkes_Rev")
+    #test(model_file_name='model-DFS_Retrain_mimic_3_clip_scaled_2021-05-26 20:58:01.109485.pkl', dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1)
+    #fit(model_name="mimic", dataset_name=mimic, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="Hawkes")
+    #fit(model_name="mimic", dataset_name=mimic, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="Hawkes_Rev")
     
     
     #urine 1 ratio in mimic: 0.776597959608578
@@ -445,10 +457,11 @@ if __name__ == "__main__":
     #rescale_data("mimic_2.npy", "mimic_2_scaled.npy", scale=10/500)
     #dataset_stat(dataset=args.dataset)
     
-    #data, num_sample = get_data(dataset_name=args.dataset, num_sample=100)
+    #data, num_sample = get_data(dataset_name=mimic, num_sample=100)
     #l = list()
     #for k,v in data.items():
         #print(k,v)
+    #    print(v[61])
         #if v[51]["state"][0] == 1 or len(v[51]["state"])>2:
         #print(v[51]["state"]) 
         #print(v[51]["time"])
@@ -461,6 +474,8 @@ if __name__ == "__main__":
     #dataset_stat("mimic_2")
     #dataset_stat("mimic_1")
     #dataset_stat("mimic_3")
+    #rescale_data("mimic_3.npy", "mimic_3_scaled.npy", scale=10/400)
+    #dataset_stat("mimic_3_scaled")
     #rescale_data("mimic_1.npy", "mimic_1_scaled.npy", scale=10/500)
 
     #dataset_stat("mimic_1_scaled")

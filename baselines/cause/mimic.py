@@ -25,15 +25,20 @@ def load_mimic(dataset_name, start_idx, end_idx):
     event_seqs = list()
     n_types = 62
     pred_list = list(range(n_types))
-    T_max = 10.0
+    T_max = 500.0
     
     for sample_idx in range(end_idx-start_idx):
         sample = list()
         for pred in pred_list:
             pred_events = list()
             for idx,t in enumerate(data[sample_idx][pred]["time"]):
-                if data[sample_idx][pred]["state"][idx]==1:
-                    pred_events.append((t+1e-5, float(pred)))
+                
+                if pred == 61:
+                    if data[sample_idx][pred]["state"][idx]==0:
+                        pred_events.append((t+1e-5, float(pred)))
+                else:
+                    if data[sample_idx][pred]["state"][idx]==1:
+                        pred_events.append((t+1e-5, float(pred)))
             if len(pred_events) ==0: #use dummy event to fill empty pred.
                 pred_events.append((T_max, float(pred)))
             sample.extend(pred_events)
@@ -77,7 +82,7 @@ def load_mae(args):
     #print(test_event_seqs)
     print(args.dataset, args.model_name)
     calc_mean_absolute_error(test_event_seqs, event_seqs_pred)
-    calc_acc(test_event_seqs, event_seqs_pred)
+    
 
 
 def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
@@ -88,7 +93,8 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
     """
     target_dict = {'survival':61, 'real_time_urine_output_low':51}
 
-    result_dict = {t:AverageMeter() for t in target_dict.keys() }
+    result_dict_mae = {t:AverageMeter() for t in target_dict.keys() }
+    result_dict_acc = {t:AverageMeter() for t in target_dict.keys() }
 
     for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
         for t_name, t_idx in target_dict.items():
@@ -98,40 +104,35 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
             if len(pred_time) > length:
                 pred_time = pred_time[:length]
             elif len(pred_time) < length:
-                gt_time = pred_time[:len(pred_time)]
-                #if len(pred_time) == 0:
-                #    pred_time.append(0)
-                #pred_time.extend([pred_time[0],] * (length-len(pred_time)))
-            mae = np.abs(np.array(gt_time) - np.array(pred_time)).mean()
+                #gt_time = pred_time[:len(pred_time)]
+                if len(pred_time) == 0:
+                    pred_time.append(0)
+                pred_time.extend([pred_time[0],] * (length-len(pred_time)))
+            
+            threshold = 15
+            if length > 1:
+                mae = np.abs(np.diff(np.array(gt_time)) - np.diff(np.array(pred_time))).mean()
+                acc = (threshold > np.abs(np.diff(np.array(gt_time)) - np.diff(np.array(pred_time)))).mean()
+            else:
+                mae = np.abs(np.array(gt_time) - np.array(pred_time)).mean()
+                acc = (threshold > np.abs(np.array(gt_time) - np.array(pred_time))).mean()
+            
             length = len(gt_time)
             if length > 0:
-                result_dict[t_name].update(mae, length)
+                result_dict_mae[t_name].update(mae, length)
+                result_dict_acc[t_name].update(acc, length)
         #raise ValueError
     
     target = list(target_dict.keys())
-    mae = [result_dict[t].avg for t in target]
+    mae = [result_dict_mae[t].avg for t in target]
+    acc = [result_dict_acc[t].avg for t in target]
     print("MAE:", target)
     print(("&{:.3f} "*len(target)).format(*mae))
-
-def calc_acc(event_seqs_true, event_seqs_pred):
-    """
-    Args:
-        event_seqs_true (List[List[Tuple]]):
-        event_seqs_pred (List[List[Tuple]]):
-    """
-    target_dict = {'survival':61, 'real_time_urine_output_low':51}
-    result_dict = {t:AverageMeter() for t in target_dict.keys() }
-    threshold = 1 #this threshold is tunable
-    for seq_true, seq_pred in zip(event_seqs_true, event_seqs_pred):
-        for t, t_idx in target_dict.items():
-            l = [abs(event_true[0]-event_pred[0])<threshold for event_true,event_pred in zip(seq_true,seq_pred) if event_true[1] ==  t_idx]
-            if l:
-                result_dict[t].update(np.mean(l), len(l))
-    
-    target = list(target_dict.keys())
-    acc = [result_dict[t].avg for t in target]
     print("ACC:", target)
     print(("&{:.3f} "*len(target)).format(*acc))
+
+
+
 
 
 

@@ -117,6 +117,8 @@ class Logic_Learning_Model():
             if self.use_2_bases:
                 self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
                 self.model_parameter[idx]['base_1_0'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
+                if idx in self.survival_pred_set:
+                    self.model_parameter[idx]['base_0_1'] = torch.autograd.Variable((torch.zeros(1)).double(), requires_grad=False)
             else:
                 self.model_parameter[idx]['base'] = torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)
             #
@@ -364,21 +366,33 @@ class Logic_Learning_Model():
         return feature
 
     def get_state(self, cur_time, head_predicate_idx, history):
-        head_transition_time = np.array(history[head_predicate_idx]['time'])
-        head_transition_state = np.array(history[head_predicate_idx]['state'])
         if head_predicate_idx in self.instant_pred_set:
             #instant pred state is always zero.
             #print("head_predicate_idx in self.instant_pred_set")
             cur_state = 0
+            return cur_state
+
+        head_transition_time = np.array(history[head_predicate_idx]['time'])
+        head_transition_state = np.array(history[head_predicate_idx]['state'])
+        
+        if head_predicate_idx in self.survival_pred_set:
+            default_state = 1
         else:
-            if len(head_transition_time) == 0:
-                cur_state = 0
+            default_state = 0
+        
+        if len(head_transition_time) == 0:
+            cur_state = default_state
+        else:
+            idx = np.sum(cur_time > head_transition_time) - 1
+            if idx < 0:
+                cur_state = default_state
             else:
-                idx = np.sum(cur_time > head_transition_time) - 1
-                if idx < 0:
-                    cur_state = 0
-                else:
-                    cur_state = head_transition_state[idx]
+                cur_state = head_transition_state[idx]
+        if head_predicate_idx in self.survival_pred_set and cur_state == 0:
+            print(cur_time)
+            print(head_transition_time)
+            print(head_transition_state)
+
         return cur_state
 
     def get_formula_effect(self, cur_time, head_predicate_idx, history, template):
@@ -404,7 +418,10 @@ class Logic_Learning_Model():
         for sample_ID in sample_ID_batch:
             # iterate over head predicates; each predicate corresponds to one intensity
             data_sample = dataset[sample_ID]
-            T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0 for p in self.predicate_set])
+            if head_predicate_idx in self.survival_pred_set:
+                T_max = data_sample[head_predicate_idx]["time"][-1]
+            else:
+                T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0 for p in self.predicate_set])
             intensity_log_sum = self.intensity_log_sum(head_predicate_idx, dataset, sample_ID)
             intensity_integral = self.intensity_integral(head_predicate_idx, dataset, sample_ID)
             if self.debug_mode:
@@ -451,7 +468,10 @@ class Logic_Learning_Model():
 
     def intensity_integral(self, head_predicate_idx, dataset, sample_ID):
         start_time = 0
-        T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
+        if head_predicate_idx in self.survival_pred_set:
+            T_max = dataset[sample_ID][head_predicate_idx]["time"][-1]
+        else:
+            T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
         end_time = T_max
         intensity_grid = []
         for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -462,15 +482,6 @@ class Logic_Learning_Model():
         integral = torch.sum(torch.cat(intensity_grid, dim=0)) * self.integral_resolution
         return integral
 
-    def intensity_integral_cp(self, head_predicate_idx, data_sample):
-        start_time = 0
-        T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0  for p in self.predicate_set])
-        end_time = T_max
-        integral = np.zeros(1)
-        for t in np.arange(start_time, end_time, self.integral_resolution):
-            cur_intensity = self.intensity_cp(t, head_predicate_idx, data_sample)
-            integral += cur_intensity * self.integral_resolution
-        return integral
 
     def optimize_log_likelihood(self, head_predicate_idx, dataset, verbose=True):
         print("---- start optimize_log_likelihood ----", flush=1)
@@ -701,7 +712,10 @@ class Logic_Learning_Model():
 
         if self.use_exp_kernel:
             start_time = 0
-            T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
+            if head_predicate_idx in self.survival_pred_set:
+                T_max = dataset[sample_ID][head_predicate_idx]["time"][-1]
+            else:
+                T_max = max([dataset[sample_ID][p]["time"][-1] if dataset[sample_ID][p]["time"] else 0 for p in self.predicate_set])
             end_time = T_max
             intensity_gradient_grid = []
             for t in np.arange(start_time, end_time, self.integral_resolution):
@@ -730,7 +744,10 @@ class Logic_Learning_Model():
             # iterate over head predicates; each predicate corresponds to one intensity
             data_sample = dataset[sample_ID]
             # compute the log_intensity_gradient, integral_gradient_grid using existing rules
-            T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0  for p in self.predicate_set])
+            if head_predicate_idx in self.survival_pred_set:
+                T_max = dataset[sample_ID][head_predicate_idx]["time"][-1]
+            else:
+                T_max = max([data_sample[p]["time"][-1] if data_sample[p]["time"] else 0  for p in self.predicate_set])
             start_time = 0
             end_time = T_max # Note for different sample_ID, the T_max can be different
             # compute new feature at the transition times
@@ -1419,14 +1436,16 @@ class Logic_Learning_Model():
             integral = integral.detach().numpy()
             survival_rate = np.exp(-integral)
             is_survival = int(survival_rate > 0.5)
-            return abs(is_survival - input_target_sample["state"][-1])
+            #print(is_survival)
+            #print(input_target_sample["state"][-1])
+            return [abs(is_survival - input_target_sample["state"][-1]),]
 
         else:
             
 
             # other preds, calculate MAE
             if target_sample_length <= 0:
-                return 0
+                return []
                 #return input_target_sample["time"]
             
             # obtain the maximal intensity
@@ -1439,7 +1458,7 @@ class Logic_Learning_Model():
                 intensity = self.intensity(t, head_predicate_idx, local_data, local_sample_ID).detach()
                 intensity_potential.append(intensity)
             if len(intensity_potential) == 0:
-                return 0
+                return []
             intensity_max = max(intensity_potential)
             #print("intensity_max=", intensity_max,flush=1)
 
@@ -1472,9 +1491,9 @@ class Logic_Learning_Model():
             
             gt = np.array(input_target_sample["time"])
             generated = np.array(generated_sample_time)
-            mae = np.abs(gt- generated).mean()
+            ae = np.abs(gt- generated)
             #print("generated 1 sample, mae=",mae,flush=1)
-            return mae
+            return ae
 
     def generate_target(self, head_predicate_idx, dataset, num_repeat=100):
         #print(self.instant_pred_set)
@@ -1495,11 +1514,13 @@ class Logic_Learning_Model():
                     res = pool.starmap(self.generate_target_one_sample, arg_list)
             else: #single process, not use pool.
                 res = [self.generate_target_one_sample(*arg) for arg in arg_list]
-        res = np.array(res)
-        res = res[res>0].mean()
+        res = np.concatenate(res)
+        #print(res)
         if head_predicate_idx in self.survival_pred_set:
+            res = 1 - res.mean()
             print("ACC =", res)
         else:
+            res = res.mean()
             print("MAE =", res)
         print("----- exit generation -----", flush=1)
 

@@ -254,6 +254,15 @@ mimic{
     target length mean = 36.0332, std = 121.1968.
     target size mean = 1.8443, std = 0.3625.
     seq total size mean = 79.0333, std = 4.9776.
+
+    dataset_path is  ./data/mimic_3_scaled.npy
+    sample num is  4298
+    num pred is 62
+    seq length mean = 9.8173, std = 9.8615.
+    seq size mean = 1.9991, std = 0.0374.
+    target length mean = 0.9008, std = 3.0299.
+    target size mean = 1.8443, std = 0.3625.
+    seq total size mean = 79.0333, std = 4.9776.
     
 
     double_sample: 192

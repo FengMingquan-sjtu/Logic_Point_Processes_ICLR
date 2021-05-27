@@ -7,11 +7,11 @@ setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_
 setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 12
 setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 13
 
-setsid python3 train_mimic.py --dataset mimic_3_clip_scaled --head_predicate_idx 51
-setsid python3 train_mimic.py --dataset mimic_3_clip_scaled --head_predicate_idx 61
+setsid python3 train_mimic.py  --head_predicate_idx 51
+setsid python3 train_mimic.py  --head_predicate_idx 61
 
-python3 train_mimic.py --dataset mimic_3_clip_scaled --worker 16 --print_log --head_predicate_idx 51
-setsid python3 train_mimic.py --dataset mimic_3_clip_scaled --worker 16
+python3 train_mimic.py --worker 16 --print_log --head_predicate_idx 51
+setsid python3 train_mimic.py  --worker 16
 
 ps -ef |grep logic |awk '{print $2}'|xargs kill -9
 ps -ef |grep synthetic |awk '{print $2}'|xargs kill -9

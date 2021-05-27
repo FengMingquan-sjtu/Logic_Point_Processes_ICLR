@@ -354,12 +354,17 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def test(dataset_name, model_file):
-    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=-1)
-    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
-    with open("./model/"+model_file, "rb") as f:
+def test(model_file_name, dataset_name,   num_sample):
+    #load model
+    with open("./model/"+model_file_name, "rb") as f:
         model = pickle.load(f)
-    model.generate_target(head_predicate_idx=13, dataset=testing_dataset, num_repeat=100)
+    head_predicate_idx = model.head_predicate_set[0]
+    #get data
+    dataset,num_sample =  get_data(dataset_name, num_sample)
+    training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
+
+    model.generate_target(head_predicate_idx, testing_dataset, num_repeat=100)
 
 
 if __name__ == "__main__":
@@ -371,10 +376,19 @@ if __name__ == "__main__":
     if not args.print_log:
         redirect_log_file()
     
-
+    
     #fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
-    fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="Hawkes")
+    #or head_predicate_idx in [10,11,12,13]:
+    #    fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="Hawkes")
+    models = [
+        "model-BFS_crime_all_day_scaled_2021-05-25 21:13:52.385025.pkl",
+        "model-BFS_crime_all_day_scaled_2021-05-25 21:19:46.688345.pkl",
+        "model-BFS_crime_all_day_scaled_2021-05-25 21:25:03.354947.pkl",
+        "model-BFS_crime_all_day_scaled_2021-05-26 08:23:17.427424.pkl",
+    ]
+    for m in models:
+        test(model_file_name=m, dataset_name=args.dataset,  num_sample=-1)
     
     #dataset_stat("crime_all_day_scaled", 10)
     #dataset_stat("crime_all_day_scaled", 11)
