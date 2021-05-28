@@ -247,6 +247,7 @@ def build_batched_grad_fences(grad, batch_size, inputs, fences, targets):
     """
     def batched_grad(weights, i):
         cur_idxs, cur_slice = get_ith_minibatch_ixs_fences(i, batch_size, fences)
+        cur_slice = cur_slice.astype(int)
         batched_inputs = inputs[:, cur_slice]
         batched_targets = None if targets is None else targets[:, cur_slice]
         batched_fences = fences[cur_idxs.start:cur_idxs.stop+1] - fences[cur_idxs.start]

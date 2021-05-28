@@ -5,9 +5,8 @@ from copy import copy
 from builtins import range
 
 import autograd.numpy as np
-from autograd.util import flatten
 from autograd.core import primitive
-import autograd.scipy.stats.norm as norm
+
 
 
 def build_gru(input_count, state_count, output_count):

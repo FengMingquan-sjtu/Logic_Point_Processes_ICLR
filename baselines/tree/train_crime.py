@@ -25,14 +25,11 @@ def convert_from_dict(in_file, target, is_train, interval):
         n_pred = len(d.keys())
         #print(n_interval)
         converted_d = np.zeros((n_pred, n_interval),dtype=int)
-        if target == 51: #urine
-            default_state = 1
-        elif target == 61: #survival
-            default_state = 0
+        
         for pid,p in d.items():
             for i in range(n_interval):
                 for idx,t in enumerate(p["time"]):
-                    if p["state"][idx] == default_state  and i*interval <=t <=(i+1)*interval:
+                    if p["state"][idx] == 1 and i*interval <=t <=(i+1)*interval:
                         converted_d[pid,i] = 1
                         break
                     if t > (i+1)*interval:
@@ -137,12 +134,8 @@ def test(in_file, model_file, target, interval):
         sample_y_true = y_true[F[f_idx]: F[f_idx+1]]
         sample_y_pred = y_pred[F[f_idx]: F[f_idx+1]]
         #print("sample_y_pred=",sample_y_pred)
-        if target == 51: #urine
-            gt_time = [i*interval for i,s in enumerate(sample_y_true) if s==1]
-            pred_time = [i*interval for i,s in enumerate(sample_y_pred) if s>=0.4]
-        elif target == 61:
-            gt_time = [i*interval for i,s in enumerate(sample_y_true) if s==0]
-            pred_time = [i*interval for i,s in enumerate(sample_y_pred) if s<=0.4]
+        gt_time = [i*interval for i,s in enumerate(sample_y_true) if s==1]
+        pred_time = [i*interval for i,s in enumerate(sample_y_pred) if s>=0.4]
         #print("gt-time:", gt_time)
         #print("pred-time:", pred_time)
         length = len(gt_time)
@@ -251,8 +244,12 @@ if __name__ == "__main__":
     #run(tr_args)
     #get_vis()
 
-    #run_2(in_file="mimic_3_clip_scaled.npy", model_file="mimic-urine.pkl", target=51, interval=4)
-    #test(in_file="mimic_3_clip_scaled.npy", model_file="mimic-urine.pkl", target=51, interval=4)
-    run_2(in_file="mimic_3_scaled.npy", model_file="mimic-61.pkl", target=61, interval=4)
-    test(in_file="mimic_3_scaled.npy", model_file="mimic-61.pkl", target=61, interval=4)
+    #run_2(in_file="crime_all_day_scaled.npy", model_file="crime-10.pkl", target=10, interval=0.5)
+    #test(in_file="crime_all_day_scaled.npy", model_file="crime-10.pkl", target=10, interval=0.5)
+    #run_2(in_file="crime_all_day_scaled.npy", model_file="crime-11.pkl", target=11, interval=0.5)
+    #test(in_file="crime_all_day_scaled.npy", model_file="crime-11.pkl", target=11, interval=0.5)
+    #run_2(in_file="crime_all_day_scaled.npy", model_file="crime-12.pkl", target=12, interval=0.5)
+    #test(in_file="crime_all_day_scaled.npy", model_file="crime-12.pkl", target=12, interval=0.5)
+    run_2(in_file="crime_all_day_scaled.npy", model_file="crime-13.pkl", target=13, interval=0.5)
+    test(in_file="crime_all_day_scaled.npy", model_file="crime-13.pkl", target=13, interval=0.5)
     

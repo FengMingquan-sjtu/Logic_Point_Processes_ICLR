@@ -103,7 +103,7 @@ def calc_mean_absolute_error(event_seqs_true, event_seqs_pred):
                 #gt_time = pred_time[:len(pred_time)]
                 if len(pred_time) == 0:
                     pred_time.append(0)
-                pred_time.extend([pred_time[0],] * (length-len(pred_time)))
+                pred_time.extend([pred_time[-1],] * (length-len(pred_time)))
             length = len(gt_time)
             if length == 0:
                 continue
