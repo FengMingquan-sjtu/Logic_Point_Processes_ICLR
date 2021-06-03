@@ -100,6 +100,7 @@ class Logic_Learning_Model():
         self.use_decay = True
         self.use_2_bases = True
         self.init_base = 0.1
+        self.l1_coef = 1e-3
         self.init_params()
 
     def init_params(self):
@@ -596,8 +597,9 @@ class Logic_Learning_Model():
                     print("param-{}={}".format(idx, p.data))
                     print("grad-{}=".format(idx), p.grad,flush=1)
             log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
+            l1 = torch.sum(torch.abs(torch.cat(params)))
             #print("log_likelihood = ", log_likelihood)
-            loss = - log_likelihood
+            loss = - log_likelihood + self.l1_coef * l1
             #print("loss=", loss)
             loss.backward()
             optimizer.step()
@@ -779,7 +781,7 @@ class Logic_Learning_Model():
             #print("sample-{}: term1={}, term2={}, log-grad={}".format(sample_ID, sum_intensity_log_grad.item(), intensity_integral_grad.item(), log_likelihood_grad.item()))
                                        
             log_likelihood_grad_list.append(log_likelihood_grad)
-        mean_grad = np.mean(log_likelihood_grad_list) 
+        mean_grad = np.mean(log_likelihood_grad_list) + self.l1_coef 
         std_grad = np.std(log_likelihood_grad_list,ddof=1) #ddof=1 for unbiased estimation
         #note: we assume l1 penalty gradient is zero, at w=0
         return mean_grad, std_grad

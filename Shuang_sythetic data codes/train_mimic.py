@@ -28,10 +28,6 @@ def get_model(model_name, dataset_name, head_predicate_idx):
             #rule template
             model.body_pred_set_first_part = lab_preds + output_preds
             model.body_pred_set_second_part = input_preds + drug_preds
-            #model.deleted_rules.add("sysbp_normal --> real_time_urine_output_low , sysbp_normal BEFORE real_time_urine_output_low")
-            #model.deleted_rules.add("sysbp_normal --> real_time_urine_output_low , sysbp_normal EQUAL real_time_urine_output_low")
-            #model.deleted_rules.add("sysbp_normal --> Not real_time_urine_output_low , sysbp_normal BEFORE Not real_time_urine_output_low")
-            #model.deleted_rules.add("sysbp_normal --> Not real_time_urine_output_low , sysbp_normal EQUAL Not real_time_urine_output_low")
 
         elif head_predicate_idx == 61:
             model.body_pred_set = lab_preds + output_preds + input_preds + drug_preds 
@@ -442,7 +438,7 @@ if __name__ == "__main__":
         mimic = "mimic_3_scaled"
     else:
         raise ValueError
-    #fit(model_name="mimic", dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
+    fit(model_name="mimic", dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
     #retrain(model_file_name="model-DFS_mimic_3_clip_scaled_2021-05-25 15:07:45.234259.pkl", delete_formula_idx_list=[1,2,5],dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=2, algorithm="DFS")
     #retrain(model_file_name="model-DFS_mimic_1_scaled_2021-05-23 15:56:18.702553.pkl", delete_formula_idx_list=[],dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1, worker_num=args.worker, num_iter=1, algorithm="DFS")
     #test(model_file_name='model-DFS_Retrain_mimic_3_clip_scaled_2021-05-26 20:58:01.109485.pkl', dataset_name=mimic, head_predicate_idx=args.head_predicate_idx,  num_sample=-1)

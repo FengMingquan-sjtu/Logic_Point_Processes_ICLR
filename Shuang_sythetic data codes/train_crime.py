@@ -22,11 +22,11 @@ def get_model(model_name, dataset_name, head_predicate_idx):
         model.static_pred_set = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         model.instant_pred_set = [10, 11, 12, 13]
         
-        model.max_rule_body_length = 2
-        model.max_num_rule = 20
+        model.max_rule_body_length = 3
+        model.max_num_rule = 60
         
-        model.gain_threshold = 0.01
-        model.low_grad_threshold = 0.005
+        model.gain_threshold = 0.001
+        model.low_grad_threshold = 0.001
         model.learning_rate = 0.0001
         model.base_lr = 0.0001
         model.weight_lr = 0.01
@@ -36,18 +36,15 @@ def get_model(model_name, dataset_name, head_predicate_idx):
         model.opt_worker_num = 16
         model.best_N = 1
         
-    if head_predicate_idx in [10,13]:
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.2
-    else:
-        model.weight_threshold = 0.1
-        model.strict_weight_threshold= 0.2
+
+        model.weight_threshold = 0.01
+        model.strict_weight_threshold= 0.05
 
     if dataset_name.endswith("day_scaled"):
         model.scale = 10/24
         model.time_window = 24 * model.scale
         model.Time_tolerance = 1 * model.scale
-        model.decay_rate = 0.1
+        model.decay_rate = 0.05
         model.batch_size = 64
         model.integral_resolution = 0.1 * model.scale
     
@@ -367,6 +364,27 @@ def test(model_file_name, dataset_name,   num_sample):
     model.generate_target(head_predicate_idx, testing_dataset, num_repeat=100)
 
 
+def retrain(model_file_name, dataset_name,  num_sample, worker_num, num_iter, algorithm):
+    time_ = str(datetime.datetime.now())
+    print("Start time is", time_, flush=1)
+    with open("./model/"+model_file_name, "rb") as f:
+        model = pickle.load(f)
+    
+    model.max_rule_body_length = 3
+
+    #get data
+    dataset,num_sample =  get_data(dataset_name, num_sample)
+    training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
+
+    if algorithm == "DFS":
+        with Timer("DFS-Retrain") as t:
+            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="DFS_Retrain_{}_{}".format(dataset_name, time_), init_params=False)
+    elif algorithm == "BFS":
+        with Timer("BFS-Retrain") as t:
+            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag="BFS_Retrain_{}_{}".format(dataset_name, time_), init_params=False)
+
+
 if __name__ == "__main__":
     
 
@@ -379,16 +397,29 @@ if __name__ == "__main__":
     
     #fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="DFS")
     #fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=args.head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="BFS")
+
+    #retrain A
+    A_model  = "model-BFS_crime_all_day_scaled_2021-06-01 11:12:33.643773.pkl"
+    #retrain(model_file_name=A_model, dataset_name="crime_all_day_scaled",  num_sample=-1, worker_num=16, num_iter=6, algorithm="BFS")
+
+    #retrain C
+    C_model = "model-BFS_crime_all_day_scaled_2021-05-31 23:41:37.351314.pkl"
+    #retrain(model_file_name=C_model, dataset_name="crime_all_day_scaled",  num_sample=-1, worker_num=16, num_iter=6, algorithm="BFS")
+
+    #retrain D
+    D_model = "model-BFS_crime_all_day_scaled_2021-05-31 23:41:40.439359.pkl"
+    retrain(model_file_name=D_model, dataset_name="crime_all_day_scaled",  num_sample=-1, worker_num=16, num_iter=6, algorithm="BFS")
+
     #or head_predicate_idx in [10,11,12,13]:
     #    fit(model_name="crime", dataset_name=args.dataset, head_predicate_idx=head_predicate_idx, num_sample=-1, worker_num=args.worker, num_iter=6, algorithm="Hawkes")
-    models = [
-        "model-BFS_crime_all_day_scaled_2021-05-25 21:13:52.385025.pkl",
-        "model-BFS_crime_all_day_scaled_2021-05-25 21:19:46.688345.pkl",
-        "model-BFS_crime_all_day_scaled_2021-05-25 21:25:03.354947.pkl",
-        "model-BFS_crime_all_day_scaled_2021-05-26 08:23:17.427424.pkl",
-    ]
-    for m in models:
-        test(model_file_name=m, dataset_name=args.dataset,  num_sample=-1)
+    #models = [
+    #    "model-BFS_crime_all_day_scaled_2021-05-25 21:13:52.385025.pkl",
+    #    "model-BFS_crime_all_day_scaled_2021-05-25 21:19:46.688345.pkl",
+    #    "model-BFS_crime_all_day_scaled_2021-05-25 21:25:03.354947.pkl",
+    #    "model-BFS_crime_all_day_scaled_2021-05-26 08:23:17.427424.pkl",
+    #]
+    #for m in models:
+    #    test(model_file_name=m, dataset_name=args.dataset,  num_sample=-1)
     
     #dataset_stat("crime_all_day_scaled", 10)
     #dataset_stat("crime_all_day_scaled", 11)

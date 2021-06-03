@@ -19,4 +19,4 @@ ps -ef |grep crime |awk '{print $2}'|xargs kill -9
 ps -ef |grep generate |awk '{print $2}'|xargs kill -9
 ps -ef |grep mimic |awk '{print $2}'|xargs kill -9
 
-ps -ef |grep head_predicate_idx\ 13 |awk '{print $2}'|xargs kill -9
+ps -ef |grep head_predicate_idx\ 10 |awk '{print $2}'|xargs kill -9
