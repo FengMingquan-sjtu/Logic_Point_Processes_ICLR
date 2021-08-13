@@ -564,3 +564,8 @@ MAE: 21.493143598091343
 
 120. use very small lr for base, large lr for weight, small iter-num.
     random sampling log-grad with best_N=2, faster speed and better robustness against high variance.
+
+121. [Fixed] In fit synthetic GT, all weights\intensity are zero.  [Reason]: the initial value of fit gt is negative.
+    [Bug] In fit synthetic GT, data-15, the 4th rule weight is negative.
+
+122. 还原synthetic实验结果：所有规则权重取负数，head pred设为instant，base取0，exp kernel，decay=1，L1=0.

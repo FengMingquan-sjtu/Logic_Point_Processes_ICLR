@@ -37,6 +37,11 @@ class Logic_Model_Generator:
         self.logic_template = dict()
         self.model_parameter = dict()
         self.time_horizon = 0
+        self.integral_resolution = 0.1
+        self.use_2_bases = False
+        self.use_exp_kernel = True
+        
+        
         
     def get_model(self):
         model = Logic_Learning_Model(self.head_predicate_set)
@@ -51,6 +56,9 @@ class Logic_Model_Generator:
         model.Time_tolerance = self.Time_tolerance
         model.decay_rate = self.decay_rate
         model.integral_resolution = self.integral_resolution
+        model.use_2_bases = self.use_2_bases
+        model.use_exp_kernel = self.use_exp_kernel
+        
         return model
     
     def get_model_for_learn(self):
@@ -65,6 +73,10 @@ class Logic_Model_Generator:
         model.Time_tolerance = self.Time_tolerance
         model.decay_rate = self.decay_rate
         model.integral_resolution = self.integral_resolution
+        model.use_2_bases = self.use_2_bases
+        model.init_base = -0.2
+        model.use_exp_kernel = self.use_exp_kernel
+        model.init_params()
         return model
 
     def generate_one_sample(self, sample_ID=0):
@@ -133,6 +145,8 @@ class Logic_Model_Generator:
         print("Generate {} samples".format(num_sample))
         print("with following rules:")
         self.model.print_rule_cp()
+        print("with following settings:")
+        self.model.print_info()
         for body_idx in self.body_predicate_set:
             print("Intensity {} is {}".format(self.predicate_notation[body_idx], self.body_intensity[body_idx]))
         print("-----",flush=1)
@@ -191,10 +205,11 @@ class Logic_Model_Generator:
         model.worker_num = worker_num
         model.print_info()
         # initialize params
+        init_base = -0.2
         for head_predicate_idx in self.head_predicate_set:
-            model.model_parameter[head_predicate_idx] = {'base': torch.autograd.Variable((torch.ones(1) * -0.2).double(), requires_grad=True)}
+            model.model_parameter[head_predicate_idx] = {'base': torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)}
             for formula_idx in range(self.num_formula):
-                model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)}
+                model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * 0.1).double(), requires_grad=True)}
         verbose = True # print mid-result
         l = model.optimize_log_likelihood_mp(head_predicate_idx, dataset,verbose)
         print("Log-likelihood (torch)= ", l, flush=1)
@@ -1015,15 +1030,17 @@ def get_logic_model_14():
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [4]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 4
+    init_base = 0.0
 
-    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
-    weights = [1.0, 1.0, 2.0]
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([init_base]).double()}
+    weights = [-1.0, -1.0, -2.0]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
         model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
@@ -1078,8 +1095,9 @@ def get_logic_model_15():
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 4
+    init_base = 0.5
 
-    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([0]).double()}
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([init_base]).double()}
     weights = [1.0, 1.0, 1.0, 1.0]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
@@ -1420,7 +1438,7 @@ if __name__ == "__main__":
 
     print("Start time is", datetime.datetime.now(),flush=1)
     
-    test(dataset_name="data-18", num_sample=-1, model_file="model-fit-gt-18.pkl", head_predicate_idx=1, worker_num=12)
+    #test(dataset_name="data-18", num_sample=-1, model_file="model-fit-gt-18.pkl", head_predicate_idx=1, worker_num=12)
     #generate(model_idx=8, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=8)
 
@@ -1442,8 +1460,8 @@ if __name__ == "__main__":
     #generate(model_idx=13, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=13)
 
-    #generate(model_idx=14, num_sample=2400, time_horizon=10, worker_num=12)
-    #fit_mp_group(model_idx=14)
+    generate(model_idx=14, num_sample=2400, time_horizon=10, worker_num=12)
+    fit_mp_group(model_idx=14)
 
     #generate(model_idx=15, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=15)

@@ -91,7 +91,7 @@ class Logic_Learning_Model():
         #self.explore_batch_size_ucb = 500
         self.use_cp = False
         self.worker_num = 8
-        self.opt_worker_num = 1
+        self.opt_worker_num = 12
         self.best_N = 1
         self.static_pred_coef = 1 #coef to balance static preds.
         self.debug_mode = False
@@ -244,7 +244,9 @@ class Logic_Learning_Model():
             feature_formula.append(f)
             effect_formula.append(self.get_formula_effect(cur_time=cur_time, head_predicate_idx=head_predicate_idx,
                                                        history=dataset[sample_ID], template=self.logic_template[head_predicate_idx][formula_idx]))
-        
+        #print("feature_formula:", feature_formula)
+        #print("effect_formula:", effect_formula)
+        #print("weight_formula:", weight_formula)
         if len(weight_formula)>0:
             #intensity = torch.exp(torch.cat(weight_formula, dim=0))/torch.sum(torch.exp(torch.cat(weight_formula, dim=0)), dim=0) * torch.cat(feature_formula, dim=0) * torch.cat(effect_formula, dim=0)
             #NOTE: Softmax on weight leads to error when len(weight) = 1. Gradient on weight is very small.
@@ -266,10 +268,13 @@ class Logic_Learning_Model():
         else:
             base = self.model_parameter[head_predicate_idx]['base']
         intensity = base + torch.sum(intensity)
+        #print("inetensity before map:", intensity)
         if self.use_exp_kernel:
             intensity = torch.exp(intensity)
         else:
             intensity = torch.nn.functional.relu(intensity) + 1e-3
+        
+        #print("inetensity after map:", intensity)
         
 
         return intensity
@@ -457,6 +462,7 @@ class Logic_Learning_Model():
             log_sum = torch.tensor([0], dtype=torch.float64)
         else:
             log_sum = torch.sum(torch.log(torch.cat(intensity_transition, dim=0)))
+        #print(intensity_transition)
         return log_sum
     
     def intensity_log_sum_cp(self, head_predicate_idx, data_sample):
