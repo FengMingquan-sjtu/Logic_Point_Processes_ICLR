@@ -1460,11 +1460,11 @@ if __name__ == "__main__":
     #generate(model_idx=13, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=13)
 
-    generate(model_idx=14, num_sample=2400, time_horizon=10, worker_num=12)
-    fit_mp_group(model_idx=14)
+    #generate(model_idx=14, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=14)
 
-    #generate(model_idx=15, num_sample=2400, time_horizon=10, worker_num=12)
-    #fit_mp_group(model_idx=15)
+    generate(model_idx=15, num_sample=2400, time_horizon=10, worker_num=12)
+    fit_mp_group(model_idx=15)
 
     #generate(model_idx=16, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=16)
