@@ -1,5 +1,6 @@
 setsid python3 logic_learning.py 
 setsid python3 generate_synthetic_data.py
+setsid python3 train_synthetic.py
 python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --print_log
 python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 10 --print_log 
 setsid python3 train_crime.py --dataset crime_all_day_scaled --worker 16 --head_predicate_idx 10

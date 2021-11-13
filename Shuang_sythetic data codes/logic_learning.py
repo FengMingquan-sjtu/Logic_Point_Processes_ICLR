@@ -99,8 +99,9 @@ class Logic_Learning_Model():
         self.scale = 1
         self.use_decay = True
         self.use_2_bases = True
-        self.init_base = 0.1
-        self.l1_coef = 1e-3
+        self.init_base = 0.2
+        self.init_weight = 0.1
+        self.l1_coef = 0.1
         self.init_params()
 
     def init_params(self):
@@ -366,9 +367,9 @@ class Logic_Learning_Model():
             feature = torch.tensor([np.sum(temporal_kernel)], dtype=torch.float64)
             if self.use_decay:
                 feature *= self.decay_rate #this decay is important for convergence, see bug#113
-        if self.debug_mode:
-            print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
-            print("feature at t={} is {}".format( cur_time,feature), flush=1)
+        #if self.debug_mode:
+        #    print("rule is : ", self.get_rule_str(rule=template, head_predicate_idx=head_predicate_idx) )
+        #    print("feature at t={} is {}".format( cur_time,feature), flush=1)
         return feature
 
     def get_state(self, cur_time, head_predicate_idx, history):
@@ -656,9 +657,11 @@ class Logic_Learning_Model():
   
         log_likelihood_list = ret
         log_likelihood = np.mean(log_likelihood_list)/self.batch_size
-        #params = self.get_model_parameters(head_predicate_idx)
-        #for idx,p in enumerate(params):
-        #    print("grad-{}={}".format(idx, p.grad),flush=1)
+        
+        if self.debug_mode:
+            params = self.get_model_parameters(head_predicate_idx)
+            for idx,p in enumerate(params):
+                print("grad-{}={}".format(idx, p.grad),flush=1)
         print("optimized rule weights are:")
         self.print_rule()
         print("---- exit optimize_log_likelihood multi-process----", flush=1)
@@ -1076,7 +1079,7 @@ class Logic_Learning_Model():
                 print("Best log-likelihood-grad(all-data) =", best_gain)
                 # add model parameter
                 self.model_parameter[head_predicate_idx][self.num_formula] = {}
-                self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)
+                self.model_parameter[head_predicate_idx][self.num_formula]['weight'] = torch.autograd.Variable((torch.ones(1) * self.init_weight).double(), requires_grad=True)
                 #self.model_parameter[head_predicate_idx][self.num_formula]['weight_cp'] = cp.Variable(1)
                 self.num_formula += 1
                 is_update_weight = True
@@ -1146,55 +1149,6 @@ class Logic_Learning_Model():
             return True
         return False
             
-    def search_algorithm(self, head_predicate_idx, dataset, dataset_id):
-        print("----- start search_algorithm -----", flush=1)
-        self.print_info()
-        #Begin Breadth(width) First Search
-        #generate new rule from scratch
-        is_continue = True
-        while self.num_formula < self.max_num_rule and is_continue:
-            is_update_weight, is_continue = self.generate_rule_via_column_generation(head_predicate_idx, dataset)
-            with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
-                pickle.dump(self, f)   
-            
-        #generate new rule by extending existing rules
-        extended_rules = set()
-        for cur_body_length in range(1, self.max_rule_body_length):
-            flag = True
-            while(self.num_formula < self.max_num_rule and flag):
-                #select all existing rules whose length are cur_body_length
-                idx_template_list = [(idx, template) for idx, template in self.logic_template[head_predicate_idx].items() if len(template['body_predicate_idx']) == cur_body_length]
-                # sort by weights, descending
-                idx_template_list  = sorted(idx_template_list, key=lambda x:self.model_parameter[head_predicate_idx][x[0]]['weight'].data[0], reverse=True) 
-                
-                # select best unextended rule to extend.
-                template_to_extend = None
-                for idx, template in idx_template_list:
-                    rule_str = self.get_rule_str(template, head_predicate_idx)
-                    if not rule_str in extended_rules:
-                        template_to_extend = template
-                        break
-
-                if template_to_extend is None:
-                    flag = False
-                    break
-                
-                rule_str = self.get_rule_str(template_to_extend, head_predicate_idx)
-                extended_rules.add(rule_str)
-                print("start to extend this rule:", rule_str)
-                
-                #extend the selected rule.
-                is_continue = True
-                while(self.num_formula < self.max_num_rule and is_continue):
-                    is_update_weight, is_continue = self.add_one_predicate_to_existing_rule(head_predicate_idx, dataset, template_to_extend)
-                    with open("./model/model-{}.pkl".format(dataset_id),'wb') as f:
-                        pickle.dump(self, f) 
-
-
-        print("search finished, rule set is:")
-        self.print_rule_cp()
-        self.final_tune(head_predicate_idx, dataset)
-        print("----- exit search_algorithm -----", flush=1)
 
     def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag, init_params=True):
         self.print_info()
@@ -1615,11 +1569,7 @@ if __name__ == "__main__":
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     
-    #run_expriment_group(dataset_id=13)
-    #run_expriment_group(dataset_id=14)
-    #run_expriment_group(dataset_id=15)
-    #run_expriment_group(dataset_id=16)
-    run_expriment_group(dataset_id=17)
+    
 
 
 

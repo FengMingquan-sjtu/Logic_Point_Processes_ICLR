@@ -39,11 +39,12 @@ class Logic_Model_Generator:
         self.time_horizon = 0
         self.integral_resolution = 0.1
         self.use_2_bases = False
-        self.use_exp_kernel = True
+        self.use_exp_kernel = False
         
         
         
     def get_model(self):
+        # used in fit-gt.
         model = Logic_Learning_Model(self.head_predicate_set)
         model.logic_template = self.logic_template
         model.model_parameter = self.model_parameter
@@ -62,19 +63,19 @@ class Logic_Model_Generator:
         return model
     
     def get_model_for_learn(self):
-        # used in logic_learning.py
+        # used in logic_learning.py\ train_synthetic.py
         model = Logic_Learning_Model(self.head_predicate_set)
         model.num_predicate = self.num_predicate
         model.predicate_set = self.body_predicate_set + self.head_predicate_set 
         model.predicate_notation = self.predicate_notation
         model.static_pred_set = self.static_pred_set
         model.instant_pred_set = self.instant_pred_set
+        model.body_pred_set = self.body_predicate_set
         model.predicate_notation = self.predicate_notation
         model.Time_tolerance = self.Time_tolerance
         model.decay_rate = self.decay_rate
         model.integral_resolution = self.integral_resolution
         model.use_2_bases = self.use_2_bases
-        model.init_base = -0.2
         model.use_exp_kernel = self.use_exp_kernel
         model.init_params()
         return model
@@ -205,11 +206,12 @@ class Logic_Model_Generator:
         model.worker_num = worker_num
         model.print_info()
         # initialize params
-        init_base = -0.2
+        init_base = 0.2
+        init_weight = 0.1
         for head_predicate_idx in self.head_predicate_set:
             model.model_parameter[head_predicate_idx] = {'base': torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)}
             for formula_idx in range(self.num_formula):
-                model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * 0.1).double(), requires_grad=True)}
+                model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * init_weight).double(), requires_grad=True)}
         verbose = True # print mid-result
         l = model.optimize_log_likelihood_mp(head_predicate_idx, dataset,verbose)
         print("Log-likelihood (torch)= ", l, flush=1)

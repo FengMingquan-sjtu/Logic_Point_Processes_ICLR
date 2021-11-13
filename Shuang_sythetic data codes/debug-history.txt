@@ -569,3 +569,5 @@ MAE: 21.493143598091343
     [Bug] In fit synthetic GT, data-15, the 4th rule weight is negative.
 
 122. 还原synthetic实验结果：所有规则权重取负数，head pred设为instant，base取0，exp kernel，decay=1，L1=0.
+
+123. (13-11-21)synthetic出错，一轮迭代后权重全变为nan。因为使用了exp kernel，全部换成linear kernel（self.use_exp_kernel=False)即可。

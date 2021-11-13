@@ -13,9 +13,15 @@ def get_data(dataset_id, num_sample):
     dataset = np.load(dataset_path, allow_pickle='TRUE').item()
     if len(dataset.keys())> num_sample: 
         dataset = {i:dataset[i] for i in range(num_sample)}
-    num_sample = len(dataset.keys())
+    num_sample = len(dataset)
+    training_dataset = {i: dataset[i] for i in range(int(num_sample*0.8))}
+    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
+
+    
     print("sample num is ", num_sample)
-    return dataset
+    print("training_dataset size=", len(training_dataset))
+    print("testing_dataset size=", len(testing_dataset))
+    return training_dataset, testing_dataset
 
 def get_model(dataset_id):
     from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17
@@ -27,20 +33,15 @@ def get_model(dataset_id):
 def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
     t  = datetime.datetime.now()
     print("Start time is", t ,flush=1)
-
     if not os.path.exists("./model"):
-        os.makedirs("./model")
-        
+        os.makedirs("./model")    
     #get model
     model = get_model(dataset_id)
-
     #set initial rules if required
     if rule_set_str:
         set_rule(model, rule_set_str)
-        
-
     #get data
-    dataset =  get_data(dataset_id, num_sample)
+    training_dataset, testing_dataset =  get_data(dataset_id, num_sample)
 
     #set model hyper params
     model.batch_size_grad = num_sample #use all sample for grad
@@ -78,10 +79,10 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], dataset, T_max=10, tag = dataset_id)
+            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag = dataset_id)
     elif algorithm == "BFS":
         with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], dataset, T_max=10, tag = dataset_id)
+            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag = dataset_id)
     
     print("Finish time is", datetime.datetime.now())
  
@@ -106,4 +107,6 @@ if __name__ == "__main__":
     #run_expriment_group(dataset_id=14)
     #run_expriment_group(dataset_id=15)
     #run_expriment_group(dataset_id=16)
-    run_expriment_group(dataset_id=17)
+    #run_expriment_group(dataset_id=17)
+
+    fit(dataset_id=15, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
