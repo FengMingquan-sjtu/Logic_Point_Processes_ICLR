@@ -570,4 +570,19 @@ MAE: 21.493143598091343
 
 122. 还原synthetic实验结果：所有规则权重取负数，head pred设为instant，base取0，exp kernel，decay=1，L1=0.
 
-123. (13-11-21)synthetic出错，一轮迭代后权重全变为nan。因为使用了exp kernel，全部换成linear kernel（self.use_exp_kernel=False)即可。
+123. (13-11-2021)synthetic出错，一轮迭代后权重全变为nan。因为使用了exp kernel，全部换成linear kernel（self.use_exp_kernel=False)即可。
+
+124. synthetic on data-15 基本正常。耗时1.5小时。日志见 2021-11-13 10:15:23.348409
+     精确度有待提高。
+     似乎每条规则的“激励”不高。在data-19换成更大权重（权重>=10)试试。
+     增加权重、增加数据集大小，均无法改善性能。
+     增加base性能提高(base从0.2增加到1.0 性能提高，再增加到1.5，性能下降)，因为target pred events 数量增加了，可能rule被触发的几率增加了。
+     增加independent predicate A's intensity from 0.6 to 1.0 . 性能下降。所有weight均被高估。增加权重也不行
+     修复bug：l1应当只对weight有限制，对base没有限制。
+     取消了weight decay，发现性能下降了。增加weight decay。性能又下降。。
+     最后把参数调回base=0.3，weight=1，indep intensity~= 1，l1=l1=0.1 性能恢复不好不坏。\hat{w} ~= 1.5
+     但是跑了CG-BFS 发现还是不太行。。
+
+     尝试了把head 变成instant（data-20，日志2021-11-14 20:22:26.113544）
+     发现base和单变量规则都能非常精确地预测！但双变量规则不能精确预测。是巧合吗？
+     检查规则计算的代码是不是有错（get feature）（但是生成和训练都是同一个数据集，就算写错了也不会预测不出呀？）

@@ -24,8 +24,8 @@ def get_data(dataset_id, num_sample):
     return training_dataset, testing_dataset
 
 def get_model(dataset_id):
-    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17
-    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17]
+    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17,get_logic_model_18,get_logic_model_19,get_logic_model_20
+    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17,get_logic_model_18,get_logic_model_19,get_logic_model_20]
     m, _ = logic_model_funcs[dataset_id]()
     model = m.get_model_for_learn()
     return model
@@ -70,7 +70,7 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
         model.max_num_rule = 20
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.3
-    elif dataset_id in [4,9,10,11,16]:
+    elif dataset_id in [4,9,10,11,16,19,20]:
         model.max_rule_body_length = 2
         model.max_num_rule = 15
         model.weight_threshold = 0.1
@@ -109,4 +109,4 @@ if __name__ == "__main__":
     #run_expriment_group(dataset_id=16)
     #run_expriment_group(dataset_id=17)
 
-    fit(dataset_id=15, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(dataset_id=19, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")

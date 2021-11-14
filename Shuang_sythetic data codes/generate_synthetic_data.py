@@ -1084,6 +1084,7 @@ def get_logic_model_14():
 
 def get_logic_model_15():
     # difference with model_11 is one more rule.
+    # and base is different.
     #modiied from data-8
     file_name = "data-15.npy"
     
@@ -1325,8 +1326,124 @@ def get_logic_model_18():
     
     return model, file_name
 
+def get_logic_model_19():
+    # difference with data-11: modify base and weights.
+    # larger weights, lower base.
+    file_name = "data-19.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+    base = 0.3
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([base,]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+def get_logic_model_20():
+    # difference with data-11: modify base and weights.
+    # head pred instant!
+    file_name = "data-20.npy"
+    
+    model = Logic_Model_Generator()
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_predicate_set = [0,1,2,3]
+    model.head_predicate_set = [4] #head pred is instant in data-20
+    model.instant_pred_set = [4]
+    model.predicate_notation = ['A','B','C','D','E']
+    model.num_predicate = len(model.body_predicate_set)
+    
+    # define weights and base
+    model.model_parameter = dict()
+    head_predicate_idx = 4
+    base = 0.3
+    model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([base,]).double()}
+    weights = [1.0, 1.0, 1.0]
+    model.num_formula = len(weights)
+    for idx, w in enumerate(weights):
+        model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
+   
+    # encode rule information
+    logic_template = {}
+    logic_template[head_predicate_idx] = {} 
+
+    # A --> E, A Before E
+    formula_idx = 0
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [0]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[0, 4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE]
+
+    # B ^ C --> E,  B Before E, C Before E
+    formula_idx = 1
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [1,2]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[1,4], [2,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.BEFORE]
+
+    # C ^ D --> E, C Before E, D Equal E.
+    formula_idx = 2
+    logic_template[head_predicate_idx][formula_idx] = {}
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
+    logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]
+    logic_template[head_predicate_idx][formula_idx]['temporal_relation_type'] = [model.BEFORE, model.EQUAL]
+
+    model.logic_template = logic_template
+    
+    return model, file_name
+
+
 def get_model_by_idx(model_idx):
-    model_list = [None, get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16, get_logic_model_17, get_logic_model_18]
+    model_list = [None, get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16, get_logic_model_17, get_logic_model_18, get_logic_model_19, get_logic_model_20]
     return model_list[model_idx]()
 
 
@@ -1439,7 +1556,13 @@ if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     print("Start time is", datetime.datetime.now(),flush=1)
-    
+    #generate(model_idx=19, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp(model_idx=19, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
+
+    generate(model_idx=20, num_sample=2400, time_horizon=10, worker_num=12)
+    fit_mp(model_idx=20, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
+
+
     #test(dataset_name="data-18", num_sample=-1, model_file="model-fit-gt-18.pkl", head_predicate_idx=1, worker_num=12)
     #generate(model_idx=8, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=8)
@@ -1465,8 +1588,8 @@ if __name__ == "__main__":
     #generate(model_idx=14, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=14)
 
-    generate(model_idx=15, num_sample=2400, time_horizon=10, worker_num=12)
-    fit_mp_group(model_idx=15)
+    #generate(model_idx=15, num_sample=2400, time_horizon=10, worker_num=12)
+    #fit_mp_group(model_idx=15)
 
     #generate(model_idx=16, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp_group(model_idx=16)

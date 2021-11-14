@@ -102,6 +102,7 @@ class Logic_Learning_Model():
         self.init_base = 0.2
         self.init_weight = 0.1
         self.l1_coef = 0.1
+        self.l2_coef = 0.1
         self.init_params()
 
     def init_params(self):
@@ -578,22 +579,17 @@ class Logic_Learning_Model():
     def _optimize_log_likelihood_mp_worker(self, head_predicate_idx, dataset, sample_ID_batch_list):
         params = self.get_model_parameters(head_predicate_idx)
         
-        if self.debug_mode:
-            print("[Debug mode] Use SGD")
-            optimizer = optim.SGD(params, lr=self.learning_rate)
+        
+        if self.use_2_bases:
+            base_0_1_params = {"params": params[0], "lr":self.base_lr}
+            base_1_0_params = {"params": params[1], "lr":self.base_lr}
+            weight_params = {"params": params[2:], "lr":self.weight_lr}
+            params_dicts = [base_0_1_params, base_1_0_params, weight_params] 
         else:
-            #s
-            #optimizer = optim.SGD(params, lr=self.learning_rate)
-            if self.use_2_bases:
-                base_0_1_params = {"params": params[0], "lr":self.base_lr}
-                base_1_0_params = {"params": params[1], "lr":self.base_lr}
-                weight_params = {"params": params[2:], "lr":self.weight_lr}
-                params_dicts = [base_0_1_params, base_1_0_params, weight_params] 
-            else:
-                base_params = {"params": params[:1], "lr":self.base_lr}
-                weight_params = {"params": params[1:], "lr":self.weight_lr}
-                params_dicts = [base_params, weight_params] 
-            optimizer = optim.SGD(params_dicts, lr=self.learning_rate, weight_decay=0.1)
+            base_params = {"params": params[:1], "lr":self.base_lr}
+            weight_params = {"params": params[1:], "lr":self.weight_lr}
+            params_dicts = [base_params, weight_params] 
+        optimizer = optim.SGD(params_dicts, lr=self.learning_rate, weight_decay=self.l2_coef)
 
         for batch_idx, sample_ID_batch in enumerate(sample_ID_batch_list):
             # update weitghs
@@ -604,7 +600,7 @@ class Logic_Learning_Model():
                     print("param-{}={}".format(idx, p.data))
                     print("grad-{}=".format(idx), p.grad,flush=1)
             log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
-            l1 = torch.sum(torch.abs(torch.cat(params)))
+            l1 = torch.sum(torch.abs(torch.cat(params))) #l1 loss on weights and base.
             #print("log_likelihood = ", log_likelihood)
             loss = - log_likelihood + self.l1_coef * l1
             #print("loss=", loss)
@@ -1032,7 +1028,7 @@ class Logic_Learning_Model():
                 
         #delete low gain candidate rules
         for idx, gain_ in enumerate(mean_gain_all_data):
-            if gain_ < self.low_grad_threshold:
+            if abs(gain_) < self.low_grad_threshold:
                 rule_str = self.get_rule_str(arg_list[idx][-1], head_predicate_idx)
                 if rule_str in self.low_grad_rules:
                     self.low_grad_rules[rule_str] += 1
