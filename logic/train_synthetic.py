@@ -91,6 +91,9 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     elif algorithm == "BFS":
         with Timer("BFS") as t:
             model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag = dataset_id)
+    elif algorithm == "Brute":
+        with Timer("Brute") as t:
+            model.Brute(model.head_predicate_set[0], training_dataset)
     
     print("Finish time is", datetime.datetime.now())
  
@@ -112,10 +115,8 @@ if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
     
     #run_expriment_group(dataset_id=13)
-    #run_expriment_group(dataset_id=14)
-    #run_expriment_group(dataset_id=15)
-    #run_expriment_group(dataset_id=16)
-    #run_expriment_group(dataset_id=17)
+    
+    
+    #fit(dataset_id=20, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
 
-    #fit(dataset_id=19, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
-    fit(dataset_id=20, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(dataset_id=20, num_sample=1200, worker_num=12, num_iter=12, algorithm="Brute")

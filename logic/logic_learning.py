@@ -61,6 +61,9 @@ class Logic_Learning_Model():
         self.deleted_rules = set()
         self.low_grad_rules = dict()
 
+        self.start_time = time.time()
+        self.max_time = 2 * 3600 #2 hours
+
         # tunable params
         self.time_window = 10
         self.Time_tolerance = 0.1
@@ -602,9 +605,11 @@ class Logic_Learning_Model():
             log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
             l1 = torch.sum(torch.abs(torch.cat(params))) #l1 loss on weights and base.
             loss = - log_likelihood + self.l1_coef * l1
+
+            
             if self.debug_mode:
                 print("Before update batch_idx =", batch_idx)
-                print("log_likelihood = ", log_likelihood)
+                print("log_likelihood = ", log_likelihood.data[0])
                 print("loss=", loss)
                 for idx,p in enumerate(params):
                     print("param-{}={}".format(idx, p.data))
@@ -619,6 +624,12 @@ class Logic_Learning_Model():
         if self.debug_mode:
             for idx,p in enumerate(params):
                 print("param-{}={}".format(idx, p.data))
+        
+        time_cost = self.start_time - time.time()
+        print("time(s), log_likelihood = ", time_cost, log_likelihood.data.item(), flush=True)
+        if time_cost > self.max_time:
+            print("Exit due to exceeding maxinum time ", self.max_time)
+            exit()
         return log_likelihood.detach().numpy()
 
 
@@ -663,37 +674,6 @@ class Logic_Learning_Model():
         
         return log_likelihood
 
-    def optimize_log_likelihood_cp(self, head_predicate_idx, dataset):
-        # optimize using cvxpy
-        print("start optimize using cp:", flush=1)
-        if self.batch_size_cp < len(dataset.keys()):
-            sample_ID_batch =  random.sample(dataset.keys(), self.batch_size_cp)
-        else:
-            sample_ID_batch = list(dataset.keys())
-        log_likelihood = self.log_likelihood_cp(head_predicate_idx, dataset, sample_ID_batch)
-        params = self.get_model_parameters_cp(head_predicate_idx)
-        l1 = cp.sum([cp.abs(i) for i in params])
-        objective = cp.Maximize(log_likelihood - l1) #with l1 penalty
-        prob = cp.Problem(objective)
-        
-        # SCS solver for mimic:
-        #opt_log_likelihood = prob.solve(warm_start=True, verbose=True, solver="SCS")
-
-        #default ECOS solver:
-        #opt_log_likelihood = prob.solve(warm_start=True) 
-        #MOSEK solver
-        opt_log_likelihood = prob.solve(warm_start=True, solver=cp.MOSEK)
-
-        if self.model_parameter[head_predicate_idx]['base_cp'].value is None:
-            print("mosek solver failed, problem status=", prob.status)
-            # solver failed, use torch
-            log_likelihood = self.optimize_log_likelihood_mp(head_predicate_idx, dataset )
-            
-            return log_likelihood
-        else:
-            #synchronize weight updates to torch.
-            self.synchronize_torch_weight_with_cp(head_predicate_idx)
-            return opt_log_likelihood / len(sample_ID_batch)
 
     ### the following 2 functions are to compute sub-problem objective function
     def intensity_log_gradient(self, head_predicate_idx, dataset, sample_ID):
@@ -1146,27 +1126,25 @@ class Logic_Learning_Model():
             
 
     def BFS(self, head_predicate_idx, training_dataset, testing_dataset, tag, init_params=True):
+        
         self.print_info()
         if init_params:
             self.init_params()
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
-        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
+        #self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
         print("----- start BFS -----", flush=1)
+        self.start_time = time.time()
         #Begin Breadth(width) First Search
         #generate new rule from scratch
-
-        
 
         is_continue = True
         while self.num_formula < self.max_num_rule and is_continue:
             is_update_weight, is_continue, _ = self.generate_rule_via_column_generation(head_predicate_idx, training_dataset)
-            if is_update_weight:
-                self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
-        
-            
-            
+            #if is_update_weight:
+            #    self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
+         
         #generate new rule by extending existing rules
         extended_rules = set()
         for cur_body_length in range(1, self.max_rule_body_length):
@@ -1195,15 +1173,15 @@ class Logic_Learning_Model():
                 is_update_weight , is_continue, _ = self.add_one_predicate_to_existing_rule(head_predicate_idx, training_dataset, template_to_extend)
                 if not is_continue: # this rule is fully explored, don't re-visit it.
                     extended_rules.add(rule_str) 
-                if is_update_weight:
-                    self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
+                #if is_update_weight:
+                #    self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
 
 
         print("BFS finished, rule set is:")
         self.print_rule_cp()
 
         self.final_tune(head_predicate_idx, training_dataset)
-        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=100)
+        #self.generate_target( head_predicate_idx, testing_dataset, num_repeat=100)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit BFS -----", flush=1)
@@ -1329,8 +1307,9 @@ class Logic_Learning_Model():
         with Timer("initial optimize") as t:
             l = self.optimize_log_likelihood_mp(head_predicate_idx, training_dataset)
             print("log-likelihood=",l)
-        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
+        #self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
         print("----- start DFS -----", flush=1)
+        self.start_time = time.time()
         rule_to_extend_str_stack = list() #use stack to implement DFS
         while self.num_formula < self.max_num_rule:
             if len(rule_to_extend_str_stack) == 0: #if stack empty,  generate len-1 rule
@@ -1358,12 +1337,11 @@ class Logic_Learning_Model():
                         rule_to_extend_str_stack.pop()
                     for added_rule_str in added_rule_str_list:
                         rule_to_extend_str_stack.append(added_rule_str)
-            if is_update_weight:
-                #test
-                self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
+            #if is_update_weight:
+            #    self.generate_target( head_predicate_idx, testing_dataset, num_repeat=1)
 
         self.final_tune(head_predicate_idx, training_dataset)
-        self.generate_target( head_predicate_idx, testing_dataset, num_repeat=100)
+        #self.generate_target( head_predicate_idx, testing_dataset, num_repeat=100)
         with open("./model/model-{}.pkl".format(tag),'wb') as f:
             pickle.dump(self, f)
         print("----- exit DFS -----", flush=1)
@@ -1480,6 +1458,59 @@ class Logic_Learning_Model():
             res = res.mean()
             print("MAE =", res)
         print("----- exit generation -----", flush=1)
+
+    def Brute(self, head_predicate_idx, dataset):
+        print("----- start Brute -----", flush=1)
+        self.start_time = time.time()
+        head_predicate_sign = 1
+        body_predicate_sign = 1
+        
+        # add len=1 rules
+        for body_predicate_idx in self.body_pred_set: 
+            for temporal_relation_type in [self.BEFORE, self.EQUAL]:
+                rule = {
+                    'body_predicate_idx':[body_predicate_idx],
+                    'body_predicate_sign':[body_predicate_sign],
+                    'head_predicate_sign':[head_predicate_sign], 
+                    'temporal_relation_idx':[(body_predicate_idx, head_predicate_idx)], 
+                    'temporal_relation_type' :[temporal_relation_type]
+                    }
+                self.logic_template[head_predicate_idx][self.num_formula] = rule 
+                self.model_parameter[head_predicate_idx][self.num_formula]= {'weight':torch.autograd.Variable((torch.ones(1) * self.init_weight).double(), requires_grad=True)}
+                self.num_formula += 1
+        
+        #
+        max_length = 3
+        for body_length in range(1, max_length):    
+            rule_list = [template for idx,template in self.logic_template[head_predicate_idx].items() if len(template['body_predicate_idx']) == body_length]
+            for rule in rule_list:
+                for body_predicate_idx in self.body_pred_set: 
+                    if body_predicate_idx in rule['body_predicate_idx']: 
+                        continue
+                    for temporal_relation_type in [self.BEFORE, self.EQUAL]:
+                        for existing_predicate_idx in [head_predicate_idx] + rule['body_predicate_idx']:
+                            new_rule = {
+                                'body_predicate_idx':rule['body_predicate_idx']+[body_predicate_idx],
+                                'body_predicate_sign':rule['body_predicate_sign']+[body_predicate_sign],
+                                'head_predicate_sign':[head_predicate_sign], 
+                                'temporal_relation_idx':rule['temporal_relation_idx']+[(body_predicate_idx, existing_predicate_idx)], 
+                                'temporal_relation_type' :rule['temporal_relation_type']+[temporal_relation_type]
+                                }
+                            if self.check_repeat(new_rule, head_predicate_idx): # Repeated rule is not allowed.
+                                continue
+                            self.logic_template[head_predicate_idx][self.num_formula] = new_rule 
+                            self.model_parameter[head_predicate_idx][self.num_formula]= {'weight':torch.autograd.Variable((torch.ones(1) * self.init_weight).double(), requires_grad=True)}
+                            self.num_formula += 1
+        
+        with Timer("optimize log-likelihood (brute)") as t:
+            l = self.optimize_log_likelihood_mp(head_predicate_idx, dataset)
+            print("Log-likelihood (brute)= ", l, flush=1)
+
+        print("----- exit Brute -----", flush=1)
+
+                     
+
+
 
         
 
