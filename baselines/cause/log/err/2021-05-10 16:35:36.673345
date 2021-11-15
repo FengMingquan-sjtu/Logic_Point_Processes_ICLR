@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "./tasks/test.py", line 237, in <module>
-    if osp.exists(osp.join(input_path, "infectivity.txt")):
-NameError: name 'input_path' is not defined

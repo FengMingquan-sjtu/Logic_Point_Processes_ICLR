@@ -1,7 +1,7 @@
-Shuang_sythetic data codes/data
-Shuang_sythetic data codes/data-old
-Shuang_sythetic data codes/log
-Shuang_sythetic data codes/model
+logic/data
+logic/data-old
+logic/log
+logic/model
 /data
 /log
 /model
@@ -9,5 +9,3 @@ Shuang_sythetic data codes/model
 *.pyc
 *.npz
 *.pkl
-baselines/cause/data
-baselines/cause/data_output
