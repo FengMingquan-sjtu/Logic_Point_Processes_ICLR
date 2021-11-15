@@ -104,6 +104,7 @@ class Logic_Learning_Model():
         self.l1_coef = 0.1
         self.l2_coef = 0.1
         self.init_params()
+        
 
     def init_params(self):
         #claim parameters and rule set
@@ -269,11 +270,14 @@ class Logic_Learning_Model():
 
         else:
             base = self.model_parameter[head_predicate_idx]['base']
-        intensity = base + torch.sum(intensity)
+        
         #print("inetensity before map:", intensity)
         if self.use_exp_kernel:
-            intensity = torch.exp(intensity)
+            # constraint base in [-1, 1], avoid overflow
+            intensity = base + torch.sum(intensity)
+            intensity = torch.exp(intensity) + 1e-3
         else:
+            intensity = base + torch.sum(intensity)
             intensity = torch.nn.functional.relu(intensity) + 1e-3
         
         #print("inetensity after map:", intensity)
@@ -594,28 +598,27 @@ class Logic_Learning_Model():
         for batch_idx, sample_ID_batch in enumerate(sample_ID_batch_list):
             # update weitghs
             optimizer.zero_grad()  # set gradient zero at the start of a new mini-batch
+            
+            log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
+            l1 = torch.sum(torch.abs(torch.cat(params))) #l1 loss on weights and base.
+            loss = - log_likelihood + self.l1_coef * l1
             if self.debug_mode:
-                print("Before batch_idx=", batch_idx)
+                print("Before update batch_idx =", batch_idx)
+                print("log_likelihood = ", log_likelihood)
+                print("loss=", loss)
                 for idx,p in enumerate(params):
                     print("param-{}={}".format(idx, p.data))
                     print("grad-{}=".format(idx), p.grad,flush=1)
-            log_likelihood = self.log_likelihood(head_predicate_idx, dataset, sample_ID_batch)
-            l1 = torch.sum(torch.abs(torch.cat(params))) #l1 loss on weights and base.
-            #print("log_likelihood = ", log_likelihood)
-            loss = - log_likelihood + self.l1_coef * l1
-            #print("loss=", loss)
             loss.backward()
             optimizer.step()
 
             if self.debug_mode:
-                print("After batch_idx=", batch_idx)
+                print("After update batch_idx=", batch_idx)
                 for idx,p in enumerate(params):
                     print("param-{}={}".format(idx, p.data))
-                    print("grad-{}={}".format(idx, p.grad.data),flush=1)
         if self.debug_mode:
             for idx,p in enumerate(params):
                 print("param-{}={}".format(idx, p.data))
-                print("grad-{}={}".format(idx, p.grad),flush=1)
         return log_likelihood.detach().numpy()
 
 
@@ -654,10 +657,6 @@ class Logic_Learning_Model():
         log_likelihood_list = ret
         log_likelihood = np.mean(log_likelihood_list)/self.batch_size
         
-        if self.debug_mode:
-            params = self.get_model_parameters(head_predicate_idx)
-            for idx,p in enumerate(params):
-                print("grad-{}={}".format(idx, p.grad),flush=1)
         print("optimized rule weights are:")
         self.print_rule()
         print("---- exit optimize_log_likelihood multi-process----", flush=1)

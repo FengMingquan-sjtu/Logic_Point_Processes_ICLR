@@ -593,3 +593,10 @@ MAE: 21.493143598091343
     
     (2021-11-15 11:20:25.920084)
     head instant, weight = -1, base=0. 把indep intensity 变成~=0.5能极大增加准确率！（目前只考虑len-1规则）
+    发现即使intensity不改  正确率也很高。发现l1和l2 norm取消了也没关系。
+    发现跑cg依旧会崩盘。指数爆炸！weight变成很大的负数，log-likelihood变成-inf。
+    找了曾经的dataset-15结果 看起来很正常：2021-03-18 21:13:01.829532
+    发现它的weight-lr=0.005，而likelihood是batch求平均的(batch-size=64)。也就是，实际的lr是 10^{-5}这个量级。
+    而现在版本里，likelihood没有对batch求平均。weight-lr=0.005，可能太大了。
+    尝试把weight-lr改为0.001。发现效果很好！不会出现爆炸现象。（日志 2021-11-15 20:22:12.864162）
+    

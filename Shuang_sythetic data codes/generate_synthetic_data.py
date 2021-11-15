@@ -206,6 +206,8 @@ class Logic_Model_Generator:
         model.worker_num = worker_num
         model.print_info()
         model.debug_mode = False
+        
+
         # initialize params
         if self.use_exp_kernel:
             init_base = -1
@@ -1394,7 +1396,7 @@ def get_logic_model_20():
     file_name = "data-20.npy"
     
     model = Logic_Model_Generator()
-    model.body_intensity= {0:0.6, 1:0.5, 2:0.7, 3:0.4}
+    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4] #head pred is instant in data-20
     model.instant_pred_set = [4]
@@ -1407,7 +1409,7 @@ def get_logic_model_20():
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 4
-    base = 0.0
+    base = -0.5
     model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([base,]).double()}
     weights = [-1, -1, -1]
     model.num_formula = len(weights)
@@ -1567,8 +1569,8 @@ if __name__ == "__main__":
     #generate(model_idx=19, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp(model_idx=19, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
 
-    generate(model_idx=20, num_sample=2400, time_horizon=10, worker_num=12)
-    fit_mp(model_idx=20, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
+    generate(model_idx=20, num_sample=1200, time_horizon=10, worker_num=12)
+    fit_mp(model_idx=20, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
 
 
     #test(dataset_name="data-18", num_sample=-1, model_file="model-fit-gt-18.pkl", head_predicate_idx=1, worker_num=12)
