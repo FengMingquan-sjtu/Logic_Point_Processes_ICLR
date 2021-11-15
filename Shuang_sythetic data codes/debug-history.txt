@@ -581,8 +581,15 @@ MAE: 21.493143598091343
      修复bug：l1应当只对weight有限制，对base没有限制。
      取消了weight decay，发现性能下降了。增加weight decay。性能又下降。。
      最后把参数调回base=0.3，weight=1，indep intensity~= 1，l1=l1=0.1 性能恢复不好不坏。\hat{w} ~= 1.5
-     但是跑了CG-BFS 发现还是不太行。。
+     但是跑了CG-BFS 发现还是不太行。。（日志见2021-11-14 22:54:00.618363）
 
      尝试了把head 变成instant（data-20，日志2021-11-14 20:22:26.113544）
      发现base和单变量规则都能非常精确地预测！但双变量规则不能精确预测。是巧合吗？
      检查规则计算的代码是不是有错（get feature）（但是生成和训练都是同一个数据集，就算写错了也不会预测不出呀？）
+
+125 （11-15-2021）尝试做单长度的、head是instant的实验。(其实是Hawkes)失败了
+    尝试改小decay rate 从1改到0.5 （注意在之前的crime （也是linear kernel）decay是0.1，衰减效果很强））
+    （bug#114. decay is important!! without it, abs value of features may be too large, then it is unstable for linear kernel, since intensity prones to reach 0.)
+    
+    (2021-11-15 11:20:25.920084)
+    head instant, weight = -1, base=0. 把indep intensity 变成~=0.5能极大增加准确率！（目前只考虑len-1规则）

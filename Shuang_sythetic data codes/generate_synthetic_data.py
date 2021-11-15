@@ -205,9 +205,14 @@ class Logic_Model_Generator:
         model.num_iter = num_iter
         model.worker_num = worker_num
         model.print_info()
+        model.debug_mode = False
         # initialize params
-        init_base = 0.2
-        init_weight = 0.1
+        if self.use_exp_kernel:
+            init_base = -1
+            init_weight = -0.1
+        else:
+            init_base = 0.2
+            init_weight = 0.1
         for head_predicate_idx in self.head_predicate_set:
             model.model_parameter[head_predicate_idx] = {'base': torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)}
             for formula_idx in range(self.num_formula):
@@ -1389,19 +1394,22 @@ def get_logic_model_20():
     file_name = "data-20.npy"
     
     model = Logic_Model_Generator()
-    model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
+    model.body_intensity= {0:0.6, 1:0.5, 2:0.7, 3:0.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4] #head pred is instant in data-20
     model.instant_pred_set = [4]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
+    model.decay_rate = 1
+    model.use_exp_kernel = True
+
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 4
-    base = 0.3
+    base = 0.0
     model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([base,]).double()}
-    weights = [1.0, 1.0, 1.0]
+    weights = [-1, -1, -1]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
         model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
@@ -1431,7 +1439,7 @@ def get_logic_model_20():
     # C ^ D --> E, C Before E, D Equal E.
     formula_idx = 2
     logic_template[head_predicate_idx][formula_idx] = {}
-    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2,3]
+    logic_template[head_predicate_idx][formula_idx]['body_predicate_idx'] = [2, 3]
     logic_template[head_predicate_idx][formula_idx]['body_predicate_sign'] = [1,1]  # use 1 to indicate True; use 0 to indicate False
     logic_template[head_predicate_idx][formula_idx]['head_predicate_sign'] = [1]
     logic_template[head_predicate_idx][formula_idx]['temporal_relation_idx'] = [[2,4], [3,4]]

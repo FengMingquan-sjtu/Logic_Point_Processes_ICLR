@@ -49,6 +49,13 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     model.num_iter = num_iter
     model.use_cp = use_cp
     model.worker_num = worker_num
+
+    if model.use_exp_kernel:
+        model.init_base = -1
+        model.init_weight = -0.1
+    else:
+        model.init_base = 0.2
+        model.init_weight = 0.1
     
     if dataset_id in [5,12]:
         model.max_rule_body_length = 2
@@ -109,4 +116,5 @@ if __name__ == "__main__":
     #run_expriment_group(dataset_id=16)
     #run_expriment_group(dataset_id=17)
 
-    fit(dataset_id=19, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=19, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(dataset_id=20, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
