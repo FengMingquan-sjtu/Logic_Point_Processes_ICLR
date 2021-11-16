@@ -621,15 +621,16 @@ class Logic_Learning_Model():
                 print("After update batch_idx=", batch_idx)
                 for idx,p in enumerate(params):
                     print("param-{}={}".format(idx, p.data))
+            time_cost = time.time() - self.start_time 
+            print("time(s), log_likelihood = ", time_cost, log_likelihood.data.item(), flush=True)
+            if time_cost > self.max_time:
+                print("Exit due to exceeding maxinum time ", self.max_time)
+                exit()
         if self.debug_mode:
             for idx,p in enumerate(params):
                 print("param-{}={}".format(idx, p.data))
         
-        time_cost = self.start_time - time.time()
-        print("time(s), log_likelihood = ", time_cost, log_likelihood.data.item(), flush=True)
-        if time_cost > self.max_time:
-            print("Exit due to exceeding maxinum time ", self.max_time)
-            exit()
+        
         return log_likelihood.detach().numpy()
 
 

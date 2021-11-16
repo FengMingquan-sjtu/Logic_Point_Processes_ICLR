@@ -117,6 +117,6 @@ if __name__ == "__main__":
     #run_expriment_group(dataset_id=13)
     
     
-    #fit(dataset_id=20, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+    fit(dataset_id=20, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
 
-    fit(dataset_id=20, num_sample=1200, worker_num=12, num_iter=12, algorithm="Brute")
+    #fit(dataset_id=20, num_sample=1200, worker_num=12, num_iter=12, algorithm="Brute")
