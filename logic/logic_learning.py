@@ -89,9 +89,7 @@ class Logic_Learning_Model():
         self.max_num_rule = 20
         self.batch_size_cp = 500 # batch size used in cp. If too large, may out of memory.
         self.batch_size_grad = 500 #batch_size used in optimize_log_grad.
-        #self.batch_size_init_ucb = 5
-        #self.explore_rule_num_ucb = 8
-        #self.explore_batch_size_ucb = 500
+        
         self.use_cp = False
         self.worker_num = 8
         self.opt_worker_num = 12
@@ -106,6 +104,7 @@ class Logic_Learning_Model():
         self.init_weight = 0.1
         self.l1_coef = 0.1
         self.l2_coef = 0.1
+        self.reverse_head_sign = False
         self.init_params()
         
 
@@ -403,10 +402,9 @@ class Logic_Learning_Model():
                 cur_state = default_state
             else:
                 cur_state = head_transition_state[idx]
-        if head_predicate_idx in self.survival_pred_set and cur_state == 0:
-            print(cur_time)
-            print(head_transition_time)
-            print(head_transition_state)
+        
+        if self.reverse_head_sign:
+            cur_state = 1 - cur_state
 
         return cur_state
 

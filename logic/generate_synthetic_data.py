@@ -39,7 +39,8 @@ class Logic_Model_Generator:
         self.time_horizon = 0
         self.integral_resolution = 0.1
         self.use_2_bases = False
-        self.use_exp_kernel = False
+        self.use_exp_kernel = True
+        self.reverse_head_sign = True
         
         
         
@@ -59,6 +60,7 @@ class Logic_Model_Generator:
         model.integral_resolution = self.integral_resolution
         model.use_2_bases = self.use_2_bases
         model.use_exp_kernel = self.use_exp_kernel
+        model.reverse_head_sign = self.reverse_head_sign
         
         return model
     
@@ -77,6 +79,7 @@ class Logic_Model_Generator:
         model.integral_resolution = self.integral_resolution
         model.use_2_bases = self.use_2_bases
         model.use_exp_kernel = self.use_exp_kernel
+        model.reverse_head_sign = self.reverse_head_sign
         model.init_params()
         return model
 
@@ -168,36 +171,7 @@ class Logic_Model_Generator:
             
         return data
 
-    def fit_gt_rules(self, dataset, time_horizon):
-        # fit logic learning model
-        model = self.get_model()
-        model.num_iter = 100
-        model.print_info()
-        # initialize params
-        for head_predicate_idx in self.head_predicate_set:
-            for formula_idx in range(self.num_formula):
-                model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * 0.01).double(), requires_grad=True)}
-        verbose = True # print mid-result
-        l = model.optimize_log_likelihood(head_predicate_idx, dataset, time_horizon,verbose)
-        print("Log-likelihood (torch)= ", l, flush=1)
-        print("rule set is:")
-        model.print_rule()
-    
-    def fit_gt_rules_cp(self, dataset, time_horizon):
-        model = self.get_model()
-        model.print_info()
 
-        # initialize params
-        for head_predicate_idx in self.head_predicate_set:
-            model.model_parameter[head_predicate_idx] = dict()
-            model.model_parameter[head_predicate_idx]['base_cp'] = cp.Variable(1)
-            for formula_idx in range(self.num_formula):
-                model.model_parameter[head_predicate_idx][formula_idx] = {'weight_cp': cp.Variable(1)}
-        
-        l = model.optimize_log_likelihood_cp(head_predicate_idx, dataset, time_horizon)
-        print("Log-likelihood (cp)= ", l, flush=1)
-        print("rule set is:")
-        model.print_rule_cp()
 
     def fit_gt_rules_mp(self, dataset, time_horizon, num_iter, worker_num):
         # fit logic learning model
@@ -210,8 +184,9 @@ class Logic_Model_Generator:
 
         # initialize params
         if self.use_exp_kernel:
-            init_base = -1
-            init_weight = -0.1
+            
+            init_base = 0.01
+            init_weight = 0.1
         else:
             init_base = 0.2
             init_weight = 0.1
@@ -237,6 +212,7 @@ def get_logic_model_1():
     model.body_intensity= {0:2, 1:2, 2:2, 3:2}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -312,6 +288,7 @@ def get_logic_model_2():
     model.body_intensity= {0:2, 1:2, 2:2, 3:2, 4:2}
     model.body_predicate_set = [0,1,2,3,4]
     model.head_predicate_set = [5]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E','F']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -385,6 +362,7 @@ def get_logic_model_3():
     model.body_intensity= {0:2.1, 1:2.2, 2:1.9, 3:1.8, 4:2.3, 5:1.7}
     model.body_predicate_set = [0,1,2,3,4,5]
     model.head_predicate_set = [6]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E','F','G']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -459,6 +437,7 @@ def get_logic_model_4():
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -516,6 +495,7 @@ def get_logic_model_5():
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -573,6 +553,7 @@ def get_logic_model_6():
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -630,6 +611,7 @@ def get_logic_model_7():
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -687,6 +669,7 @@ def get_logic_model_8():
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0 }
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -754,6 +737,7 @@ def get_logic_model_9():
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0, 4:0.2} #dummy E has lower intensity
     model.body_predicate_set = [0,1,2,3,4]
     model.head_predicate_set = [5]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E','F']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -811,6 +795,7 @@ def get_logic_model_10():
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -867,6 +852,7 @@ def get_logic_model_11():
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -924,6 +910,7 @@ def get_logic_model_12():
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -982,6 +969,7 @@ def get_logic_model_13():
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -1039,7 +1027,7 @@ def get_logic_model_14():
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
-    model.instant_pred_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -1099,13 +1087,14 @@ def get_logic_model_15():
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
     model.head_predicate_set = [4]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 4
-    init_base = 0.5
+    init_base = 0.0
 
     model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([init_base]).double()}
     weights = [1.0, 1.0, 1.0, 1.0]
@@ -1168,6 +1157,7 @@ def get_logic_model_16():
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4, 4:0.2} #dummy E has lower intensity
     model.body_predicate_set = [0,1,2,3,4]
     model.head_predicate_set = [5]
+    model.instant_pred_set = [model.head_predicate_set[0]]
     model.predicate_notation = ['A','B','C','D','E','F']
     model.num_predicate = len(model.body_predicate_set)
     
@@ -1398,20 +1388,17 @@ def get_logic_model_20():
     model = Logic_Model_Generator()
     model.body_intensity= {0:0.6, 1:0.8, 2:1.2, 3:1.4}
     model.body_predicate_set = [0,1,2,3]
-    model.head_predicate_set = [4] #head pred is instant in data-20
-    model.instant_pred_set = [4]
+    model.head_predicate_set = [4] 
+    model.instant_pred_set = [model.head_predicate_set[0]] #head pred is instant
     model.predicate_notation = ['A','B','C','D','E']
     model.num_predicate = len(model.body_predicate_set)
     
-    model.decay_rate = 1
-    model.use_exp_kernel = True
-
     # define weights and base
     model.model_parameter = dict()
     head_predicate_idx = 4
-    base = -0.5
+    base = 0.0
     model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([base,]).double()}
-    weights = [-1, -1, -1]
+    weights = [1.0, 1.0, 1.0]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
         model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
@@ -1569,8 +1556,8 @@ if __name__ == "__main__":
     #generate(model_idx=19, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp(model_idx=19, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
 
-    generate(model_idx=20, num_sample=1200, time_horizon=10, worker_num=12)
-    fit_mp(model_idx=20, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
+    generate(model_idx=20, num_sample=600, time_horizon=10, worker_num=4)
+    fit_mp(model_idx=20, num_sample=600, time_horizon=10, num_iter = 50, worker_num = 4 )
 
 
     #test(dataset_name="data-18", num_sample=-1, model_file="model-fit-gt-18.pkl", head_predicate_idx=1, worker_num=12)

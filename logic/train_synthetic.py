@@ -53,8 +53,8 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     model.weight_lr = 0.001
 
     if model.use_exp_kernel:
-        model.init_base = -1
-        model.init_weight = -0.1
+        model.init_base = 0.01
+        model.init_weight = 0.1
     else:
         model.init_base = 0.2
         model.init_weight = 0.1
