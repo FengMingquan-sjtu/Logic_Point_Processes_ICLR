@@ -1031,7 +1031,7 @@ if __name__ == "__main__":
 
     print("Start time is", datetime.datetime.now(),flush=1)
 
-    generate(model_idx=8, num_sample=1200, time_horizon=10, worker_num=12)
+    generate(model_idx=2, num_sample=1200, time_horizon=10, worker_num=12)
     #fit_mp(model_idx=8, num_sample=600, time_horizon=10, num_iter = 50, worker_num = 12 )
 
 

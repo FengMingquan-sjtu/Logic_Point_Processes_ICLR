@@ -1062,6 +1062,8 @@ class Logic_Learning_Model():
                 is_update_weight = True
                 is_continue = True
                 print("new rule added.")
+                if self.print_time:
+                    print("new rule added at t(s)=",time.time()-self.start_time)
             else:
                 is_continue = False
                 print("best gain {} does not meet thershold {}.".format(best_gain, self.gain_threshold))
