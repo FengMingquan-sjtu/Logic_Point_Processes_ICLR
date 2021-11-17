@@ -263,7 +263,7 @@ def get_logic_model_1():
 
 def get_logic_model_2():
     # only difference with model_1 is weights.
-    file_name = "data-1.npy"
+    file_name = "data-2.npy"
     
     model = Logic_Model_Generator()
     model.body_intensity= {0:1.0, 1:1.0, 2:1.0, 3:1.0}
