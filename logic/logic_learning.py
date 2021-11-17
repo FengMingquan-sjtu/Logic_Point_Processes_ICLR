@@ -105,6 +105,7 @@ class Logic_Learning_Model():
         self.l1_coef = 0.1
         self.l2_coef = 0.1
         self.reverse_head_sign = False
+        self.print_time = False
         self.init_params()
         
 
@@ -384,25 +385,24 @@ class Logic_Learning_Model():
             #instant pred state is always zero.
             #print("head_predicate_idx in self.instant_pred_set")
             cur_state = 0
-            return cur_state
-
-        head_transition_time = np.array(history[head_predicate_idx]['time'])
-        head_transition_state = np.array(history[head_predicate_idx]['state'])
-        
-        if head_predicate_idx in self.survival_pred_set:
-            default_state = 1
         else:
-            default_state = 0
-        
-        if len(head_transition_time) == 0:
-            cur_state = default_state
-        else:
-            idx = np.sum(cur_time > head_transition_time) - 1
-            if idx < 0:
+            head_transition_time = np.array(history[head_predicate_idx]['time'])
+            head_transition_state = np.array(history[head_predicate_idx]['state'])
+            
+            if head_predicate_idx in self.survival_pred_set:
+                default_state = 1
+            else:
+                default_state = 0
+            
+            if len(head_transition_time) == 0:
                 cur_state = default_state
             else:
-                cur_state = head_transition_state[idx]
-        
+                idx = np.sum(cur_time > head_transition_time) - 1
+                if idx < 0:
+                    cur_state = default_state
+                else:
+                    cur_state = head_transition_state[idx]
+            
         if self.reverse_head_sign:
             cur_state = 1 - cur_state
 
@@ -619,8 +619,11 @@ class Logic_Learning_Model():
                 print("After update batch_idx=", batch_idx)
                 for idx,p in enumerate(params):
                     print("param-{}={}".format(idx, p.data))
+            
+            
             time_cost = time.time() - self.start_time 
-            print("time(s), log_likelihood = ", time_cost, log_likelihood.data.item(), flush=True)
+            if self.print_time:
+                print("time(s), log_likelihood = ", time_cost, log_likelihood.data.item(), flush=True)
             if time_cost > self.max_time:
                 print("Exit due to exceeding maxinum time ", self.max_time)
                 exit()

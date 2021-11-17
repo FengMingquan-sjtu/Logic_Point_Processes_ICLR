@@ -24,8 +24,8 @@ def get_data(dataset_id, num_sample):
     return training_dataset, testing_dataset
 
 def get_model(dataset_id):
-    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17,get_logic_model_18,get_logic_model_19,get_logic_model_20
-    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12,get_logic_model_13,get_logic_model_14,get_logic_model_15,get_logic_model_16,get_logic_model_17,get_logic_model_18,get_logic_model_19,get_logic_model_20]
+    from generate_synthetic_data import get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12
+    logic_model_funcs = [None,get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12]
     m, _ = logic_model_funcs[dataset_id]()
     model = m.get_model_for_learn()
     return model
@@ -50,7 +50,8 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     model.use_cp = use_cp
     model.worker_num = worker_num
     model.opt_worker_num = worker_num
-    model.weight_lr = 0.001
+    model.print_time = True
+    model.weight_lr = 0.0005
 
     if model.use_exp_kernel:
         model.init_base = 0.01
@@ -114,11 +115,9 @@ if __name__ == "__main__":
     redirect_log_file()
 
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
-    
-    #run_expriment_group(dataset_id=13)
-    
-    
-    # single worker
-    fit(dataset_id=20, num_sample=1200, worker_num=1, num_iter=12, algorithm="BFS")
 
-    #fit(dataset_id=20, num_sample=1200, worker_num=1, num_iter=12, algorithm="Brute")
+    # our model
+    fit(dataset_id=8, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+
+    # baseline brute force model.
+    #fit(dataset_id=7, num_sample=1200, worker_num=12, num_iter=12, algorithm="Brute")
