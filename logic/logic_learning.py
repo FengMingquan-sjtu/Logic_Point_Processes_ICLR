@@ -62,7 +62,7 @@ class Logic_Learning_Model():
         self.low_grad_rules = dict()
 
         self.start_time = time.time()
-        self.max_time = 2 * 3600 #2 hours
+        self.max_time = 8 * 3600 #8 hours
 
         # tunable params
         self.time_window = 10
