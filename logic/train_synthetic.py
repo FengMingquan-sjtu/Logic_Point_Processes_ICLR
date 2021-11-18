@@ -30,7 +30,7 @@ def get_model(dataset_id):
     model = m.get_model_for_learn()
     return model
 
-def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
+def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
     t  = datetime.datetime.now()
     print("Start time is", t ,flush=1)
     if not os.path.exists("./model"):
@@ -52,6 +52,7 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     model.opt_worker_num = worker_num
     model.print_time = True
     model.weight_lr = 0.0005
+    model.l1_coef = l1_coef
 
     if model.use_exp_kernel:
         model.init_base = 0.01
@@ -59,6 +60,12 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     else:
         model.init_base = 0.2
         model.init_weight = 0.1
+    
+    #if algorithm == "Brute":
+        #smaller init weight and heavier panelty, to avoid colapse
+    #    model.init_weight = 0.01
+    #    model.l1_coef = 1
+    #    model.l2_coef = 1
     
     if dataset_id in [2,8]:
         model.max_rule_body_length = 2
@@ -102,16 +109,6 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
     print("Finish time is", datetime.datetime.now())
  
 
-def run_expriment_group(dataset_id):
-    #DFS
-    fit(dataset_id=dataset_id, num_sample=600, worker_num=12, num_iter=12, algorithm="DFS")
-    fit(dataset_id=dataset_id, num_sample=1200, worker_num=12, num_iter=12, algorithm="DFS")
-    fit(dataset_id=dataset_id, num_sample=2400, worker_num=12, num_iter=12, algorithm="DFS")
-
-    #BFS 
-    fit(dataset_id=dataset_id, num_sample=600, worker_num=12, num_iter=12, algorithm="BFS")
-    fit(dataset_id=dataset_id, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
-    fit(dataset_id=dataset_id, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
 
 if __name__ == "__main__":
     redirect_log_file()
@@ -119,7 +116,7 @@ if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
     # our model
-    fit(dataset_id=8, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+    #fit(dataset_id=3, l1_coef=100, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
 
     # baseline brute force model.
-    #fit(dataset_id=7, num_sample=1200, worker_num=12, num_iter=12, algorithm="Brute")
+    fit(dataset_id=3, l1_coef=100, num_sample=2400, worker_num=12, num_iter=12, algorithm="Brute")

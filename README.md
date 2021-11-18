@@ -29,11 +29,12 @@ time_horizon 是样本长度，一直固定为10，不需要调整。
 ```
 python3 train_synthetic.py
 ```
-在train_synthetic.py 第119行，可以指定参数：
+在train_synthetic.py 第119行附近，可以指定参数：
 ```
-fit(dataset_id=8, num_sample=1200, worker_num=12, num_iter=12, algorithm="BFS")
+fit(dataset_id=8, num_sample=1200, l1_coef=100, worker_num=12, num_iter=12, algorithm="BFS")
 ```
 其中dataset_id是数据集编号，与前面的model_idx是同样的含义。
+l1_coef是l1正则化项系数。
 num_sample、worker_num也与之前含义相同。
 num_iter是SGD迭代次数。
 algorithm是使用的算法名称，"BFS"和"DFS"都是我们的模型，"Brute"是baseline。

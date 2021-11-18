@@ -62,7 +62,7 @@ class Logic_Learning_Model():
         self.low_grad_rules = dict()
 
         self.start_time = time.time()
-        self.max_time = 8 * 3600 #8 hours
+        self.max_time = 24 * 3600 #24 hours
 
         # tunable params
         self.time_window = 10
@@ -623,7 +623,7 @@ class Logic_Learning_Model():
             
             time_cost = time.time() - self.start_time 
             if self.print_time:
-                print("time(s), log_likelihood = ", time_cost, log_likelihood.data.item(), flush=True)
+                print("time(s), log_like, obj = ", time_cost, log_likelihood.data.item(), -loss.data.item(), flush=True)
             if time_cost > self.max_time:
                 print("Exit due to exceeding maxinum time ", self.max_time)
                 exit()
