@@ -60,31 +60,33 @@ def fit(dataset_id, num_sample, worker_num=8, num_iter=5, use_cp=False, rule_set
         model.init_base = 0.2
         model.init_weight = 0.1
     
-    if dataset_id in [5,12]:
+    if dataset_id in [2,8]:
         model.max_rule_body_length = 2
         model.max_num_rule = 15
         model.weight_threshold = 0.05
         model.strict_weight_threshold= 0.1
-    elif dataset_id in [6,13]:
+    elif dataset_id in [3,9]:
         model.max_rule_body_length = 2
         model.max_num_rule = 15
         model.weight_threshold = 0.2
         model.strict_weight_threshold= 0.5
-    elif dataset_id in [7,14,17]:
+    elif dataset_id in [4,10]:
         model.max_rule_body_length = 3
         model.max_num_rule = 20
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.3
-    elif dataset_id in [8,15]:
+    elif dataset_id in [5,11]:
         model.max_rule_body_length = 2
         model.max_num_rule = 20
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.3
-    elif dataset_id in [4,9,10,11,16,19,20]:
+    elif dataset_id in [1,6,7]:
         model.max_rule_body_length = 2
         model.max_num_rule = 15
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.3
+    else:
+        print("Warning: Hyperparameters not set!")
 
 
     if algorithm == "DFS":
