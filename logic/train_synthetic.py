@@ -113,7 +113,7 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
 if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
-    dataset_id = 7
+    dataset_id = 10
 
     # our model
     redirect_log_file()

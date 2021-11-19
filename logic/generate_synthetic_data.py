@@ -750,7 +750,7 @@ def get_logic_model_10():
     init_base = 0.0
 
     model.model_parameter[head_predicate_idx] = { 'base':torch.tensor([init_base]).double()}
-    weights = [-1.0, -1.0, -2.0]
+    weights = [1.0, 1.0, 2.0]
     model.num_formula = len(weights)
     for idx, w in enumerate(weights):
         model.model_parameter[head_predicate_idx][idx] = {'weight': torch.tensor([w]).double()}
@@ -1032,7 +1032,7 @@ if __name__ == "__main__":
     print("Start time is", datetime.datetime.now(),flush=1)
 
     
-    generate(model_idx=1, num_sample=2400, time_horizon=10, worker_num=12)
+    generate(model_idx=10, num_sample=2400, time_horizon=10, worker_num=12)
     #fit_mp(model_idx=1, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
 
 
