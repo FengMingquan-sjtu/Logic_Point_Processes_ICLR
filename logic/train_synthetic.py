@@ -111,12 +111,15 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
 
 
 if __name__ == "__main__":
-    redirect_log_file()
-
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
-    # our model
-    #fit(dataset_id=3, l1_coef=100, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+    dataset_id = 7
 
+    # our model
+    redirect_log_file()
+    fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
     # baseline brute force model.
-    fit(dataset_id=3, l1_coef=100, num_sample=2400, worker_num=12, num_iter=12, algorithm="Brute")
+    redirect_log_file()
+    fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="Brute")
+
+    

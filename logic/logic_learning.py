@@ -1465,6 +1465,7 @@ class Logic_Learning_Model():
 
     def Brute(self, head_predicate_idx, dataset):
         print("----- start Brute -----", flush=1)
+        self.print_info()
         self.start_time = time.time()
         head_predicate_sign = 1
         body_predicate_sign = 1
