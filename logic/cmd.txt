@@ -21,4 +21,6 @@ ps -ef |grep generate |awk '{print $2}'|xargs kill -9
 ps -ef |grep mimic |awk '{print $2}'|xargs kill -9
 ps -ef |grep train_synthetic |awk '{print $2}'|xargs kill -9
 
+ps -ef |grep 20774 |awk '{print $2}'|xargs kill -9
+
 ps -ef |grep head_predicate_idx\ 10 |awk '{print $2}'|xargs kill -9

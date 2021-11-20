@@ -61,11 +61,11 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
         model.init_base = 0.2
         model.init_weight = 0.1
     
-    #if algorithm == "Brute":
-        #smaller init weight and heavier panelty, to avoid colapse
-    #    model.init_weight = 0.01
-    #    model.l1_coef = 1
-    #    model.l2_coef = 1
+    if algorithm == "Brute":
+        #smaller init weight and  smaller lr
+        model.init_weight = 0.01
+        model.weight_lr = 0.0001
+
     
     if dataset_id in [2,8]:
         model.max_rule_body_length = 2
@@ -113,11 +113,11 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
 if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
-    dataset_id = 10
+    dataset_id = 5
 
     # our model
-    redirect_log_file()
-    fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+    #redirect_log_file()
+    #fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
     # baseline brute force model.
     redirect_log_file()
     fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="Brute")
