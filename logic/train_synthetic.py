@@ -87,7 +87,7 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
         model.max_num_rule = 20
         model.weight_threshold = 0.1
         model.strict_weight_threshold= 0.3
-    elif dataset_id in [1,6,7]:
+    elif dataset_id in [1,6,7,12]:
         model.max_rule_body_length = 2
         model.max_num_rule = 15
         model.weight_threshold = 0.1
@@ -95,6 +95,8 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
     else:
         print("Warning: Hyperparameters not set!")
 
+    if dataset_id in [8, 11, 12]:
+        model.weight_lr = 0.0001
 
     if algorithm == "DFS":
         with Timer("DFS") as t:
@@ -113,13 +115,14 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
 if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
-    dataset_id = 5
+    dataset_id = 8
 
     # our model
-    #redirect_log_file()
-    #fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
-    # baseline brute force model.
     redirect_log_file()
-    fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="Brute")
+    fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+    
+    # baseline brute force model.
+    #redirect_log_file()
+    #fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="Brute")
 
     
