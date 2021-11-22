@@ -95,7 +95,7 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
     else:
         print("Warning: Hyperparameters not set!")
 
-    if dataset_id in [8, 11, 12]:
+    if dataset_id in [1, 6, 7, 8, 11, 12]:
         model.weight_lr = 0.0001
 
     if algorithm == "DFS":
@@ -115,7 +115,7 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
 if __name__ == "__main__":
     torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
 
-    dataset_id = 8
+    dataset_id = 6
 
     # our model
     redirect_log_file()
