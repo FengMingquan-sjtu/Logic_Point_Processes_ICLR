@@ -5,30 +5,23 @@ from torch.multiprocessing import Pool, cpu_count
 import os 
 import sys
 import pickle 
+import argparse
 
 import numpy as np
 import torch
-#import cvxpy as cp
 
 from logic_learning import Logic_Learning_Model
-from utils import Timer, get_data
+from utils import Timer, redirect_log_file
 
-##################################################################
-#np.random.seed(1)
 class Logic_Model_Generator:
     def __init__(self):
-
-        ### the following parameters are used to manually define the logic rules
-        self.num_predicate = 0  # num_predicate is same as num_node
+        self.num_predicate = 0  
         self.num_formula = 0
         self.BEFORE = 'BEFORE'
         self.EQUAL = 'EQUAL'
-        self.AFTER = 'AFTER'
-        self.STATIC = "STATIC"
         self.Time_tolerance = 0.1
         self.body_predicate_set = list() # the index set of all body predicates
         self.head_predicate_set = list() # the index set of all head predicates
-        self.static_pred_set = list()
         self.instant_pred_set = list()
         self.decay_rate = 1 # decay kernel
         self.predicate_notation = list()
@@ -41,18 +34,15 @@ class Logic_Model_Generator:
         self.use_2_bases = False
         self.use_exp_kernel = True
         self.reverse_head_sign = True
-        
-        
-        
+
     def get_model(self):
-        # used in fit-gt.
+        # get model for generate
         model = Logic_Learning_Model(self.head_predicate_set)
         model.logic_template = self.logic_template
         model.model_parameter = self.model_parameter
         model.num_predicate = self.num_predicate
         model.num_formula = self.num_formula
         model.predicate_set = self.body_predicate_set + self.head_predicate_set 
-        model.static_pred_set = self.static_pred_set
         model.instant_pred_set = self.instant_pred_set
         model.predicate_notation = self.predicate_notation
         model.Time_tolerance = self.Time_tolerance
@@ -63,14 +53,13 @@ class Logic_Model_Generator:
         model.reverse_head_sign = self.reverse_head_sign
         
         return model
-    
+
     def get_model_for_learn(self):
-        # used in logic_learning.py\ train_synthetic.py
+        #get the model used in train_synthetic.py
         model = Logic_Learning_Model(self.head_predicate_set)
         model.num_predicate = self.num_predicate
         model.predicate_set = self.body_predicate_set + self.head_predicate_set 
         model.predicate_notation = self.predicate_notation
-        model.static_pred_set = self.static_pred_set
         model.instant_pred_set = self.instant_pred_set
         model.body_pred_set = self.body_predicate_set
         model.predicate_notation = self.predicate_notation
@@ -84,6 +73,16 @@ class Logic_Model_Generator:
         return model
 
     def generate_one_sample(self, sample_ID=0):
+        """generate a point process sample, guided by logic rule, via Ogata Thinning algorithm.
+        Input
+        --------
+        sample_ID: an interger index for each sample.
+
+        Output:
+        --------
+        data_sample: a nested dict, data_sample[predicate_idx]["time"] is a list of occurance time of the predicate_idx
+        and data_sample[predicate_idx]["state"] is the 0-1 state list of it.
+        """
         data_sample = dict()
         for predicate_idx in range(self.num_predicate):
             data_sample[predicate_idx] = {}
@@ -108,7 +107,7 @@ class Logic_Model_Generator:
                         cur_state = 1
                 data_sample[body_predicate_idx]['state'].append(cur_state)
 
-
+        # generate head predicate data.
         for head_predicate_idx in self.head_predicate_set:
             data_sample[head_predicate_idx] = {}
             data_sample[head_predicate_idx]['time'] = [0,]
@@ -123,8 +122,8 @@ class Logic_Model_Generator:
                 intensity = self.model.intensity(t, head_predicate_idx, data, sample_ID)
                 intensity_potential.append(intensity)
             intensity_max = max(intensity_potential)
-            #print(intensity_max)
-            # generate events via accept and reject
+            
+            # generate events via accept and reject (thinning)
             t = 0
             while t < self.time_horizon:
                 time_to_event = np.random.exponential(scale=1.0/intensity_max).item()
@@ -144,11 +143,23 @@ class Logic_Model_Generator:
         return data_sample
 
     def generate_data(self, num_sample, time_horizon, worker_num):
+        """generate a synthetic dataset in parallel.
+        
+        Input
+        -------
+        num_sample: the number of samples in dataset
+        time_horizon: the time span of each sample
+        worker_num: the number of parallel cores.
+
+        Output 
+        _______
+        data: a nested dict of data samples, key: Sample_ID, value: sample.
+        """
         self.model = self.get_model()
         self.time_horizon = time_horizon
         print("Generate {} samples".format(num_sample))
         print("with following rules:")
-        self.model.print_rule_cp()
+        self.model.print_rule()
         print("with following settings:")
         self.model.print_info()
         for body_idx in self.body_predicate_set:
@@ -173,37 +184,10 @@ class Logic_Model_Generator:
 
 
 
-    def fit_gt_rules_mp(self, dataset, time_horizon, num_iter, worker_num):
-        # fit logic learning model
-        model = self.get_model()
-        model.num_iter = num_iter
-        model.worker_num = worker_num
-        model.print_info()
-        model.debug_mode = False
         
-
-        # initialize params
-        if self.use_exp_kernel:
-            
-            init_base = 0.01
-            init_weight = 0.1
-        else:
-            init_base = 0.2
-            init_weight = 0.1
-        for head_predicate_idx in self.head_predicate_set:
-            model.model_parameter[head_predicate_idx] = {'base': torch.autograd.Variable((torch.ones(1) * init_base).double(), requires_grad=True)}
-            for formula_idx in range(self.num_formula):
-                model.model_parameter[head_predicate_idx][formula_idx] = {'weight': torch.autograd.Variable((torch.ones(1) * init_weight).double(), requires_grad=True)}
-        verbose = True # print mid-result
-        l = model.optimize_log_likelihood_mp(head_predicate_idx, dataset,verbose)
-        print("Log-likelihood (torch)= ", l, flush=1)
-        print("rule set is:")
-        model.print_rule()
-        return model
-
-
-        
-
+"""
+The following functions, from get_logic_model_1 to get_logic_model_12, define 12 logic rule sets.
+"""
 
 def get_logic_model_1():
     file_name = "data-1.npy"
@@ -916,124 +900,43 @@ def get_logic_model_12():
     return model, file_name
 
 
-def get_model_by_idx(model_idx):
+def get_model_by_idx(dataset_id):
     model_list = [None, get_logic_model_1,get_logic_model_2,get_logic_model_3,get_logic_model_4,get_logic_model_5,get_logic_model_6,get_logic_model_7,get_logic_model_8,get_logic_model_9,get_logic_model_10,get_logic_model_11,get_logic_model_12]
-    return model_list[model_idx]()
+    return model_list[dataset_id]()
 
 
-
-def load_data(file_name, num_sample=0):
-    path = os.path.join("./data", file_name)
-    data = np.load(path, allow_pickle='TRUE').item()
-    if num_sample > 0:
-        num_sample = min(num_sample, len(data.keys()))
-        data = {i:data[i] for i in range(num_sample)}
-    return data
-
-def avg_event_num(model_idx, num_sample):
-    model, file_name = get_model_by_idx(model_idx)
-    data = load_data(file_name, num_sample)
-    event_num_dict = {pred_idx:0 for pred_idx in data[0].keys()}
-    for sample_ID in data.keys():
-        for pred_idx in event_num_dict.keys():
-            event_num_dict[pred_idx] += len(data[sample_ID][pred_idx]['time'])
-    
-    num_sample = len(data.keys())
-    print("data file is ", file_name)
-    print("num_sample = {}".format(num_sample))
-    for pred_idx, cnt in event_num_dict.items():
-        print("pred {} avg event num is {:.4f}".format(pred_idx, cnt/num_sample))
-    
-
-def fit_mp(model_idx, num_sample, time_horizon, num_iter, worker_num ):
-    print("---- start  fit_mp ----")
-    model, file_name = get_model_by_idx(model_idx)
-    data = load_data(file_name, num_sample)
-    avg_event_num(model_idx, num_sample)
-    print("fit data-{}, with {} samples".format(model_idx, num_sample))
-    with Timer("Fit data (torch)") as t:
-        m = model.fit_gt_rules_mp(data, time_horizon, num_iter, worker_num)
-    tag = "fit-gt-{}".format(model_idx)
-    with open("./model/model-{}.pkl".format(tag),'wb') as f:
-        pickle.dump(m, f)
-    print("---- exit  fit_mp ----")
-
-def fit_cp(model_idx, num_sample, time_horizon ):
-    model, file_name = get_model_by_idx(model_idx)
-    data = load_data(file_name, num_sample)
-    with Timer("Fit data (cp)") as t:
-        model.fit_gt_rules_cp(data, time_horizon=time_horizon)
-
-def generate(model_idx, num_sample, time_horizon, worker_num):
+def generate(dataset_id, num_sample, time_horizon, worker_num):
+    """ The interface of generate data.
+    dataset_id is the index of get_logic_model_x() functions, indicating which dataset to generate.
+    """
     print("---- start  generate ----")
-    model, file_name = get_model_by_idx(model_idx)
+    model, file_name = get_model_by_idx(dataset_id)
     with Timer("Generate data") as t:
         data = model.generate_data(num_sample=num_sample, time_horizon=time_horizon, worker_num=worker_num)
     if not os.path.exists("./data"):
         os.makedirs("./data")
     path = os.path.join("./data", file_name)
     np.save(path, data)
-    avg_event_num(model_idx, num_sample)
     print("data saved to", path)
     print("---- exit  generate ----")
 
-def feature_mean_std(model_idx):
-    model, file_name = get_model_by_idx(model_idx = model_idx)
-    head_predicate_idx = model.head_predicate_set[0]
-    learning_model = model.get_model()
-    data = load_data(file_name)
-    ret_dict = dict()
-    for sample_ID, history in data.items():
-        for formula_idx, template in learning_model.logic_template[head_predicate_idx].items():
-            for cur_time in range(1,10):
-                f = learning_model.get_feature(cur_time, head_predicate_idx, history, template)
-                if not (formula_idx,cur_time) in ret_dict:
-                    ret_dict[(formula_idx,cur_time)] = list()
-                ret_dict[(formula_idx,cur_time)].append(f.item()) 
 
-    print("featrue mean and std.")
-    print("(f, t) --> f is formula_idx, t is time.")
-    for k in ret_dict.keys():
-        mean = np.mean(ret_dict[k])
-        std = np.std(ret_dict[k], ddof=1)
-        print(k, "mean={:.4f}, std={:.4f}".format(mean, std))
-    
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset_id', type=int, 
+        help = "an integer between 1 and 12, indicating one of 12 datasets",
+        default = 1,
+        choices = list(range(1,13)))
+    args = parser.parse_args()
+    return args
 
-
-def redirect_log_file():
-    log_root = ["./log/out","./log/err"]   
-    for root in log_root:     
-        if not os.path.exists(root):
-            os.makedirs(root)
-    t = str(datetime.datetime.now())
-    out_file = os.path.join(log_root[0], t)
-    err_file = os.path.join(log_root[1], t)
-    sys.stdout = open(out_file, 'w')
-    sys.stderr = open(err_file, 'w')
-
-def fit_mp_group(model_idx):
-    fit_mp(model_idx=model_idx, num_sample=600, time_horizon=10, num_iter = 50, worker_num = 12 )
-    fit_mp(model_idx=model_idx, num_sample=1200, time_horizon=10, num_iter = 50, worker_num = 12 )
-    fit_mp(model_idx=model_idx, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
-
-
-def test(dataset_name, num_sample, model_file, head_predicate_idx, worker_num):
-    dataset,num_sample =  get_data(dataset_name=dataset_name, num_sample=num_sample)
-    testing_dataset = {i: dataset[int(num_sample*0.8)+i] for i in range(int(num_sample*0.2))}
-    with open("./model/"+model_file, "rb") as f:
-        model = pickle.load(f)
-    model.worker_num = worker_num
-    model.generate_target(head_predicate_idx=head_predicate_idx, dataset=testing_dataset, num_repeat=100)
 
 if __name__ == "__main__":
-    redirect_log_file()
-    torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
-
+    agrs = get_args()
+    redirect_log_file() #redirect stdout and stderr to log files.
+    torch.multiprocessing.set_sharing_strategy('file_system') #multi process communication strategy, depending on operating system.
     print("Start time is", datetime.datetime.now(),flush=1)
 
+    generate(dataset_id=agrs.dataset_id, num_sample=2400, time_horizon=10, worker_num=12)
     
-    generate(model_idx=10, num_sample=2400, time_horizon=10, worker_num=12)
-    #fit_mp(model_idx=1, num_sample=2400, time_horizon=10, num_iter = 50, worker_num = 12 )
-
-
     

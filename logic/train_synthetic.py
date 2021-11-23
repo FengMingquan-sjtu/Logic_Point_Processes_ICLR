@@ -1,5 +1,6 @@
 import datetime
 import os
+import argparse
 
 import numpy as np
 import torch
@@ -30,29 +31,22 @@ def get_model(dataset_id):
     model = m.get_model_for_learn()
     return model
 
-def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=False, rule_set_str = None, algorithm="BFS"):
+def fit(dataset_id, num_sample, time_limit, worker_num=8, num_epoch=5, algorithm="RAFS"):
+    """Train synthetic data set, define hyper-parameters here."""
     t  = datetime.datetime.now()
     print("Start time is", t ,flush=1)
     if not os.path.exists("./model"):
         os.makedirs("./model")    
-    #get model
     model = get_model(dataset_id)
-    #set initial rules if required
-    if rule_set_str:
-        set_rule(model, rule_set_str)
-    #get data
     training_dataset, testing_dataset =  get_data(dataset_id, num_sample)
 
     #set model hyper params
-    model.batch_size_grad = num_sample #use all sample for grad
-    model.batch_size_cp = num_sample
-    model.num_iter = num_iter
-    model.use_cp = use_cp
+    model.time_limit = time_limit
+    model.num_epoch = num_epoch
     model.worker_num = worker_num
-    model.opt_worker_num = worker_num
-    model.print_time = True
+    model.print_time = False
     model.weight_lr = 0.0005
-    model.l1_coef = l1_coef
+    model.l1_coef = 0.1
 
     if model.use_exp_kernel:
         model.init_base = 0.01
@@ -98,12 +92,12 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
     if dataset_id in [1, 6, 7, 8, 11, 12]:
         model.weight_lr = 0.0001
 
-    if algorithm == "DFS":
-        with Timer("DFS") as t:
-            model.DFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag = dataset_id)
-    elif algorithm == "BFS":
-        with Timer("BFS") as t:
-            model.BFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag = dataset_id)
+    if algorithm == "REFS":
+        with Timer("REFS") as t:
+            model.REFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag = dataset_id)
+    elif algorithm == "RAFS":
+        with Timer("RAFS") as t:
+            model.RAFS(model.head_predicate_set[0], training_dataset, testing_dataset, tag = dataset_id)
     elif algorithm == "Brute":
         with Timer("Brute") as t:
             model.Brute(model.head_predicate_set[0], training_dataset)
@@ -111,18 +105,31 @@ def fit(dataset_id, num_sample, l1_coef=0.1, worker_num=8, num_iter=5, use_cp=Fa
     print("Finish time is", datetime.datetime.now())
  
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset_id', type=int, 
+        help="an integer between 1 and 12, indicating one of 12 datasets",
+        default=1,
+        choices=list(range(1,13)))
+    parser.add_argument('--algorithm', type=str, 
+        help="which seaching scheme to use, possible choices are [RAFS,REFS,Brute].",
+        default="RAFS",
+        choices=["RAFS","REFS","Brute"])
+    parser.add_argument('--time_limit', type=float, 
+        help="maximum running time (seconds)",
+        default=3600 * 24, # 24 hours
+        )
+    args = parser.parse_args()
+    return args
 
 if __name__ == "__main__":
-    torch.multiprocessing.set_sharing_strategy('file_system') #fix bug#78
+    torch.multiprocessing.set_sharing_strategy('file_system') #multi process communication strategy, depending on operating system.
 
-    dataset_id = 6
-
-    # our model
-    redirect_log_file()
-    fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="BFS")
+    args = get_args()
     
-    # baseline brute force model.
-    #redirect_log_file()
-    #fit(dataset_id=dataset_id, l1_coef=0.1, num_sample=2400, worker_num=12, num_iter=12, algorithm="Brute")
+    redirect_log_file() #redirect stdout and stderr to log files.
+
+    fit(dataset_id=args.dataset_id, time_limit=args.time_limit, num_sample=2400, worker_num=12, num_epoch=12, algorithm=args.algorithm)
+    
 
     

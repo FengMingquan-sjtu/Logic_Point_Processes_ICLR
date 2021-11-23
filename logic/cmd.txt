@@ -1,3 +1,5 @@
+python3 generate_synthetic_data.py --dataset_id 2
+python3 train_synthetic.py --dataset_id 2 --time_limit 100 --algorithm REFS
 setsid python3 logic_learning.py 
 setsid python3 generate_synthetic_data.py
 setsid python3 train_synthetic.py
