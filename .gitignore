@@ -10,3 +10,4 @@ logic/model
 *.npz
 *.pkl
 /misc
+logic
